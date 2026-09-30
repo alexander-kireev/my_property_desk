@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import Http404
@@ -15,6 +16,7 @@ from config.form_state import (
     serialise_form_data,
     store_form_state,
 )
+from config.feedback import snapshot_form_values, form_values_changed
 
 from .forms import PropertyForm
 from .models import Property
@@ -28,10 +30,12 @@ from .services import (
     create_property,
     deactivate_property,
     delete_property,
+    related_work_counts,
     reactivate_property,
     update_property,
 )
 from .navigation import created_record_property_url
+from pages.workspace_selection import amended_query_url, page_for_record
 
 
 PROPERTIES_PER_PAGE = 20
@@ -110,6 +114,15 @@ def _property_detail_url(property_record, *, form_state=None):
     return f"{url}?{urlencode({'form_state': form_state})}" if form_state else url
 
 
+def _selected_property_url(request, property_record, *, clear_filters=False):
+    """Keep a changed property selected while retaining explicit list filters."""
+    parameters = _list_query_parameters(_normalised_list_values(request))
+    if clear_filters:
+        parameters = {key: value for key, value in parameters.items() if key == "sort"}
+    url = _property_detail_url(property_record)
+    return f"{url}?{urlencode(parameters)}" if parameters else url
+
+
 def _redirect_with_property_form_state(
     request,
     *,
@@ -148,15 +161,15 @@ def _restore_edit_property_form(request, state, property_record):
     )
 
 
-def _property_list_context(request, *, add_property_form=None, edit_property_form=None, edit_property_record=None):
+def _property_list_context(request, *, add_property_form=None, edit_property_form=None, edit_property_record=None, page_override=None):
     values = _normalised_list_values(request)
     properties = filtered_properties_for_user(
         user=request.user,
-        **{**values, "state": values["state"] or Property.State.ACTIVE},
+        **{**values, "state": values["state"] or "all"},
     )
 
     paginator = Paginator(with_work_summary(properties), PROPERTIES_PER_PAGE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(page_override or request.GET.get("page"))
 
     query_parameters = _list_query_parameters(values)
     return_parameters = query_parameters.copy()
@@ -182,7 +195,7 @@ def _property_list_context(request, *, add_property_form=None, edit_property_for
         "state": values["state"],
         "sort": values["sort"],
         "list_query": urlencode(query_parameters),
-        "has_filters": bool(values["search"] or values["state"]),
+        "has_filters": bool(values["search"] or values["state"] not in ("", "all")),
         "property_count": properties_for_user(user=request.user).count(),
         "selected_property": selected_property,
         "selected_in_page": True,
@@ -213,7 +226,7 @@ def _property_history(request, property_record):
         terminated_at__isnull=False,
     ).filter(
         Q(property=property_record)
-        | Q(issue__property=property_record, issue__deleted_at__isnull=True)
+        | Q(issue__property=property_record)
     ).distinct()
     for task in finished_tasks:
         history.append({"kind": "task", "label": task.get_state_display(), "item": task, "date": task.terminated_at})
@@ -247,7 +260,7 @@ def _property_detail_context(request, property_record, *, edit_property_form=Non
         deleted_at__isnull=True,
     ).filter(
         Q(property=property_record)
-        | Q(issue__property=property_record, issue__deleted_at__isnull=True)
+        | Q(issue__property=property_record)
     ).select_related("issue").distinct()
     events = Event.objects.filter(
         user=request.user,
@@ -302,17 +315,39 @@ def _property_detail_context(request, property_record, *, edit_property_form=Non
         record_parameters["records_search"] = record_search
     record_page = Paginator(records, RELATED_RECORDS_PER_PAGE).get_page(request.GET.get("records_page"))
 
-    context = list_context or _property_list_context(request)
+    selection_redirect = None
+    if list_context is None:
+        values = _normalised_list_values(request)
+        filtered = filtered_properties_for_user(
+            user=request.user,
+            **{**values, "state": values["state"] or "all"},
+        )
+        natural_page = page_for_record(filtered, property_record.pk, PROPERTIES_PER_PAGE)
+        if natural_page is not None:
+            wanted = str(natural_page) if natural_page > 1 else ""
+            if request.GET.get("page", "") != wanted:
+                selection_redirect = amended_query_url(
+                    request, changes={"page": natural_page if natural_page > 1 else None},
+                )
+        context = _property_list_context(request, page_override=natural_page)
+    else:
+        context = list_context
+    linked_counts = related_work_counts(property_record=property_record)
     context.update({
         "property": property_record,
         "selected_property": property_record,
+        "related_work_counts": linked_counts,
+        "linked_work_option_count": sum(bool(linked_counts[key]) for key in ("events_scheduled", "issues_active", "tasks_active")),
         "selected_in_page": any(item.pk == property_record.pk for item in context["page_obj"].object_list),
+        "selected_outside_filters": list_context is None and natural_page is None,
+        "selection_redirect": selection_redirect,
         "is_detail_route": list_context is None,
         "related_page": record_page,
         "related_type": record_type,
         "related_scope": record_scope,
         "related_sort": record_sort,
         "related_search": record_search,
+        "related_has_filters": bool(record_type != "all" or record_scope != "current" or record_search),
         "related_query": urlencode(record_parameters),
         "edit_property_form": (
             edit_property_form
@@ -365,10 +400,9 @@ def add_property_view(request):
             user=request.user,
             **form.cleaned_data,
         )
+        messages.success(request, "Property added.")
 
-        if request.GET.get("return_to") == "list":
-            return redirect(_property_list_url(request))
-        return redirect("property:property_detail", property_id=property_record.pk)
+        return redirect(_selected_property_url(request, property_record, clear_filters=True))
 
     return _redirect_with_property_form_state(
         request,
@@ -398,6 +432,8 @@ def property_detail_view(request, property_id):
         property_record,
         edit_property_form=edit_property_form,
     )
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
     if (
         isinstance(state, dict)
         and state.get("action") == "property_add_record"
@@ -461,6 +497,7 @@ def add_property_record_view(request, property_id, kind):
                 contacts=contacts_form.cleaned_data["contacts"],
                 **form.cleaned_data,
             )
+        messages.success(request, f"{kind.title()} added to property.")
         return redirect(created_record_property_url(record, property_record.pk, kind))
 
     token = store_form_state(request, {
@@ -486,15 +523,13 @@ def edit_property_view(request, property_id):
         user=request.user,
         instance=property_record,
     )
+    before = snapshot_form_values(form)
 
     if form.is_valid():
-        update_property(
-            property_record=property_record,
-            **form.cleaned_data,
-        )
-        if request.GET.get("return_to") == "list":
-            return redirect(_property_list_url(request))
-        return redirect("property:property_detail", property_id=property_record.pk)
+        if form_values_changed(before, form):
+            update_property(property_record=property_record, **form.cleaned_data)
+            messages.success(request, "Property updated.")
+        return redirect(_selected_property_url(request, property_record))
 
     return _redirect_with_property_form_state(
         request,
@@ -511,10 +546,17 @@ def deactivate_property_view(request, property_id):
         pk=property_id,
         state=Property.State.ACTIVE,
     )
-    deactivate_property(property_record=property_record)
-    if request.GET.get("return_to") == "list":
-        return redirect(_property_list_url(request))
-    return redirect("property:property_detail", property_id=property_record.pk)
+    deactivate_property(
+        property_record=property_record,
+        cancel_events=request.POST.get("cancel_events") == "yes",
+        dismiss_issues=request.POST.get("dismiss_issues") == "yes",
+        dismiss_tasks=request.POST.get("dismiss_tasks") == "yes",
+    )
+    affected = property_record.affected_work
+    detail = ", ".join(f"{count} {kind[:-1] if count == 1 else kind}" for kind, count in affected.items() if count)
+    if property_record.action_changed:
+        messages.success(request, f"Property deactivated.{(' Also updated ' + detail + '.') if detail else ''}")
+    return redirect(_selected_property_url(request, property_record))
 
 
 @login_required
@@ -526,9 +568,8 @@ def reactivate_property_view(request, property_id):
         state=Property.State.DEACTIVATED,
     )
     reactivate_property(property_record=property_record)
-    if request.GET.get("return_to") == "list":
-        return redirect(_property_list_url(request))
-    return redirect("property:property_detail", property_id=property_record.pk)
+    messages.success(request, "Property reactivated.")
+    return redirect(_selected_property_url(request, property_record))
 
 
 @login_required
@@ -538,7 +579,16 @@ def delete_property_view(request, property_id):
         properties_for_user(user=request.user),
         pk=property_id,
     )
-    delete_property(property_record=property_record)
+    delete_property(
+        property_record=property_record,
+        delete_events=request.POST.get("delete_events") == "yes",
+        delete_issues=request.POST.get("delete_issues") == "yes",
+        delete_tasks=request.POST.get("delete_tasks") == "yes",
+    )
+    affected = property_record.affected_work
+    detail = ", ".join(f"{count} {kind[:-1] if count == 1 else kind}" for kind, count in affected.items() if count)
+    if property_record.action_changed:
+        messages.success(request, f"Property deleted.{(' Also deleted ' + detail + '.') if detail else ''}")
 
     if request.GET.get("return_to") == "list":
         return redirect(_property_list_url(request))

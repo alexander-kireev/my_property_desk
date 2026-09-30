@@ -16,7 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
             help.hidden = !isTelephone || Boolean(value.parentElement.querySelector(".invalid-feedback"));
         }
 
-        method.addEventListener("change", update);
+        method.addEventListener("change", () => {
+            value.value = "";
+            update();
+        });
         update();
     });
 });

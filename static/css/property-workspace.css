@@ -42,16 +42,14 @@
     border-bottom: 1px solid var(--bs-border-color);
 }
 
-.property-command-row:hover,
-.property-command-row.is-selected {
-    background: var(--bs-tertiary-bg) !important;
-}
+.property-command-row:hover { background: var(--pom-hover) !important; }
+.property-command-row.is-selected { background: var(--bs-tertiary-bg) !important; }
 
 .property-command-row.is-selected::before {
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--bs-emphasis-color);
+    background: var(--pom-brand-blue);
     content: "";
 }
 
@@ -61,10 +59,34 @@
     overflow-wrap: anywhere;
 }
 
+.property-command-row strong {
+    width: calc(100% - 1rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .property-command-row small {
     margin-top: 0.25rem;
     color: var(--bs-secondary-color);
 }
+
+.property-command-row .property-command-address {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.property-heading-address {
+    display: flex;
+    align-items: flex-start;
+    gap: .45rem;
+    margin-top: .35rem;
+    max-width: 100%;
+}
+.property-heading-address .expandable-text-content { display: block; flex: 1 1 auto; min-width: 0; }
+.property-heading-address .expandable-text-toggle { flex: 0 0 auto; margin-top: 0; white-space: nowrap; }
 
 .property-list-column .command-pagination {
     display: grid;
@@ -124,13 +146,14 @@
 .property-tab:hover,
 .property-tab:focus-visible {
     color: var(--bs-emphasis-color);
-    background: var(--bs-tertiary-bg);
+    background: var(--pom-hover);
 }
 
 .property-tab.is-active {
     color: var(--bs-emphasis-color);
-    border-bottom-color: var(--bs-emphasis-color);
+    border-bottom-color: var(--pom-brand-blue);
     font-weight: 600;
+    background: transparent;
 }
 
 .property-panel-area {
@@ -178,7 +201,23 @@
     scrollbar-width: thin;
 }
 
-/* The property add forms stay above this workspace and scroll inside the modal. */
+/* Keep long property names inside their locked Add-record fields; forms scroll in the modal. */
+.property-context-modal-title { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; }
+.property-context-modal-title + .btn-close { flex: 0 0 auto; }
+.property-context-modal-name { display: block; max-width: 100%; overflow: hidden; color: var(--bs-secondary-color); font-size: 0.85rem; font-weight: 400; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.property-context-readonly {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+    cursor: default;
+}
+.property-context-readonly:focus {
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+}
 .property-command-page [id^="propertyAdd"] .modal-content {
     max-height: calc(100dvh - var(--bs-modal-margin) - var(--bs-modal-margin));
 }
@@ -218,8 +257,22 @@
 }
 
 .property-related-record {
-    border-bottom: 1px solid var(--bs-border-color);
+    position: relative;
     color: var(--bs-emphasis-color);
+}
+.property-related-record + .property-related-record {
+    border-top: 1px solid var(--bs-border-color);
+}
+.property-related-record[open]::before {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--pom-brand-blue);
+    content: "";
+    pointer-events: none;
 }
 .property-related-summary {
     display: grid;
@@ -228,28 +281,38 @@
     gap: 0.75rem;
     padding: 0.75rem 0.85rem;
     cursor: pointer;
+    height: auto;
+    min-height: 4.5rem;
 }
 .property-related-summary::-webkit-details-marker { display: none; }
 .property-related-summary::marker { content: ""; }
 
-.property-related-record:last-child { border-bottom: 0; }
+.property-related-record[open] .property-related-summary { background: var(--bs-tertiary-bg); padding-left: calc(0.85rem + 4px); }
 .property-related-summary:hover,
-.property-related-summary:focus-visible { background: var(--bs-tertiary-bg); }
+.property-related-summary:focus-visible { background: var(--pom-hover); }
+.property-related-record[open] .property-related-summary:hover,
+.property-related-record[open] .property-related-summary:focus-visible { background: var(--bs-tertiary-bg); }
+.property-related-summary:focus-visible { outline: 3px solid var(--pom-brand-blue); outline-offset: -3px; }
 .property-related-record-main,
 .property-related-record-aside { min-width: 0; }
 .property-related-record-main strong,
-.property-related-record-main small { display: block; overflow-wrap: anywhere; }
+.property-related-record-main small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .property-related-record-main strong { font-weight: 600; }
 .property-related-record-main small,
 .property-related-record-aside small { color: var(--bs-secondary-color); }
 .property-related-record-aside { display: grid; justify-items: end; gap: 0.3rem; text-align: right; }
+.property-related-record-aside > small { max-width: 100%; overflow-wrap: anywhere; }
 .property-related-record-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem; }
 .property-related-chevron { display: grid; place-items: center; color: var(--bs-secondary-color); }
 .property-related-chevron svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
 .property-related-record[open] .property-related-chevron svg { transform: rotate(180deg); }
-.property-related-details { padding: 0.1rem 0.85rem 0.85rem; overflow-wrap: anywhere; }
-.property-related-details p { margin: 0 0 0.65rem; }
-.property-related-facts { display: flex; flex-wrap: wrap; gap: 0.35rem 0.85rem; margin-bottom: 0.75rem; color: var(--bs-secondary-color); font-size: 0.83rem; }
+@media (prefers-reduced-motion: reduce) {
+    .property-related-chevron svg { transition: none; }
+}
+.property-related-details { margin-left: 4px; border-top: 1px solid var(--bs-border-color); padding: 0.9rem 1rem; overflow-wrap: anywhere; }
+.property-related-details p { margin: 0; }
+.property-related-details h4 { font-size: 0.8rem; font-weight: 600; margin: 0 0 0.3rem; }
+.property-related-detail-footer { display: flex; justify-content: flex-end; margin-top: 1rem; }
 .property-related-empty { padding: 1.25rem; margin: 0; }
 .property-related-pagination { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.75rem; font-size: 0.85rem; }
 
@@ -332,7 +395,7 @@
 
 .property-work-filters button:hover,
 .property-work-filters button:focus-visible {
-    background: var(--bs-tertiary-bg);
+    background: var(--pom-hover);
 }
 
 .property-work-filters span {
@@ -393,26 +456,6 @@
     border-color: var(--bs-border-color);
 }
 
-.property-description-preview.is-clamped {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
-
-.property-description-open {
-    margin-top: 0.45rem;
-    padding: 0;
-    color: var(--bs-link-color);
-    background: transparent;
-    border: 0;
-    text-decoration: underline;
-    text-underline-offset: 0.15rem;
-}
-
-.property-description-full {
-    overflow-wrap: anywhere;
-}
 
 .property-record,
 .property-history-record {
@@ -521,7 +564,7 @@ summary.property-record-link::-webkit-details-marker {
 
 .property-record-link:hover,
 .property-record-link:focus-visible {
-    background: var(--bs-tertiary-bg);
+    background: var(--pom-hover);
 }
 
 .property-record-chevron {
@@ -592,11 +635,26 @@ summary.property-record-link::-webkit-details-marker {
     .property-overview-grid { grid-template-columns: 1fr; grid-template-areas: "issues" "tasks" "schedule" "history"; }
     .property-related-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .property-related-search { grid-column: span 2; }
+
+    /* Keep both columns, but let a long detail page grow instead of squeezing
+       its related records into a tiny second scrollport. */
+    .property-command-page,
+    .property-command-page .page-shell { height: auto; min-height: 100dvh; overflow: visible; }
+    .property-command-main > .container-xl,
+    .property-command-centre { height: auto !important; overflow: visible; }
+    .property-workspace { height: auto; min-height: calc(100dvh - 9rem); }
+    .property-list-column,
+    .property-detail-column,
+    .property-command-list,
+    .property-related-results,
+    .property-related-scroll { overflow: visible; }
+    .property-related-results,
+    .property-related-scroll { flex: 0 0 auto; }
 }
 
 /* A short desktop viewport (including high browser zoom) must not squeeze the
    results list between its header and the card's bottom edge. */
-@media (min-width: 992px) and (max-height: 700px) {
+@media (min-width: 1300px) and (max-height: 700px) {
     .property-command-page,
     .property-command-page .page-shell { height: auto; min-height: 100dvh; overflow: visible; }
     .property-command-main > .container-xl,
@@ -604,7 +662,7 @@ summary.property-record-link::-webkit-details-marker {
     .property-workspace { height: 40rem; min-height: 40rem; }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 991.98px), (max-width: 1299.98px) and (max-height: 750px) {
     .property-command-page,
     .property-command-page .page-shell,
     .property-command-main,
@@ -634,7 +692,35 @@ summary.property-record-link::-webkit-details-marker {
     .property-record-link { grid-template-columns: minmax(0, 1fr) 7.5rem 0.7rem; gap: 0.4rem; padding: 0.7rem 0.25rem; }
 }
 
+@media (min-width: 992px) and (max-width: 1299.98px) and (max-height: 750px) {
+    .property-command-main > .container-xl,
+    .property-command-centre { height: auto !important; }
+    .property-command-page .workspace-mobile-back { display: inline-flex; }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .property-command-centre { max-width: 720px; margin-inline: auto; }
+    .property-command-centre:has(.property-workspace.show-detail) { max-width: 800px; }
+
+    .property-heading-row.workspace-detail-header-layout {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+    .property-heading-copy { min-width: 0; }
+    .property-heading-actions.workspace-detail-actions { justify-content: flex-end; }
+    .property-command-header .workspace-mobile-back { margin-bottom: .5rem !important; }
+
+    .property-related-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .property-related-filters label:nth-child(3),
+    .property-related-filters > button { grid-column: auto; }
+    .property-related-search { grid-column: span 2; }
+}
+
 @media (max-width: 767.98px) {
+    .property-related-summary { height: auto; grid-template-columns: minmax(0, 1fr) 1rem; }
+    .property-related-record-aside { grid-column: 1; grid-row: 2; display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 0.3rem 0.65rem; text-align: left; }
+    .property-related-chevron { grid-column: 2; grid-row: 1 / 3; }
+    .property-related-detail-footer { justify-content: flex-start; }
     .property-heading-actions { align-items: stretch; }
     .property-heading-actions > .btn,
     .property-heading-actions > form { flex: 1 1 auto; }

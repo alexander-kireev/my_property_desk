@@ -52,4 +52,9 @@ urlpatterns = [
         views.delete_contact_note_view,
         name="delete_contact_note",
     ),
+    path(
+        "<int:contact_id>/notes/undo/",
+        views.undo_contact_note_view,
+        name="undo_contact_note",
+    ),
 ]

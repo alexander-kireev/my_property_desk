@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -13,9 +14,11 @@ from config.form_state import (
     serialise_form_data,
     store_form_state,
 )
+from config.feedback import snapshot_form_values, form_values_changed
 
 from property.selectors import properties_for_user
 from property.navigation import active_property_for_user, created_record_property_url
+from pages.workspace_selection import amended_query_url, resolve_selection
 from event.selectors import events_for_user
 from task.forms import TaskForm
 from task.models import Task
@@ -45,14 +48,14 @@ ISSUES_PER_PAGE = 20
 
 def _normalised_list_values(request):
     search = request.GET.get("search", "").strip()
-    state = request.GET.get("state", "")
+    state = request.GET.get("state", "all")
     sort = request.GET.get("sort", "resolution_deadline")
     priority_value = request.GET.get("priority", "")
     property_value = request.GET.get("property", "")
     deadline_period = request.GET.get("deadline_period", "")
 
     if state not in (*Issue.State.values, "all"):
-        state = ""
+        state = "all"
     if sort not in ISSUE_SORT_OPTIONS:
         sort = "resolution_deadline"
     if deadline_period not in ISSUE_DEADLINE_PERIOD_OPTIONS:
@@ -83,7 +86,7 @@ def _normalised_list_values(request):
 def _list_query_parameters(values):
     parameters = {}
     for name in ("search", "state", "priority", "deadline_period"):
-        if values[name]:
+        if values[name] and not (name == "state" and values[name] == "all"):
             parameters[name] = values[name]
     if values["property_id"]:
         parameters["property"] = values["property_id"]
@@ -98,10 +101,13 @@ def _issue_workspace_url(
     issue_id=None,
     tab="details",
     form_state=None,
+    clear_filters=False,
 ):
     parameters = _list_query_parameters(_normalised_list_values(request))
+    if clear_filters:
+        parameters = {key: value for key, value in parameters.items() if key == "sort"}
     page = request.GET.get("page", "")
-    if page.isdigit() and int(page) > 1:
+    if not clear_filters and page.isdigit() and int(page) > 1:
         parameters["page"] = page
     if issue_id is not None:
         parameters["selected"] = issue_id
@@ -245,22 +251,16 @@ def _issue_list_context(
     values = _normalised_list_values(request)
     issues = filtered_issues_for_user(
         user=request.user,
-        **{**values, "state": values["state"] or Issue.State.ACTIVE},
+        **values,
+    )
+    requested_issue, selected_page, outside_filters, selection_redirect = resolve_selection(
+        request, filtered=issues, owned=issues_for_user(user=request.user), page_size=ISSUES_PER_PAGE,
     )
     paginator = Paginator(issues, ISSUES_PER_PAGE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(selected_page or request.GET.get("page"))
 
     if selected_issue is None:
-        try:
-            selected_id = int(request.GET.get("selected", ""))
-        except (TypeError, ValueError):
-            selected_id = None
-        selected_issue = next(
-            (issue for issue in page_obj if issue.pk == selected_id),
-            None,
-        )
-        if selected_issue is None and selected_id is not None and request.GET.get("open") in ("detail", "edit"):
-            selected_issue = issues_for_user(user=request.user).filter(pk=selected_id).first()
+        selected_issue = requested_issue
 
     if selected_issue is None and page_obj.object_list:
         selected_issue = page_obj.object_list[0]
@@ -284,6 +284,13 @@ def _issue_list_context(
     return {
         "page_obj": page_obj,
         "selected_issue": selected_issue,
+        "selected_outside_filters": outside_filters,
+        "selection_redirect": selection_redirect,
+        "show_compact_detail": (
+            selected_issue is not None
+            and request.GET.get("selected") == str(selected_issue.pk)
+        ),
+        "show_mobile_detail": request.GET.get("open") in ("detail", "edit") or open_modal == "editIssueModal",
         "mobile_expanded_issue_id": (
             selected_issue.pk if selected_issue is not None
             and request.GET.get("selected") == str(selected_issue.pk)
@@ -342,7 +349,7 @@ def _issue_list_context(
         "has_filters": any(
             (
                 values["search"],
-                values["state"],
+                values["state"] != "all",
                 values["priority"],
                 values["property_id"],
                 values["deadline_period"],
@@ -351,7 +358,7 @@ def _issue_list_context(
         "filter_count": sum(
             bool(value)
             for value in (
-                values["state"],
+                values["state"] != "all",
                 values["priority"],
                 values["property_id"],
                 values["deadline_period"],
@@ -376,7 +383,11 @@ def _issue_list_context(
 @login_required
 @require_GET
 def issues_view(request):
+    if request.GET.get("deadline_period") == "upcoming":
+        return redirect(amended_query_url(request, remove=("deadline_period",)))
     context = _issue_list_context(request, **_restore_issue_form_context(request))
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
     origin = None
     if request.GET.get("open") == "add" and not context["open_modal"]:
         origin = active_property_for_user(request.user, request.GET.get("property"))
@@ -405,10 +416,11 @@ def add_issue_view(request):
     )
     if form.is_valid():
         issue = create_issue(user=request.user, **form.cleaned_data)
+        messages.success(request, "Issue added.")
         property_url = created_record_property_url(issue, request.POST.get("return_property"), "issue")
         if property_url:
             return redirect(property_url)
-        return redirect(_issue_workspace_url(request, issue_id=issue.pk))
+        return redirect(_issue_workspace_url(request, issue_id=issue.pk, clear_filters=True))
     return _redirect_with_issue_form_state(
         request,
         action="add_issue",
@@ -427,8 +439,11 @@ def edit_issue_view(request, issue_id):
         instance=issue,
         auto_id="edit_issue_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_issue(issue=issue, **form.cleaned_data)
+        if form_values_changed(before, form):
+            update_issue(issue=issue, **form.cleaned_data)
+            messages.success(request, "Issue updated.")
         return redirect(_issue_workspace_url(request, issue_id=issue.pk))
     return _redirect_with_issue_form_state(
         request,
@@ -447,6 +462,10 @@ def resolve_issue_view(request, issue_id):
         issue=issue,
         dismiss_linked_tasks=request.POST.get("affect_linked_tasks") == "yes",
     )
+    count = issue.affected_linked_tasks
+    detail = f" {count} linked task{'s' if count != 1 else ''} dismissed." if count else ""
+    if issue.action_changed:
+        messages.success(request, f"Issue resolved.{detail}")
     property_url = f"{reverse('property:property_detail', args=[issue.property_id])}?tab=work" if issue.property_id else None
     if property_url and request.POST.get("next") == property_url:
         return redirect(property_url)
@@ -463,6 +482,10 @@ def dismiss_issue_view(request, issue_id):
         issue=issue,
         dismiss_linked_tasks=request.POST.get("affect_linked_tasks") == "yes",
     )
+    count = issue.affected_linked_tasks
+    detail = f" {count} linked task{'s' if count != 1 else ''} dismissed." if count else ""
+    if issue.action_changed:
+        messages.success(request, f"Issue dismissed.{detail}")
     return redirect(_issue_workspace_url(request, issue_id=issue.pk))
 
 
@@ -475,6 +498,7 @@ def reactivate_issue_view(request, issue_id):
         state__in=[Issue.State.RESOLVED, Issue.State.DISMISSED],
     )
     reactivate_issue(issue=issue)
+    messages.success(request, "Issue reactivated.")
     return redirect(_issue_workspace_url(request, issue_id=issue.pk))
 
 
@@ -486,6 +510,10 @@ def delete_issue_view(request, issue_id):
         issue=issue,
         delete_linked_tasks=request.POST.get("affect_linked_tasks") == "yes",
     )
+    count = issue.affected_linked_tasks
+    detail = f" {count} linked task{'s' if count != 1 else ''} deleted." if count else ""
+    if issue.action_changed:
+        messages.success(request, f"Issue deleted.{detail}")
     return redirect(_issue_workspace_url(request))
 
 
@@ -508,6 +536,7 @@ def add_issue_task_view(request, issue_id):
             issue=issue,
             **form.cleaned_data,
         )
+        messages.success(request, "Task added to issue.")
         return redirect(_issue_workspace_url(request, issue_id=issue.pk, tab="tasks"))
     return _redirect_with_issue_form_state(
         request,
@@ -534,8 +563,11 @@ def edit_issue_task_view(request, issue_id, task_id):
         instance=task,
         auto_id="edit_issue_task_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_task(task=task, **form.cleaned_data)
+        if form_values_changed(before, form):
+            update_task(task=task, **form.cleaned_data)
+            messages.success(request, "Task updated.")
         if task.issue_id != issue.pk:
             return redirect(f"{reverse('task:tasks')}?selected={task.pk}&moved=1")
         return redirect(_issue_workspace_url(request, issue_id=issue.pk, tab="tasks"))

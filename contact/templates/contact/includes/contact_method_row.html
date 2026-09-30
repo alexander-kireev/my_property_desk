@@ -1,6 +1,6 @@
 <div class="contact-method-row{% if selected_contact.state == 'active' %} contact-method-row--editable{% endif %}">
     <div class="contact-method-copy">
-        {% if method.type == "email" %}<a class="contact-method-value contact-method-value--email link-body-emphasis" href="mailto:{{ method.value }}" title="{{ method.value }}" aria-label="Email {{ method.value }}">{{ method.value }}</a>{% else %}<a class="contact-method-value contact-method-value--telephone link-body-emphasis" href="tel:{{ method.value }}" title="{{ method.value }}" aria-label="Telephone {{ method.value }}">{{ method.value }}</a>{% endif %}
+        {% if method.type == "email" %}<span class="contact-method-value contact-method-value--email" title="{{ method.value }}">{{ method.value }}</span>{% else %}<span class="contact-method-value contact-method-value--telephone" title="{{ method.value }}">{{ method.value }}</span>{% endif %}
     </div>
     {% if selected_contact.state == "active" %}
         <div class="contact-method-actions" aria-label="Contact detail actions">

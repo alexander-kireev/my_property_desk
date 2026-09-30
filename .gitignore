@@ -29,3 +29,5 @@ wireframes/
 # For internal build docs
 build_docs/
 docs/
+.github/*.md
+.github/audits/

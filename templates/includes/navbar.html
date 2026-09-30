@@ -1,6 +1,7 @@
+{% load static %}
 <nav class="app-navbar navbar navbar-expand-lg" data-bs-theme="dark">
-  <div class="container-fluid px-5">
-    <a class="navbar-brand fw-semibold" href="{% url 'pages:home' %}">PoM</a>
+  <div class="container-fluid px-3 px-md-5">
+    <a class="navbar-brand" href="{% if request.user.is_authenticated %}{% url 'pages:dashboard' %}{% else %}{% url 'pages:home' %}{% endif %}" aria-label="{% if request.user.is_authenticated %}My Property Desk dashboard{% else %}My Property Desk home{% endif %}"><img class="app-brand-logo" src="{% static 'brand/mpd-wordmark-dark.svg' %}" alt="My Property Desk" width="382" height="60"></a>
       <button 
         class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNavbar" 
         aria-controls="siteNavbar" aria-expanded="false" aria-label="Toggle navigation">

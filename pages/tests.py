@@ -1,11 +1,13 @@
 from datetime import time, timedelta
+from unittest.mock import patch
 
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import User
-from event.models import Event
+from contact.models import Contact
+from event.models import Event, EventContact
 from issue.models import Issue
 from note.models import Note
 from task.models import Task
@@ -43,6 +45,55 @@ class DashboardTests(TestCase):
         self.assertEqual(records["issue"][0]["id"], issue.pk)
         self.assertEqual(records["issue"][0]["due"], deadline.isoformat())
 
+    def test_dashboard_edit_preserves_task_link_to_historical_issue(self):
+        issue = Issue.objects.create(
+            user=self.user, title="Test activity reported", state=Issue.State.RESOLVED,
+        )
+        self.task.issue = issue
+        self.task.save(update_fields=["issue"])
+
+        data = self.client.get(reverse("pages:dashboard_data")).json()
+        task_data = next(item for item in data["records"]["task"] if item["id"] == self.task.pk)
+        self.assertEqual(task_data["issue_id"], issue.pk)
+        self.assertEqual(task_data["issue_title"], issue.title)
+        self.assertNotIn(issue.pk, [item["id"] for item in data["issues"]])
+
+        response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "edit", "kind": "task", "id": self.task.pk,
+            "title": "Collect landlord approval", "description": "",
+            "relationship_type": "issue", "property": "", "issue": issue.pk,
+            "priority": self.task.priority, "scheduled_date": "", "completion_deadline": "",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.title, "Collect landlord approval")
+        self.assertEqual(self.task.issue_id, issue.pk)
+
+    def test_dashboard_edit_can_clear_task_schedule_and_task_or_issue_deadline(self):
+        yesterday = self.today - timedelta(days=1)
+        self.task.scheduled_date = yesterday
+        self.task.completion_deadline = yesterday
+        self.task.save(update_fields=["scheduled_date", "completion_deadline"])
+        issue = Issue.objects.create(user=self.user, title="Roof leak", resolution_deadline=yesterday)
+        task_response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "edit", "kind": "task", "id": self.task.pk,
+            "title": self.task.title, "description": "", "relationship_type": "standalone",
+            "property": "", "issue": "", "priority": self.task.priority,
+            "scheduled_date": "", "completion_deadline": "",
+        })
+        issue_response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "edit", "kind": "issue", "id": issue.pk,
+            "title": issue.title, "description": "", "property": "", "priority": issue.priority,
+            "resolution_deadline": "",
+        })
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(issue_response.status_code, 200)
+        self.task.refresh_from_db()
+        issue.refresh_from_db()
+        self.assertIsNone(self.task.scheduled_date)
+        self.assertIsNone(self.task.completion_deadline)
+        self.assertIsNone(issue.resolution_deadline)
+
     def test_dashboard_sets_csrf_cookie_for_actions(self):
         client = Client(enforce_csrf_checks=True)
         client.force_login(self.user)
@@ -66,6 +117,51 @@ class DashboardTests(TestCase):
         for tab in ("tasks", "deadlines", "events"):
             self.assertContains(response, f'data-day-tab="{tab}"')
         self.assertContains(response, 'id="dashboardToast"')
+        for kind in ("tasks", "issues", "events"):
+            self.assertContains(response, f'data-calendar-filter="{kind}" checked')
+        for panel in ("operations", "calendar", "day", "notes"):
+            self.assertContains(response, f'data-dashboard-panel="{panel}"')
+
+    def test_dashboard_dialogs_are_named_and_keep_neutral_escape_action(self):
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(response, 'id="workDialog" class="dashboard-dialog modal fade"')
+        self.assertContains(response, 'id="confirmDialog" class="dashboard-dialog modal fade"')
+        self.assertContains(response, 'id="confirmCancel" data-close-dialog>Cancel</button>')
+
+    def test_dashboard_uses_shared_component_classes_while_retaining_its_board(self):
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(response, 'class="dashboard-board" data-active-panel="operations"')
+        self.assertContains(response, 'class="dashboard-tabs nav nav-underline"')
+        self.assertContains(response, 'class="dashboard-work-list list-group list-group-flush"')
+        self.assertContains(response, 'class="form-control form-control-sm" id="workSearch"')
+        self.assertContains(response, 'class="modal-dialog modal-dialog-centered modal-dialog-scrollable"')
+
+    def test_dashboard_uses_mpd_branding(self):
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(response, "Dashboard | My Property Desk")
+        self.assertContains(response, "brand/mpd-wordmark-dark.svg")
+        self.assertContains(response, "brand/mpd-favicon-light.svg")
+        self.assertContains(response, "brand/mpd-favicon-dark.svg")
+        self.assertNotContains(response, "PoM")
+
+    def test_brand_link_targets_dashboard_when_signed_in_and_home_when_signed_out(self):
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(
+            response,
+            f'class="navbar-brand" href="{reverse("pages:dashboard")}" aria-label="My Property Desk dashboard"',
+        )
+        anonymous_response = Client().get(reverse("pages:home"))
+        self.assertContains(
+            anonymous_response,
+            f'class="navbar-brand" href="{reverse("pages:home")}" aria-label="My Property Desk home"',
+        )
+
+    def test_dashboard_event_filters_use_date_only(self):
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(response, 'id="workFilter"')
+        self.assertContains(response, 'id="workSecondaryWrap"')
+        self.assertNotContains(response, 'id="workPresenceFilter"')
+        self.assertNotContains(response, 'id="workPresenceWrap"')
 
     def test_dashboard_switches_between_day_and_notes_with_add_control_in_operations(self):
         response = self.client.get(reverse("pages:dashboard"))
@@ -76,6 +172,17 @@ class DashboardTests(TestCase):
         self.assertContains(response, 'id="notesView" role="tabpanel" aria-labelledby="notesViewToggle" hidden')
         self.assertContains(response, 'id="notesList"')
         self.assertNotContains(response, 'id="notesToggle"')
+
+    def test_unchanged_note_edit_does_not_write(self):
+        note = Note.objects.create(user=self.user, content="Call back tomorrow")
+        with patch("pages.views.update_note") as update:
+            response = self.client.post(reverse("pages:dashboard_action"), {
+                "action": "edit", "kind": "note", "id": note.pk,
+                "content": "  Call back tomorrow  ",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["changed"])
+        update.assert_not_called()
 
     def test_schedule_task_and_keep_its_deadline(self):
         self.task.completion_deadline = self.today + timedelta(days=5)
@@ -88,6 +195,61 @@ class DashboardTests(TestCase):
         self.task.refresh_from_db()
         self.assertEqual(self.task.scheduled_date, date)
         self.assertEqual(self.task.completion_deadline, self.today + timedelta(days=5))
+
+    def test_same_day_drop_returns_no_change(self):
+        self.task.scheduled_date = self.today
+        self.task.save(update_fields=["scheduled_date"])
+        response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "date", "kind": "task", "id": self.task.pk,
+            "date": self.today.isoformat(),
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["changed"])
+
+    def test_complete_undo_is_owner_and_state_safe(self):
+        completed = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "finish", "kind": "task", "id": self.task.pk,
+        })
+        self.assertEqual(completed.status_code, 200)
+        token = completed.json()["undo_token"]
+        repeated = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "finish", "kind": "task", "id": self.task.pk,
+        })
+        self.assertEqual(repeated.status_code, 409)
+        restored = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "undo", "kind": "task", "id": self.task.pk, "token": token,
+        })
+        self.assertEqual(restored.status_code, 200)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.state, Task.State.ACTIVE)
+        self.assertIsNone(self.task.terminated_at)
+        stale = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "undo", "kind": "task", "id": self.task.pk, "token": token,
+        })
+        self.assertEqual(stale.status_code, 409)
+
+    def test_issue_and_event_quick_actions_can_be_undone(self):
+        issue = Issue.objects.create(user=self.user, title="Leaky pipe")
+        event = Event.objects.create(
+            user=self.user, title="Visit", scheduled_date=self.today + timedelta(days=1),
+            all_day=True,
+        )
+        for kind, record, active_state in (
+            ("issue", issue, Issue.State.ACTIVE),
+            ("event", event, Event.State.SCHEDULED),
+        ):
+            with self.subTest(kind=kind):
+                finished = self.client.post(reverse("pages:dashboard_action"), {
+                    "action": "finish", "kind": kind, "id": record.pk,
+                })
+                self.assertEqual(finished.status_code, 200)
+                undone = self.client.post(reverse("pages:dashboard_action"), {
+                    "action": "undo", "kind": kind, "id": record.pk,
+                    "token": finished.json()["undo_token"],
+                })
+                self.assertEqual(undone.status_code, 200)
+                record.refresh_from_db()
+                self.assertEqual(record.state, active_state)
 
     def test_move_task_deadline_without_rescheduling_task(self):
         scheduled = self.today + timedelta(days=1)
@@ -112,6 +274,66 @@ class DashboardTests(TestCase):
         self.assertEqual(response.status_code, 200)
         issue.refresh_from_db()
         self.assertEqual(issue.resolution_deadline, deadline)
+
+    def test_unschedule_task_preserves_its_deadline(self):
+        deadline = self.today + timedelta(days=3)
+        self.task.scheduled_date = self.today
+        self.task.completion_deadline = deadline
+        self.task.save(update_fields=["scheduled_date", "completion_deadline"])
+        url = reverse("pages:dashboard_action")
+        response = self.client.post(url, {"action": "unschedule", "kind": "task", "id": self.task.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["changed"])
+        self.task.refresh_from_db()
+        self.assertIsNone(self.task.scheduled_date)
+        self.assertEqual(self.task.completion_deadline, deadline)
+        repeated = self.client.post(url, {"action": "unschedule", "kind": "task", "id": self.task.pk})
+        self.assertFalse(repeated.json()["changed"])
+
+    def test_remove_task_or_issue_deadline_preserves_other_dates(self):
+        self.task.scheduled_date = self.today
+        self.task.completion_deadline = self.today + timedelta(days=2)
+        self.task.save(update_fields=["scheduled_date", "completion_deadline"])
+        issue = Issue.objects.create(user=self.user, title="Faulty lock", resolution_deadline=self.today)
+        url = reverse("pages:dashboard_action")
+        for kind, record in (("task", self.task), ("issue", issue)):
+            with self.subTest(kind=kind):
+                response = self.client.post(url, {"action": "clear_deadline", "kind": kind, "id": record.pk})
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.json()["changed"])
+                record.refresh_from_db()
+                self.assertIsNone(record.completion_deadline if kind == "task" else record.resolution_deadline)
+                repeated = self.client.post(url, {"action": "clear_deadline", "kind": kind, "id": record.pk})
+                self.assertFalse(repeated.json()["changed"])
+        self.assertEqual(self.task.scheduled_date, self.today)
+
+    def test_clear_date_actions_reject_events_and_other_users_records(self):
+        event = Event.objects.create(user=self.user, title="Visit", scheduled_date=self.today, all_day=True)
+        other_task = Task.objects.get(user=self.other)
+        url = reverse("pages:dashboard_action")
+        for action in ("unschedule", "clear_deadline"):
+            with self.subTest(action=action):
+                forbidden = self.client.post(url, {"action": action, "kind": "event", "id": event.pk})
+                self.assertEqual(forbidden.status_code, 400)
+                private = self.client.post(url, {"action": action, "kind": "task", "id": other_task.pk})
+                self.assertEqual(private.status_code, 404)
+
+    def test_issue_resolve_requires_review_when_linked_task_is_active(self):
+        issue = Issue.objects.create(user=self.user, title="Review linked work")
+        task = Task.objects.create(user=self.user, issue=issue, title="Linked")
+        url = reverse("pages:dashboard_action")
+        immediate = self.client.post(url, {"action": "finish", "kind": "issue", "id": issue.pk})
+        self.assertEqual(immediate.status_code, 409)
+        issue.refresh_from_db()
+        self.assertEqual(issue.state, Issue.State.ACTIVE)
+        confirmed = self.client.post(url, {
+            "action": "finish", "kind": "issue", "id": issue.pk,
+            "confirm_linked_tasks": "yes", "affect_linked_tasks": "yes",
+        })
+        self.assertEqual(confirmed.status_code, 200, confirmed.content)
+        self.assertNotIn("undo_token", confirmed.json())
+        task.refresh_from_db()
+        self.assertEqual(task.state, Task.State.DISMISSED)
 
     def test_deadline_rejects_invalid_date_and_other_users_record(self):
         invalid = self.client.post(reverse("pages:dashboard_action"), {
@@ -149,6 +371,19 @@ class DashboardTests(TestCase):
         self.assertEqual(response.status_code, 400)
         event.refresh_from_db()
         self.assertEqual(event.scheduled_date, self.today + timedelta(days=2))
+
+    def test_past_scheduled_event_can_move_to_future_from_dashboard(self):
+        past = self.today - timedelta(days=2)
+        event = Event.objects.create(
+            user=self.user, title="Past visit", scheduled_date=past, all_day=True,
+        )
+        response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "date", "kind": "event", "id": event.pk,
+            "date": (self.today + timedelta(days=1)).isoformat(),
+        })
+        self.assertEqual(response.status_code, 200, response.content)
+        event.refresh_from_db()
+        self.assertEqual(event.scheduled_date, self.today + timedelta(days=1))
 
     def test_timed_event_edit_preserves_time_when_date_changes(self):
         event = Event.objects.create(
@@ -197,6 +432,19 @@ class DashboardTests(TestCase):
         self.assertEqual(note.user, self.user)
         self.assertIsNone(note.contact)
 
+    def test_note_delete_undo_restores_only_latest_note(self):
+        first = Note.objects.create(user=self.user, content="First")
+        second = Note.objects.create(user=self.user, content="Second")
+        action_url = reverse("pages:dashboard_action")
+        first_delete = self.client.post(action_url, {"action": "delete", "kind": "note", "id": first.pk})
+        second_delete = self.client.post(action_url, {"action": "delete", "kind": "note", "id": second.pk})
+        stale = self.client.post(action_url, {"action": "undo", "kind": "note", "id": first.pk, "token": first_delete.json()["undo_token"]})
+        self.assertEqual(stale.status_code, 409)
+        restored = self.client.post(action_url, {"action": "undo", "kind": "note", "id": second.pk, "token": second_delete.json()["undo_token"]})
+        self.assertEqual(restored.status_code, 200)
+        self.assertTrue(Note.objects.filter(pk=second.pk, content="Second").exists())
+        self.assertFalse(Note.objects.filter(pk=first.pk).exists())
+
     def test_add_issue_uses_model_form_validation(self):
         response = self.client.post(reverse("pages:dashboard_action"), {
             "action": "add", "kind": "issue", "title": "Tap leak",
@@ -222,3 +470,35 @@ class DashboardTests(TestCase):
         })
         self.assertEqual(event_response.status_code, 200)
         self.assertTrue(Event.objects.filter(user=self.user, title="Access visit").exists())
+
+    def test_dashboard_add_event_offers_and_saves_owned_active_participants(self):
+        participant = Contact.objects.create(user=self.user, first_name="Ada", last_name="Lovelace")
+        Contact.objects.create(user=self.user, first_name="Inactive", state=Contact.State.DEACTIVATED)
+        Contact.objects.create(user=self.other, first_name="Private")
+        response = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(response, 'id="dashboardAddEventModal"')
+        self.assertContains(response, 'id="dashboardAddEventParticipantsTab"')
+        self.assertContains(response, 'class="modal-event-field-grid"')
+        self.assertContains(response, 'class="event-contact-option"')
+        self.assertContains(response, "Ada Lovelace")
+        self.assertNotContains(response, "Inactive")
+        self.assertNotContains(response, "Private")
+        response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "add", "kind": "event", "title": "Visit with Ada",
+            "description": "", "property": "", "scheduled_date": self.today.isoformat(),
+            "all_day": "on", "start_time": "", "end_time": "", "contacts": [participant.pk],
+        })
+        self.assertEqual(response.status_code, 200)
+        event = Event.objects.get(user=self.user, title="Visit with Ada")
+        self.assertTrue(EventContact.objects.filter(event=event, contact=participant).exists())
+
+    def test_dashboard_add_event_rejects_another_users_participant(self):
+        private = Contact.objects.create(user=self.other, first_name="Private")
+        response = self.client.post(reverse("pages:dashboard_action"), {
+            "action": "add", "kind": "event", "title": "Invalid participant",
+            "description": "", "property": "", "scheduled_date": self.today.isoformat(),
+            "all_day": "on", "start_time": "", "end_time": "", "contacts": [private.pk],
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("contacts", response.json()["errors"])
+        self.assertFalse(Event.objects.filter(user=self.user, title="Invalid participant").exists())

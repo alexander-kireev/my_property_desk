@@ -11,7 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
             frame = 0;
             listHeader.style.minHeight = "";
             detailHeader.style.minHeight = "";
-            if (window.innerWidth < minimumWidth) return;
+            const compactQuery = workspace.closest('[data-workspace-scroll-root="properties"]')
+                ? "(max-width: 1299.98px) and (max-height: 750px)"
+                : "(max-width: 1199.98px) and (max-height: 700px)";
+            // Both workspaces keep independent header heights in the intermediate
+            // split layout; the roomy desktop layout still aligns the divider.
+            if (window.innerWidth < minimumWidth || !window.matchMedia("(min-width: 1200px)").matches || window.matchMedia(compactQuery).matches) return;
 
             // scrollHeight excludes the bottom border, which leaves the two
             // separator lines out of step when only one header needs growing.

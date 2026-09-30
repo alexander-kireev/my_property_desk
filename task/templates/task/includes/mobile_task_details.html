@@ -1,22 +1,47 @@
+{% load work_status %}
 <section class="work-mobile-expanded" id="taskInlineDetails{{ task.pk }}" aria-label="Details for {{ task.title }}">
-    <p class="work-mobile-description">{{ task.description|default:"No description supplied."|linebreaksbr }}</p>
-    <dl class="work-mobile-facts">
-        <dt>Status</dt><dd>{{ task.get_state_display }}</dd>
-        <dt>Scheduled</dt><dd>{{ task.scheduled_date|date:"j M Y"|default:"Not scheduled" }}</dd>
-        <dt>Deadline</dt><dd>{{ task.completion_deadline|date:"j M Y"|default:"No deadline" }}</dd>
-        <dt>Related to</dt><dd>{% if task.issue %}Issue: {{ task.issue.title }}{% elif task.property %}Property: {{ task.property.name }}{% else %}Standalone{% endif %}</dd>
-    </dl>
-    <div class="work-mobile-actions">
+    <div class="task-inline-section task-inline-description">
+        <h3 class="task-inline-section-title">Description</h3>
+        {% include "includes/expandable_text.html" with text=task.description text_id="task-mobile-description-" record_id=task.pk text_class="work-mobile-description" inline_end_toggle=True %}
+    </div>
+    <div class="task-inline-section">
+        <h3 class="task-inline-section-title">Details</h3>
+        <dl class="task-inline-facts">
+            <div class="task-inline-fact"><dt>Status</dt><dd>{% include "includes/work_state_badge.html" with item=task only %}</dd></div>
+            <div class="task-inline-fact"><dt>Priority</dt><dd>{% include "task/includes/priority_badge.html" with task=task %}</dd></div>
+            <div class="task-inline-fact"><dt>Created</dt><dd>{{ task.created_at|date:"j F Y" }}</dd></div>
+            <div class="task-inline-fact"><dt>Scheduled</dt><dd>{{ task.scheduled_date|date:"j M Y"|default:"Not scheduled" }}{% if task.scheduled_date %}<span class="work-date-relative">{{ task.scheduled_date|relative_day:today }}</span>{% endif %}</dd></div>
+            <div class="task-inline-fact"><dt>Deadline</dt><dd><span{% if task_status.kind == 'overdue' %} class="task-detail-overdue-date"{% endif %}>{{ task.completion_deadline|date:"j M Y"|default:"No deadline" }}</span>{% if task.completion_deadline %}<span class="work-date-relative{% if task_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if task_status.kind == 'overdue' %}{{ task_status.headline }}{% else %}{{ task.completion_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd></div>
+            {% if task.terminated_at %}<div class="task-inline-fact"><dt>Terminated</dt><dd>{{ task.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
+            {% if task.issue or task.property %}
+                <div class="task-inline-fact task-inline-relationship">
+                    <dt>Related to</dt>
+                    <dd>
+                        {% if task.issue %}{% if task.issue.deleted_at %}<span class="task-related-deleted" title="{{ task.issue.title }}"><span class="task-related-copy">{{ task.issue.title }}</span></span>{% else %}<a class="task-related-link" href="{% url 'issue:issues' %}?selected={{ task.issue.pk }}" title="{{ task.issue.title }}"><span class="task-related-copy">{{ task.issue.title }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}{% else %}{% if task.property.deleted_at %}<span class="task-related-deleted" title="{{ task.property.name }}"><span class="task-related-copy">{{ task.property.name }}</span></span>{% else %}<a class="task-related-link" href="{% url 'property:property_detail' task.property.pk %}" title="{{ task.property.name }}"><span class="task-related-copy">{{ task.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}{% endif %}
+                    </dd>
+                </div>
+            {% endif %}
+        </dl>
+    </div>
+    <div class="work-mobile-actions task-inline-actions">
         {% if task.state == "active" %}
             <button class="btn btn-sm theme-action" type="button" data-bs-toggle="modal" data-bs-target="#completeTaskModal">Complete</button>
             <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#editTaskModal">Edit</button>
-            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#dismissTaskModal">Dismiss</button>
+            <button class="btn btn-sm btn-outline-secondary task-inline-secondary-action" type="button" data-bs-toggle="modal" data-bs-target="#dismissTaskModal">Dismiss</button>
         {% else %}
             <form action="{% url 'task:reactivate_task' task.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post" autocomplete="off">
                 {% csrf_token %}<input type="hidden" name="next" value="{{ task_workspace_url }}"><button class="btn btn-sm theme-action" type="submit">Reactivate</button>
             </form>
         {% endif %}
-        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">Delete</button>
+        <button class="btn btn-sm btn-outline-danger task-inline-secondary-action" type="button" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">Delete</button>
+        <div class="dropdown task-inline-more">
+            <button class="task-menu-button btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More task actions">⋮</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if task.state == "active" %}<li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#dismissTaskModal">Dismiss task</button></li>{% endif %}
+                <li><button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">Delete task</button></li>
+                <li class="work-mobile-open-menu-item"><a class="dropdown-item" href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ task.pk }}&amp;open=detail">Open record</a></li>
+            </ul>
+        </div>
         <a class="btn btn-sm btn-outline-secondary work-mobile-open" href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ task.pk }}&amp;open=detail">Open record →</a>
     </div>
 </section>

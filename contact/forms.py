@@ -72,15 +72,13 @@ class ContactMethodForm(forms.ModelForm):
         if method_type and value:
             value = normalise_contact_method_value(method_type, value)
             cleaned_data["value"] = value
+            # ContactMethod.clean validates the format during ModelForm
+            # validation. Repeating it here produces two identical messages
+            # when an existing detail changes type.
             try:
-                if method_type == ContactMethod.Type.EMAIL:
-                    email_validator(value)
-                elif method_type == ContactMethod.Type.TELEPHONE:
-                    e164_validator(value)
-            except ValidationError as error:
-                self.add_error("value", error)
+                (email_validator if method_type == ContactMethod.Type.EMAIL else e164_validator)(value)
+            except ValidationError:
                 return cleaned_data
-
             if self.contact is not None:
                 duplicates = ContactMethod.objects.filter(
                     contact=self.contact,

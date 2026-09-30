@@ -9,25 +9,43 @@ const source = readFileSync(path.join(__dirname, "../static/js/workspace-list-sc
 function openWorkspace(storage, {
     workspace = "contacts", search = "", hash = "", query = "", mobile = false,
     listVisible = true, navigationType = "navigate", initialPageY = 0, detailId = null,
+    viewportWidth = null, selectedRow = false, expandedRow = false,
 } = {}) {
     const frames = [];
     const handlers = {};
+    const reveals = [];
     const pathname = `/${workspace}/${detailId ? `${detailId}/` : ""}`;
     const origin = "http://localhost";
+    const expanded = {classList: {contains: (name) => expandedRow && name === "work-mobile-expanded"}};
+    const selected = selectedRow ? {nextElementSibling: expanded} : null;
     const list = {
         scrollTop: 0,
         addEventListener: (name, callback) => { handlers[`list:${name}`] = callback; },
+        querySelector: () => selected,
         getClientRects: () => listVisible ? [{}] : [],
     };
     const root = {
         dataset: { workspaceScrollRoot: workspace, navigationQuery: query, workspaceScrollPath: workspace === "properties" ? "/properties/" : undefined },
         querySelector: () => list,
+        querySelectorAll: () => [],
         addEventListener: (name, callback) => { handlers[`root:${name}`] = callback; },
     };
     const browser = {
         location: { origin, pathname, search, hash, href: `${origin}${pathname}${search}${hash}` },
         scrollY: initialPageY,
-        matchMedia: () => ({ matches: mobile }),
+        matchMedia: (mediaQuery) => ({
+            matches: viewportWidth === null ? mobile
+                : mediaQuery.includes("(max-width: 860px)") ? viewportWidth <= 860 : mobile,
+        }),
+        WorkspaceReveal: {
+            reveal: (row) => reveals.push({kind: "row", row}),
+            revealRange: (row, panel) => reveals.push({kind: "range", row, panel}),
+            queueRange: (row, panel, prepare) => frames.push(() => {
+                prepare?.();
+                reveals.push({kind: "range", row, panel});
+            }),
+            afterLayout: (callback) => frames.push(callback),
+        },
         performance: { getEntriesByType: () => [{ type: navigationType }] },
         scrollTo: (_x, y) => { browser.scrollY = y; },
         addEventListener: (name, callback) => { handlers[`window:${name}`] = callback; },
@@ -47,7 +65,7 @@ function openWorkspace(storage, {
         requestAnimationFrame: (callback) => { frames.push(callback); return frames.length; },
     });
     return {
-        browser, list,
+        browser, list, reveals,
         flush: () => { while (frames.length) frames.shift()(); },
         pageShow: (persisted = false) => handlers["window:pageshow"]({ persisted }),
         clickLink: (href, { prevented = false } = {}) => {
@@ -78,6 +96,48 @@ test("row selection and refresh retain desktop list scroll", () => {
     const refreshed = openWorkspace(storage, { search: "?selected=7", navigationType: "reload" });
     refreshed.flush();
     assert.equal(refreshed.list.scrollTop, 430);
+});
+
+test("Task selection at 820px restores page scroll and reveals its expanded panel", () => {
+    const storage = new Map();
+    const first = openWorkspace(storage, {workspace: "tasks", viewportWidth: 820});
+    first.flush();
+    first.scrollPage(420); first.flush();
+    assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:tasks")).pageScrollY, 420);
+    first.clickLink("?selected=7");
+
+    const selected = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        initialPageY: 420, selectedRow: true, expandedRow: true,
+    });
+    selected.flush();
+    assert.equal(selected.browser.scrollY, 420);
+    assert.deepEqual(selected.reveals.map(({kind}) => kind), ["range"]);
+});
+
+test("Task reload re-reveals the selection, while Back preserves scroll", () => {
+    const storage = new Map();
+    const first = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        selectedRow: true, expandedRow: true,
+    });
+    first.flush();
+    first.scrollPage(610); first.flush();
+
+    const reload = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        navigationType: "reload", initialPageY: 610, selectedRow: true, expandedRow: true,
+    });
+    reload.flush();
+    assert.deepEqual(reload.reveals.map(({kind}) => kind), ["range"]);
+
+    const back = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        navigationType: "back_forward", initialPageY: 610, selectedRow: true, expandedRow: true,
+    });
+    back.flush();
+    assert.deepEqual(back.reveals, []);
+    assert.equal(back.browser.scrollY, 610);
 });
 
 test("fresh navbar entry with unchanged filters starts at the top on mobile and desktop", () => {
@@ -147,17 +207,30 @@ test("a bfcache return keeps the browser-restored position", () => {
     assert.equal(page.browser.scrollY, 475);
 });
 
-test("expanded mobile Events keeps tracking its visible list and respects its row anchor", () => {
+test("contact and property selections reveal once on reload", () => {
+    for (const workspace of ["contacts", "properties"]) {
+        const page = openWorkspace(new Map(), {
+            workspace, search: "?selected=7", selectedRow: true, navigationType: "reload",
+        });
+        page.flush();
+        page.pageShow();
+        page.flush();
+        assert.equal(page.reveals.length, 1, workspace);
+    }
+});
+
+test("a legacy Events row anchor yields to the selected-record reveal", () => {
     const storage = new Map();
     const first = openWorkspace(storage, { workspace: "events", mobile: true });
     first.flush();
     first.scrollPage(300); first.flush(); first.clickLink("?selected=7&tab=details");
     const selected = openWorkspace(storage, {
         workspace: "events", search: "?selected=7&tab=details", hash: "#eventRow7",
-        mobile: true, initialPageY: 720,
+        mobile: true, initialPageY: 720, selectedRow: true, expandedRow: true,
     });
     selected.flush();
-    assert.equal(selected.browser.scrollY, 720);
+    assert.equal(selected.browser.scrollY, 300);
+    assert.deepEqual(selected.reveals.map(({kind}) => kind), ["range"]);
     selected.scrollPage(820); selected.flush();
     assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:events")).pageScrollY, 820);
 });

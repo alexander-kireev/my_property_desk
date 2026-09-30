@@ -1,6 +1,6 @@
 <div class="event-contact-picker" data-contact-picker>
     <div class="event-contact-picker-heading">
-        <p class="small text-body-secondary mb-0">Choose from active contacts. You can update this later.</p>
+        <p class="small text-body-secondary mb-0">{% if picker_mode == "edit" %}Select the contacts participating in this event. Uncheck a contact to remove them.{% else %}Select one or more contacts to add to the event.{% endif %}</p>
         <span class="small fw-semibold text-nowrap" aria-live="polite" data-contact-picker-status>{{ picker_field.value|length }} selected</span>
     </div>
     <label class="visually-hidden" for="{{ picker_id }}Search">Search contacts</label>

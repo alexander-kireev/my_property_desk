@@ -22,8 +22,16 @@
     <div class="modal fade modal-resilient" id="deactivatePropertyModal" data-modal-clear-query="deactivate" tabindex="-1" aria-labelledby="deactivatePropertyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="deactivatePropertyModalLabel">Deactivate property?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-            <div class="modal-body"><p>This property will leave active-property views. Its work and history remain stored.</p><div class="modal-context"><span class="small text-body-secondary d-block">Property</span><span class="modal-context-value">{{ selected_property.name }}</span></div></div>
-            <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep property</button><form action="{% url 'property:deactivate_property' selected_property.pk %}{% if not is_detail_route %}?{{ list_return_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-outline-secondary" type="submit">Deactivate property</button></form></div>
+            <div class="modal-body"><p>This property will be marked inactive. Its records will remain available.</p>
+              <form id="deactivatePropertyForm" action="{% url 'property:deactivate_property' selected_property.pk %}{% if not is_detail_route %}?{{ list_return_query }}{% endif %}" method="post">{% csrf_token %}
+                {% if linked_work_option_count > 1 %}<p class="small mb-2">You can also update linked work:</p>{% endif %}
+                {% if related_work_counts.events_scheduled %}<label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="cancel_events" value="yes"> Cancel {{ related_work_counts.events_scheduled }} scheduled event{{ related_work_counts.events_scheduled|pluralize }}</label>{% endif %}
+                {% if related_work_counts.issues_active %}<label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="dismiss_issues" value="yes"> Dismiss {{ related_work_counts.issues_active }} active issue{{ related_work_counts.issues_active|pluralize }}</label>{% endif %}
+                {% if related_work_counts.tasks_active %}<label class="form-check"><input class="form-check-input" type="checkbox" name="dismiss_tasks" value="yes"> Dismiss {{ related_work_counts.tasks_active }} active task{{ related_work_counts.tasks_active|pluralize }}</label>{% endif %}
+                {% if not related_work_counts.events_scheduled and not related_work_counts.issues_active and not related_work_counts.tasks_active %}<p class="small text-body-secondary mb-0">No active linked work to update.</p>{% endif %}
+              </form>
+            </div>
+            <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep property</button><button class="btn theme-action" type="submit" form="deactivatePropertyForm">Deactivate property</button></div>
         </div></div>
     </div>
 {% endif %}
@@ -32,20 +40,19 @@
     {% if selected_property.state == "active" %}
         {% include "property/includes/record_add_modals.html" %}
     {% endif %}
-    {% if selected_property.description %}
-        <div class="modal fade modal-resilient" id="propertyDescriptionModal" tabindex="-1" aria-labelledby="propertyDescriptionModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-                <div class="modal-header"><h2 class="modal-title fs-5" id="propertyDescriptionModalLabel">{{ selected_property.name }} · Description</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body property-description-full">{{ selected_property.description|linebreaksbr }}</div>
-                <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Close</button></div>
-            </div></div>
-        </div>
-    {% endif %}
     <div class="modal fade modal-resilient" id="deletePropertyModal" data-modal-clear-query="confirm_delete" tabindex="-1" aria-labelledby="deletePropertyModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <div class="modal-header"><h2 class="modal-title fs-5" id="deletePropertyModalLabel">Delete property?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
-            <div class="modal-body"><p>This property and its associated history will be removed from your workspace.</p><div class="modal-context mb-3"><span class="small text-body-secondary d-block">Property</span><span class="modal-context-value">{{ selected_property.name }}</span></div><p class="text-body-secondary mb-0">This action cannot be undone from the application.</p></div>
-            <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep property</button><form action="{% url 'property:delete_property' selected_property.pk %}{% if not is_detail_route %}?{{ list_return_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Delete property</button></form></div>
+            <div class="modal-body"><p>This property will be removed from your workspace. Linked work stays unless selected below.</p>
+              <form id="deletePropertyForm" action="{% url 'property:delete_property' selected_property.pk %}{% if not is_detail_route %}?{{ list_return_query }}{% endif %}" method="post">{% csrf_token %}
+                <p class="small mb-2">Also delete linked records? Includes current and historical records.</p>
+                {% if related_work_counts.events_all %}<label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="delete_events" value="yes"> Delete {{ related_work_counts.events_all }} event{{ related_work_counts.events_all|pluralize }}</label>{% endif %}
+                {% if related_work_counts.issues_all %}<label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="delete_issues" value="yes"> Delete {{ related_work_counts.issues_all }} issue{{ related_work_counts.issues_all|pluralize }}</label>{% endif %}
+                {% if related_work_counts.tasks_all %}<label class="form-check mb-2"><input class="form-check-input" type="checkbox" name="delete_tasks" value="yes"> Delete {{ related_work_counts.tasks_all }} task{{ related_work_counts.tasks_all|pluralize }}</label>{% endif %}
+              </form>
+              <p class="text-body-secondary small mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep property</button><button class="btn btn-danger" type="submit" form="deletePropertyForm">Delete property</button></div>
         </div></div>
     </div>
 {% endif %}

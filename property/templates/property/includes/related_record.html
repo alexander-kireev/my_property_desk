@@ -4,13 +4,13 @@
   <summary class="property-related-summary" title="{{ entry.item.title }}">
     <span class="property-related-record-main">
         <strong>{{ entry.item.title }}</strong>
-        <small>{{ entry.kind|title }}{% if entry.kind == "task" and entry.item.issue %} · Linked to {{ entry.item.issue.title }}{% endif %}</small>
+        <small title="{{ entry.kind|title }} · Related to: {% if entry.kind == 'task' and entry.item.issue %}Issue · {{ entry.item.issue.title }}{% else %}Property · {{ selected_property.name }}{% endif %}">{{ entry.kind|title }} · Related to: {% if entry.kind == "task" and entry.item.issue %}Issue · {{ entry.item.issue.title }}{% else %}Property · {{ selected_property.name }}{% endif %}</small>
     </span>
     <span class="property-related-record-aside">
         <span class="property-related-record-badges">
             {% if entry.current %}
-                {% if entry.kind == "event" %}<span class="property-event-badge">Scheduled</span>{% if entry.item.user_presence_required %}<span class="property-presence-badge">Presence required</span>{% endif %}
-                {% else %}{% include "includes/work_priority_badge.html" with item=entry.item only %}{% if timing.list_label %}<span class="work-pill work-pill--{{ timing.kind }}">{{ timing.list_label }}</span>{% endif %}{% endif %}
+                {% if entry.kind == "event" %}<span class="property-event-badge">Scheduled</span>
+                {% else %}{% if entry.kind == "task" %}{% include "task/includes/priority_badge.html" with task=entry.item %}{% else %}{% include "includes/work_priority_badge.html" with item=entry.item only %}{% endif %}{% if timing.list_label %}<span class="work-pill work-pill--{{ timing.kind }}">{{ timing.list_label }}</span>{% endif %}{% endif %}
             {% else %}<span class="property-outcome-badge property-outcome--{{ entry.item.state }}">{{ entry.item.get_state_display }}</span>{% endif %}
         </span>
         <small>{% if entry.current %}{% if entry.kind == "issue" %}{% if entry.date %}Resolve by {{ entry.date|date:"j M Y" }}{% else %}No deadline{% endif %}{% elif entry.kind == "task" %}{% if entry.date %}Deadline {{ entry.date|date:"j M Y" }}{% elif entry.item.scheduled_date %}Scheduled {{ entry.item.scheduled_date|date:"j M Y" }}{% else %}No date{% endif %}{% else %}{{ entry.date|date:"j M Y" }}{% endif %}{% else %}{{ entry.item.terminated_at|default:entry.item.created_at|date:"j M Y" }}{% endif %}</small>
@@ -18,24 +18,11 @@
     <span class="property-related-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m5 9 7 7 7-7"/></svg></span>
   </summary>
   <div class="property-related-details">
-    <p>{{ entry.item.description|default:"No description supplied."|linebreaksbr }}</p>
-    <div class="property-related-facts">
-      <span>State: {{ entry.item.get_state_display }}</span>
-      {% if entry.kind == "task" %}
-        <span>{% if entry.item.issue %}Linked issue: {{ entry.item.issue.title }}{% elif entry.item.property %}Property: {{ entry.item.property.name }}{% else %}Standalone task{% endif %}</span>
-        <span>Scheduled: {{ entry.item.scheduled_date|date:"j M Y"|default:"Not scheduled" }}</span>
-        <span>Deadline: {{ entry.item.completion_deadline|date:"j M Y"|default:"None" }}</span>
-      {% elif entry.kind == "issue" %}
-        <span>Property: {{ entry.item.property.name|default:"None" }}</span>
-        <span>Resolve by: {{ entry.item.resolution_deadline|date:"j M Y"|default:"No deadline" }}</span>
-      {% else %}
-        <span>Property: {{ entry.item.property.name|default:"None" }}</span>
-        <span>Date: {{ entry.item.scheduled_date|date:"j M Y" }}</span>
-        <span>Time: {% if entry.item.all_day %}All day{% else %}{{ entry.item.start_time|time:"H:i" }}{% if entry.item.end_time %}–{{ entry.item.end_time|time:"H:i" }}{% endif %}{% endif %}</span>
-      {% endif %}
+    <h4>Description</h4>{% include "includes/expandable_text.html" with text=entry.item.description text_id="property-related-description-" kind=entry.kind record_id=entry.item.pk text_class="property-related-description" %}
+    <div class="property-related-detail-footer">
+      {% if entry.kind == "issue" %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'issue:issues' %}?selected={{ entry.item.pk }}&amp;open=detail">Open issue record →</a>
+      {% elif entry.kind == "task" %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'task:tasks' %}?selected={{ entry.item.pk }}&amp;open=detail">Open task record →</a>
+      {% else %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'event:events' %}?selected={{ entry.item.pk }}&amp;tab=details&amp;open=detail">Open event record →</a>{% endif %}
     </div>
-    {% if entry.kind == "issue" %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'issue:issues' %}?state=all&amp;selected={{ entry.item.pk }}&amp;open=detail">Open record →</a>
-    {% elif entry.kind == "task" %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'task:tasks' %}?state=all&amp;selected={{ entry.item.pk }}&amp;open=detail">Open record →</a>
-    {% else %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'event:events' %}?state=all&amp;selected={{ entry.item.pk }}&amp;tab=details&amp;open=detail">Open record →</a>{% endif %}
   </div>
 </details>

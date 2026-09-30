@@ -7,13 +7,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".task-command-row[aria-expanded]").forEach((row) => {
         row.addEventListener("click", (event) => {
-            if (!window.matchMedia("(max-width: 991.98px)").matches || event.button !== 0 ||
+            if (!window.matchMedia("(max-width: 860px)").matches || event.button !== 0 ||
                 event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const expanded = row.nextElementSibling;
             if (expanded?.classList.contains("work-mobile-expanded")) {
                 event.preventDefault();
                 expanded.hidden = !expanded.hidden;
                 row.setAttribute("aria-expanded", String(!expanded.hidden));
+                if (!expanded.hidden) window.WorkspaceReveal?.queueRange(
+                    row, expanded, () => window.ExpandableText?.refresh(expanded),
+                );
             }
         });
     });

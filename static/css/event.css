@@ -29,7 +29,7 @@
 
 .event-command-centre > .my-work-section-nav .nav-link:hover {
     color: var(--bs-emphasis-color);
-    background: var(--bs-tertiary-bg);
+    background: var(--pom-hover);
 }
 
 .event-command-centre > .my-work-section-nav .nav-link.active {
@@ -121,16 +121,14 @@
     border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
-.event-command-row:hover,
-.event-command-row.is-selected {
-    background: var(--bs-tertiary-bg) !important;
-}
+.event-command-row:hover { background: var(--pom-hover) !important; }
+.event-command-row.is-selected { background: var(--bs-tertiary-bg) !important; }
 
 .event-command-row.is-selected::before {
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--bs-emphasis-color);
+    background: var(--pom-brand-blue);
     content: "";
 }
 
@@ -164,42 +162,6 @@
     white-space: nowrap;
 }
 
-.event-command-time,
-.event-state-badge {
-    flex: 0 0 auto;
-}
-
-.event-state-badge {
-    display: inline-flex;
-    align-items: center;
-    min-height: 1.35rem;
-    padding: 0.1rem 0.45rem;
-    font-size: 0.73rem;
-    font-weight: 650;
-    line-height: 1.25;
-    white-space: nowrap;
-    border: 1px solid;
-    border-radius: 0.3rem;
-}
-
-.event-state-scheduled {
-    color: #0757b5;
-    background: #f3f8ff;
-    border-color: #a8c8f2;
-}
-
-.event-state-occurred {
-    color: #08734f;
-    background: #edf8f3;
-    border-color: #9bd2bd;
-}
-
-.event-state-cancelled {
-    color: var(--bs-secondary-color);
-    background: var(--bs-tertiary-bg);
-    border-color: var(--bs-border-color);
-}
-
 .event-pagination .page-link {
     min-width: 2.25rem;
     color: var(--bs-emphasis-color);
@@ -228,7 +190,7 @@
     color: var(--bs-emphasis-color);
     font-weight: 600;
     background: transparent;
-    border-bottom-color: var(--bs-emphasis-color);
+    border-bottom-color: var(--pom-brand-blue);
 }
 
 .event-right-body,
@@ -278,36 +240,36 @@
     overflow: hidden;
 }
 
-#addEventModal .modal-content {
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) .modal-content {
     height: min(42rem, calc(100dvh - 2rem));
 }
 
 @media (min-width: 768px) {
-    #addEventModal .modal-content {
+    :is(#addEventModal, #editEventModal, #dashboardAddEventModal) .modal-content {
         height: min(47rem, calc(100dvh - 3.5rem));
     }
 }
 
-#addEventModal .event-form-body {
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) .event-form-body {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
 }
 
-#addEventModal [data-event-panel="participants"]:not([hidden]),
-#addEventModal [data-event-panel="participants"] .event-contact-picker {
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) [data-event-panel="participants"]:not([hidden]),
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) [data-event-panel="participants"] .event-contact-picker {
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-#addEventModal [data-event-panel="participants"]:not([hidden]),
-#addEventModal [data-event-panel="participants"] .event-contact-picker {
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) [data-event-panel="participants"]:not([hidden]),
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) [data-event-panel="participants"] .event-contact-picker {
     flex: 1 1 auto;
 }
 
-#addEventModal .event-contact-choices {
+:is(#addEventModal, #editEventModal, #dashboardAddEventModal) .event-contact-choices {
     flex: 1 1 auto;
     max-height: none;
     min-height: 0;
@@ -338,7 +300,7 @@
 }
 
 .event-form-tab.is-active {
-    border-bottom-color: var(--bs-body-color);
+    border-bottom-color: var(--pom-brand-blue);
     color: var(--bs-body-color);
     font-weight: 600;
 }
@@ -426,10 +388,8 @@
 }
 
 .event-contact-option:hover,
-.event-contact-option:focus-within,
-.event-contact-option:has(input:checked) {
-    background: var(--bs-tertiary-bg);
-}
+.event-contact-option:focus-within { background: var(--pom-hover); }
+.event-contact-option:has(input:checked) { background: var(--bs-tertiary-bg); }
 
 .event-contact-option:has(input:checked) {
     border-color: var(--bs-secondary-color);
@@ -472,7 +432,6 @@
     width: 1rem;
     height: 1rem;
     margin: 0;
-    accent-color: var(--bs-body-color);
 }
 
 .event-contact-empty-state {
@@ -494,16 +453,24 @@
     border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
+.event-participants-card {
+    width: 100%;
+}
+
 .event-participant-list {
     min-width: 0;
 }
 
 .event-participant-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
     padding: 0.85rem 1.25rem;
     align-items: center;
+}
+
+.event-participant-row.is-removable {
+    grid-template-columns: minmax(0, 1fr) 2rem;
 }
 
 .event-participant-row + .event-participant-row {
@@ -511,24 +478,106 @@
 }
 
 .event-participant-copy,
+.event-participant-heading,
 .event-participant-name,
 .event-participant-methods {
     min-width: 0;
 }
 
+.event-participant-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .event-participant-name {
-    overflow-wrap: anywhere;
+    display: block;
+    flex: 0 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.event-participant-status {
+    flex: 0 0 auto;
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+a.event-participant-name,
+a.event-participant-name:hover {
+    text-decoration: none;
+}
+
+a.event-participant-name:hover {
+    color: var(--bs-primary-text-emphasis) !important;
+}
+
+a.event-participant-name:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color);
+    outline-offset: 2px;
 }
 
 .event-participant-methods {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 0.75rem;
     margin-top: 0.3rem;
+}
+
+.event-participant-email,
+.event-participant-phone {
+    min-width: 0;
     overflow: hidden;
-    overflow-wrap: anywhere;
+    white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.event-participant-no-methods { grid-column: 1 / -1; }
+
+@media (max-width: 575.98px) {
+    .event-participant-methods {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.15rem;
+    }
+
+    .event-calendar-count-label { display: none; }
+
 }
 
 .event-participant-action {
     margin: 0;
+}
+
+.event-participant-remove {
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 0.35rem;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: 1.35rem;
+    line-height: 1;
+    opacity: 0;
+}
+
+.event-participant-row:hover .event-participant-remove,
+.event-participant-row:focus-within .event-participant-remove,
+.event-mobile-participant-row:hover .event-participant-remove,
+.event-participant-remove:focus-visible {
+    opacity: 1;
+}
+
+.event-participant-remove:hover,
+.event-participant-remove:focus-visible {
+    color: var(--bs-danger-text-emphasis);
+    background: var(--bs-danger-bg-subtle);
+}
+
+@media (hover: none) {
+    .event-participant-remove { opacity: 1; }
 }
 
 .event-participant-empty {
@@ -604,11 +653,15 @@
 }
 
 .event-calendar-day-number:hover,
-.event-calendar-day-number:focus-visible,
-.event-calendar-day-number.is-selected {
+.event-calendar-day-number:focus-visible {
     color: var(--bs-emphasis-color);
-    background: var(--bs-tertiary-bg);
-    text-decoration: underline;
+    background: var(--pom-hover);
+    text-decoration: none;
+}
+.event-calendar-day-number.is-selected { color: var(--bs-emphasis-color); background: var(--bs-tertiary-bg); text-decoration: none; }
+
+.event-calendar-day:hover {
+    background: var(--pom-hover);
 }
 
 .event-calendar-more {
@@ -650,7 +703,7 @@
 .event-day-chip:focus-visible {
     border-color: var(--bs-border-color-translucent);
     color: var(--bs-emphasis-color);
-    background: #e9eaec;
+    background: var(--pom-hover);
 }
 
 .event-day-chip-remove {
@@ -670,8 +723,8 @@
     padding: 0.2rem 0.3rem;
     overflow: hidden;
     color: var(--bs-body-color);
-    background: #f3f8ff;
-    border: 1px solid #a8c8f2;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
     border-radius: 0.3rem;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -680,15 +733,8 @@
     text-decoration: none;
 }
 
-.event-calendar-item.occurred {
-    background: #edf8f3;
-    border-color: #9bd2bd;
-}
-
 .event-calendar-item.cancelled {
     color: var(--bs-secondary-color);
-    background: var(--bs-tertiary-bg);
-    border-color: var(--bs-border-color);
     text-decoration: line-through;
 }
 
@@ -734,6 +780,41 @@
     overflow-wrap: anywhere;
 }
 
+.event-header-property {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+    max-width: min(18rem, 100%);
+    flex: 0 1 auto;
+}
+.event-header-property .badge { flex: 0 0 auto; }
+
+.event-header-property-link,
+.event-header-property-name {
+    display: inline-block;
+    min-width: 0;
+    max-width: min(18rem, 100%);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-header-property-link {
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+
+.event-header-property-link:hover {
+    color: var(--bs-primary-text-emphasis);
+    text-decoration: underline;
+}
+
+.event-header-property-link:focus-visible {
+    outline: 2px solid var(--bs-focus-ring-color);
+    outline-offset: 2px;
+}
+
 .event-detail-actions {
     align-items: flex-start;
     justify-content: flex-end;
@@ -752,11 +833,12 @@
 
 .event-detail-list {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(5rem, 36%) minmax(0, 1fr);
     gap: 0.75rem 1rem;
 }
 
 .event-detail-list dt {
+    min-width: 0;
     color: var(--bs-secondary-color);
     font-weight: 400;
 }
@@ -766,6 +848,51 @@
     min-width: 0;
     overflow-wrap: anywhere;
     text-align: right;
+}
+
+.event-property-value {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+}
+
+.event-property-name {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    flex: 1 1 auto;
+}
+
+.event-property-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.3rem 0.45rem;
+    color: var(--bs-body-color);
+    background: var(--bs-tertiary-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    text-decoration: none;
+}
+.event-property-link > span:last-child { flex: 0 0 auto; }
+
+.event-property-link:hover {
+    color: var(--bs-emphasis-color);
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-secondary-color);
+}
+
+.event-property-link:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.2);
 }
 
 .event-mobile-back {
@@ -813,7 +940,7 @@
     }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 860px) {
     .event-command-row.is-selected:not([aria-expanded]) {
         background: var(--bs-body-bg) !important;
     }
@@ -871,21 +998,15 @@
     }
 
     .event-mobile-participant-row {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
         align-items: center;
         gap: 0.5rem;
         padding: 0.4rem 0;
     }
 
-    .event-mobile-participant-row small {
-        display: block;
-        color: var(--bs-secondary-color);
-        overflow-wrap: anywhere;
-    }
-
-    .event-mobile-participant-row > span {
-        min-width: 0;
+    .event-mobile-participant-row.is-removable {
+        grid-template-columns: minmax(0, 1fr) 2.75rem;
     }
 
     .event-mobile-inline-actions {
@@ -907,33 +1028,63 @@
     }
 
     .event-calendar-toolbar > span {
-        width: 100%;
+        display: none;
     }
 
     .event-calendar-weekday {
-        padding: 0.4rem 0;
-        font-size: 0.65rem;
+        padding: 0.35rem 0.15rem;
+        font-size: 0.7rem;
     }
 
     .event-calendar-day {
-        min-height: 3.75rem;
-        padding: 0.3rem;
-        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 4.25rem;
+        padding: 1.55rem 0.3rem 0.3rem;
+        text-align: left;
+        background: var(--bs-body-bg);
+    }
+
+    .event-calendar-day.outside {
+        background: #fafbfc;
+    }
+
+    .event-calendar-day.today {
+        box-shadow: none;
     }
 
     .event-calendar-day.agenda-selected {
-        background: var(--bs-tertiary-bg);
+        background: #e5edf5;
         box-shadow: inset 0 0 0 2px var(--bs-emphasis-color);
     }
 
     .event-calendar-day-number {
-        width: 100%;
+        position: absolute;
+        top: 0.3rem;
+        left: 0.3rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        width: auto;
         margin: 0;
-        font-size: 0.85rem;
+        padding: 0;
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+
+    .event-calendar-day.today .event-calendar-day-number::after {
+        content: "";
+        width: 0.4rem;
+        height: 0.4rem;
+        border-radius: 50%;
+        background: var(--pom-brand-blue);
     }
 
     .event-calendar-day-number.is-selected,
     .event-calendar-day-number:hover {
+        background: transparent;
         text-decoration: none;
     }
 
@@ -943,15 +1094,21 @@
     }
 
     .event-calendar-count {
+        box-sizing: border-box;
         display: inline-block;
-        min-width: 1.3rem;
-        margin-top: 0.15rem;
-        padding: 0 0.2rem;
-        border-radius: 999px;
-        color: var(--bs-emphasis-color);
-        background: #e8f0fb;
-        font-size: 0.7rem;
-        font-weight: 700;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 0.1rem 0.2rem;
+        border: 1px solid #cbd3d8;
+        border-left: 2px solid #596a75;
+        border-radius: 0.25rem;
+        color: #48555e;
+        background: #f8fafb;
+        font-size: 0.67rem;
+        font-weight: 500;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .event-mobile-agenda {
@@ -981,51 +1138,40 @@
     .event-mobile-agenda-list {
         border: 1px solid var(--bs-border-color);
         border-radius: 0.5rem;
-        overflow: hidden;
     }
 
-    .event-mobile-agenda-row {
-        display: grid;
-        grid-template-columns: 3.5rem minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.75rem;
-        color: var(--bs-body-color);
-        text-decoration: none;
+    .event-mobile-agenda-entry {
+        position: relative;
+        scroll-margin-top: 4.5rem;
     }
 
-    .event-mobile-agenda-row + .event-mobile-agenda-row {
+    .event-mobile-agenda-entry + .event-mobile-agenda-entry {
         border-top: 1px solid var(--bs-border-color);
     }
 
-    .event-mobile-agenda-row:hover,
-    .event-mobile-agenda-row:focus-visible {
-        color: var(--bs-emphasis-color);
-        background: var(--bs-tertiary-bg);
+    .event-mobile-agenda-entry.is-selected::before {
+        position: absolute;
+        inset: 0 auto 0 0;
+        z-index: 1;
+        width: 0.25rem;
+        background: var(--pom-brand-blue);
+        content: "";
+    }
+
+    .event-mobile-agenda-row {
+        border-bottom: 0;
+    }
+
+    .event-mobile-agenda-row.is-selected::before {
+        content: none;
+    }
+
+    .event-mobile-agenda-entry .event-mobile-expanded:not([hidden]) {
+        border-bottom: 0;
     }
 
     .event-mobile-agenda-time {
-        color: var(--bs-secondary-color);
         font-size: 0.75rem;
-    }
-
-    .event-mobile-agenda-copy {
-        min-width: 0;
-    }
-
-    .event-mobile-agenda-copy strong,
-    .event-mobile-agenda-copy small {
-        display: block;
-        overflow-wrap: anywhere;
-    }
-
-    .event-mobile-agenda-copy strong {
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .event-mobile-agenda-copy small {
-        color: var(--bs-secondary-color);
     }
 
     .event-mobile-agenda-empty {
@@ -1090,12 +1236,173 @@
         justify-content: flex-start;
     }
 
-    .event-participant-row {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.5rem;
+    .event-participant-row.is-removable {
+        grid-template-columns: minmax(0, 1fr) 2rem;
     }
 
     .event-participant-action {
-        justify-self: start;
+        justify-self: end;
     }
+}
+
+/* At high zoom a split event list/calendar/detail view leaves too little room
+   to use either pane. Keep the list and selected record on separate pages. */
+@media (max-width: 860px), (max-width: 1199.98px) and (max-height: 700px) {
+    .event-command-page,
+    .event-command-page .page-shell {
+        height: auto;
+        overflow: visible;
+    }
+
+    .event-command-main > .container-xl,
+    .event-command-centre {
+        height: auto !important;
+    }
+
+    .event-command-centre,
+    .event-workspace,
+    .event-pane,
+    .event-right-body,
+    .event-detail-pane,
+    .event-detail-scroll {
+        overflow: visible;
+    }
+
+    .event-workspace,
+    .event-pane,
+    .event-right-body,
+    .event-detail-pane,
+    .event-detail-scroll {
+        height: auto;
+    }
+
+    .event-command-list {
+        overflow-x: clip;
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
+
+    .event-list-column,
+    .event-right-column {
+        width: 100%;
+        height: auto;
+    }
+
+    .event-workspace .event-right-column,
+    .event-right-tabs,
+    #eventCalendarPanel {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) and (max-height: 700px) {
+    .event-workspace.show-compact-detail .event-list-column {
+        display: none;
+    }
+
+    .event-workspace.show-compact-detail .event-right-column {
+        display: block !important;
+    }
+
+    #eventDetailsPanel {
+        display: block !important;
+        opacity: 1 !important;
+        height: auto !important;
+    }
+
+    .event-mobile-back {
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 860px) {
+    .event-workspace .event-right-column,
+    .event-workspace.show-compact-detail .event-right-column,
+    #eventCalendarPanel,
+    .event-mobile-agenda { display: none !important; }
+    .event-workspace .event-list-column,
+    .event-workspace.show-compact-detail .event-list-column { display: block !important; width: 100%; }
+    .event-mobile-participant-row .event-participant-remove {
+        width: 2.75rem;
+        height: 2.75rem;
+        font-size: 1.1rem;
+        opacity: 1;
+    }
+    .event-mobile-expanded .event-property-value { flex-wrap: wrap; }
+}
+
+/* My Work Events use the same stable copy / status / disclosure tracks as Tasks and Issues. */
+.event-filter-chip { color: var(--bs-body-color); cursor: pointer; }
+.event-filter-chip:hover, .event-filter-chip:focus-visible { background: var(--pom-hover); }
+.event-command-row { display: block; min-height: 4.25rem; padding: .625rem 1.25rem; }
+.event-command-row-grid { display: grid; grid-template-columns: minmax(0, 1fr) 9.5rem; gap: .5rem; align-items: center; min-height: 3rem; }
+.event-command-copy, .event-command-meta { min-width: 0; }
+.event-command-copy { display: flex; min-width: 0; flex-direction: column; justify-content: center; }
+.event-command-title, .event-command-context { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-command-context { min-height: 1.25rem; margin-top: .25rem; font-size: .875rem; }
+.event-command-meta { display: flex; flex-direction: column; align-items: flex-end; gap: .25rem; }
+.event-command-meta .work-pill { min-height: 1.375rem; }
+.event-command-when { display: flex; flex-direction: column; align-items: flex-end; gap: 0; max-width: 100%; color: var(--bs-secondary-color); font-size: .8rem; line-height: 1.2; white-space: nowrap; }
+.event-command-when span { overflow: hidden; text-overflow: ellipsis; }
+.event-command-row.terminated .event-command-title { font-weight: 500; }
+.event-detail-facts-column .work-detail-list dd { text-align: left; }
+.event-detail-facts-column .work-pill { min-height: 1.5rem; }
+.event-inline-participants-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .75rem; }
+.event-inline-participants-heading .event-inline-section-title { margin: 0; }
+.event-inline-participants .event-mobile-participant-row + .event-mobile-participant-row { border-top: 1px solid var(--bs-border-color); }
+.event-mobile-view-switch { display: none; }
+
+@media (min-width: 1200px) {
+    .event-detail-description-column { flex: 0 0 auto; width: 58.333333%; }
+    .event-detail-facts-column { flex: 0 0 auto; width: 41.666667%; }
+}
+@media (min-width: 861px) and (max-width: 1199.98px) {
+    .event-command-row-grid { grid-template-columns: minmax(0, 1fr) 8rem; }
+    .event-detail-description-column, .event-detail-facts-column { width: min(100%, 37rem); margin-inline: auto; }
+    .event-participants-card { max-width: 37rem; margin-inline: auto; }
+}
+@media (max-width: 860px) {
+    .event-mobile-view-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 0 0 auto; border-bottom: 1px solid var(--bs-border-color); }
+    .event-mobile-view-button { min-height: 2.75rem; border: 0; border-bottom: 3px solid transparent; background: var(--bs-body-bg); color: var(--bs-secondary-color); }
+    .event-mobile-view-button.active { border-bottom-color: var(--pom-brand-blue); color: var(--bs-emphasis-color); font-weight: 600; }
+    .event-command-row-grid { grid-template-columns: minmax(0, 1fr) 8rem 27px; gap: .25rem .75rem; }
+    .event-command-copy, .event-command-meta { display: contents; }
+    .event-command-title { grid-column: 1; grid-row: 1; }
+    .event-command-context { grid-column: 1; grid-row: 2; margin-top: 0; }
+    .event-command-meta .work-pill { grid-column: 2; grid-row: 1; justify-self: end; }
+    .event-command-when { grid-column: 2; grid-row: 2; justify-self: end; }
+    .event-command-row .work-mobile-chevron { grid-column: 3; grid-row: 1 / 3; place-self: center; width: 27px; height: 27px; border-color: #c2cbd2; color: #394750; }
+    .event-command-row .work-mobile-chevron svg { stroke-width: 2; }
+    .event-mobile-expanded:not([hidden]) { padding: 1rem 1.25rem 1.25rem; }
+    .event-mobile-inline-actions { margin-top: 0; container: event-actions / inline-size; }
+    .event-mobile-inline-actions .work-mobile-open { margin-left: auto; }
+    .event-mobile-description, .event-mobile-participants { margin: 0; border: 0; }
+    .event-workspace.show-mobile-calendar .event-list-column { display: none !important; }
+    .event-workspace.show-mobile-calendar .event-right-column { display: block !important; width: 100%; }
+    .event-workspace.show-mobile-calendar #eventCalendarPanel { display: block !important; opacity: 1 !important; }
+    .event-workspace.show-mobile-calendar .event-mobile-agenda { display: block !important; }
+}
+@media (min-width: 600px) and (max-width: 860px) {
+    .event-command-when { font-size: .75rem; }
+}
+@container event-actions (max-width: 24rem) {
+    .event-mobile-inline-actions .work-mobile-open { display: none; }
+    .event-mobile-inline-actions .work-mobile-open-menu-item { display: list-item; }
+}
+@media (max-width: 700px) {
+    .event-mobile-inline-actions > .event-inline-secondary-action { display: none; }
+    .event-mobile-inline-actions > .event-inline-more { display: block; }
+}
+@media (max-width: 599.98px) {
+    .event-command-row-grid { grid-template-columns: minmax(0, 1fr) 27px; gap: .25rem .75rem; min-height: 4.4rem; }
+    .event-command-copy { display: flex; grid-column: 1; grid-row: 1; }
+    .event-command-meta { display: flex; grid-column: 1; grid-row: 2; flex-direction: row; align-items: center; justify-content: space-between; gap: .5rem; }
+    .event-command-context { margin-top: .25rem; }
+    .event-command-meta .work-pill, .event-command-when { grid-column: auto; grid-row: auto; }
+    .event-command-row .work-mobile-chevron { grid-column: 2; grid-row: 1 / 3; }
+    .event-command-when { font-size: .75rem; }
+    .event-inline-participants-heading { flex-wrap: wrap; }
+}
+@media (max-width: 575.98px) {
+    .event-calendar-day { min-height: 4rem; }
 }

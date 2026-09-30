@@ -4,7 +4,9 @@ from datetime import date
 from urllib.parse import urlencode
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -16,9 +18,11 @@ from config.form_state import (
     serialise_form_data,
     store_form_state,
 )
+from config.feedback import snapshot_form_values, form_values_changed
 
 from property.selectors import properties_for_user
 from property.navigation import active_property_for_user, created_record_property_url
+from pages.workspace_selection import resolve_selection
 from issue.selectors import issues_for_user
 from task.selectors import tasks_for_user
 
@@ -41,11 +45,12 @@ from .services import (
     mark_event_occurred,
     reactivate_event,
     remove_contact_from_event,
+    set_event_contacts,
     update_event,
 )
 
 EVENTS_PER_PAGE = 20
-DEFAULT_EVENT_STATE = Event.State.SCHEDULED
+DEFAULT_EVENT_STATE = "all"
 
 
 def _normalised_list_values(request):
@@ -113,15 +118,19 @@ def _shift_month(month, offset):
 
 def _calendar_query(values, month):
     parameters = _list_query_parameters(values)
-    parameters.update({"month": month.month, "year": month.year, "tab": "calendar"})
+    parameters.update({"month": month.month, "year": month.year, "tab": "calendar", "view": "calendar"})
     return urlencode(parameters)
 
 
-def _selected_day(request):
+def _date_parameter(request, name):
     try:
-        return date.fromisoformat(request.GET.get("day", ""))
+        return date.fromisoformat(request.GET.get(name, ""))
     except (TypeError, ValueError):
         return None
+
+
+def _selected_day(request):
+    return _date_parameter(request, "day")
 
 
 def _event_workspace_url(
@@ -131,9 +140,12 @@ def _event_workspace_url(
     tab="details",
     form_state=None,
     state=None,
+    clear_filters=False,
 ):
     parameters = _list_query_parameters(_normalised_list_values(request))
-    selected_day = _selected_day(request)
+    if clear_filters:
+        parameters = {key: value for key, value in parameters.items() if key == "sort"}
+    selected_day = None if clear_filters else _selected_day(request)
     if selected_day is not None:
         parameters["day"] = selected_day.isoformat()
     if state is not None:
@@ -145,9 +157,9 @@ def _event_workspace_url(
         page = int(request.GET.get("page", ""))
     except (TypeError, ValueError):
         page = None
-    if page is not None and page > 1:
+    if not clear_filters and page is not None and page > 1:
         parameters["page"] = page
-    if request.GET.get("month") and request.GET.get("year"):
+    if not clear_filters and request.GET.get("month") and request.GET.get("year"):
         displayed_month = _calendar_month(request)
         parameters["month"] = displayed_month.month
         parameters["year"] = displayed_month.year
@@ -189,13 +201,21 @@ def _restore_edit_event_form(request, state):
     event = _scheduled_event_from_form_state(request, state)
     if event is None:
         return {}
+    data = deserialise_form_data(state.get("data", {}))
     return {
         "selected_event": event,
         "edit_event_form": EventForm(
-            deserialise_form_data(state.get("data", {})),
+            data,
             user=request.user,
             instance=event,
             auto_id="edit_event_%s",
+        ),
+        "edit_contacts_form": EventContactForm(
+            data if data.get("manage_contacts") == "1" else None,
+            user=request.user,
+            event=event,
+            include_existing=True,
+            auto_id="edit_contacts_%s",
         ),
         "active_tab": "details",
         "open_modal": "editEventModal",
@@ -261,6 +281,7 @@ def _event_list_context(
     add_event_form=None,
     initial_contacts_form=None,
     edit_event_form=None,
+    edit_contacts_form=None,
     add_contacts_form=None,
     active_tab=None,
     open_modal=None,
@@ -272,22 +293,20 @@ def _event_list_context(
         events = events.filter(scheduled_date=selected_day)
         if values["sort"] == "scheduled_date":
             events = events.order_by("-all_day", "start_time", "title", "pk")
+    requested_event, selected_page, outside_filters, selection_redirect = resolve_selection(
+        request, filtered=events, owned=events_for_user(user=request.user), page_size=EVENTS_PER_PAGE,
+    )
     paginator = Paginator(events, EVENTS_PER_PAGE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(selected_page or request.GET.get("page"))
 
     if selected_event is None:
-        try:
-            selected_id = int(request.GET.get("selected", ""))
-        except (TypeError, ValueError):
-            selected_id = None
-        if selected_id is not None:
-            selected_event = events.filter(pk=selected_id).first()
+        selected_event = requested_event
         if selected_event is None and page_obj.object_list:
             selected_event = page_obj.object_list[0]
 
     requested_tab = active_tab or request.GET.get("tab")
     if requested_tab not in ("details", "calendar"):
-        requested_tab = "details" if request.GET.get("selected") else "calendar"
+        requested_tab = "details"
 
     list_parameters = _list_query_parameters(values)
     if selected_day is not None:
@@ -318,7 +337,10 @@ def _event_list_context(
          and event.scheduled_date.year == displayed_month.year),
         None,
     )
-    mobile_agenda_day = selected_day or (
+    agenda_day = _date_parameter(request, "agenda_day")
+    if agenda_day not in {day for week in month_dates for day in week}:
+        agenda_day = None
+    mobile_agenda_day = agenda_day or selected_day or (
         today if today.year == displayed_month.year
         and today.month == displayed_month.month
         and events_by_date[today] else first_month_event or displayed_month
@@ -352,6 +374,12 @@ def _event_list_context(
     return {
         "page_obj": page_obj,
         "selected_event": selected_event,
+        "selected_outside_filters": outside_filters,
+        "selection_redirect": selection_redirect,
+        "show_compact_detail": (
+            selected_event is not None
+            and request.GET.get("selected") == str(selected_event.pk)
+        ),
         "mobile_expanded_event_id": (
             selected_event.pk if selected_event is not None
             and request.GET.get("selected") == str(selected_event.pk) else None
@@ -374,6 +402,16 @@ def _event_list_context(
                 auto_id="edit_event_%s",
             ) if selected_event_is_active else None
         ),
+        "edit_contacts_form": (
+            edit_contacts_form
+            if edit_contacts_form is not None
+            else EventContactForm(
+                user=request.user,
+                event=selected_event,
+                include_existing=True,
+                auto_id="edit_contacts_%s",
+            ) if selected_event_is_active else None
+        ),
         "add_contacts_form": (
             add_contacts_form
             if add_contacts_form is not None
@@ -384,6 +422,7 @@ def _event_list_context(
             ) if selected_event_is_active else None
         ),
         "active_tab": requested_tab,
+        "mobile_calendar_view": request.GET.get("view") == "calendar",
         "open_modal": open_modal,
         "search": values["search"],
         "state": values["state"],
@@ -434,6 +473,8 @@ def _event_list_context(
 @require_GET
 def events_view(request):
     context = _event_list_context(request, **_restore_event_form_context(request))
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
     origin = None
     if request.GET.get("open") == "add" and not context["open_modal"]:
         origin = active_property_for_user(request.user, request.GET.get("property"))
@@ -469,10 +510,11 @@ def add_event_view(request):
             contacts=contacts_form.cleaned_data["contacts"],
             **event_form.cleaned_data,
         )
+        messages.success(request, "Event added.")
         property_url = created_record_property_url(event, request.POST.get("return_property"), "event")
         if property_url:
             return redirect(property_url)
-        return redirect(_event_workspace_url(request, event_id=event.pk))
+        return redirect(_event_workspace_url(request, event_id=event.pk, clear_filters=True))
     return _redirect_with_event_form_state(
         request,
         action="add_event",
@@ -484,6 +526,7 @@ def add_event_view(request):
 def delete_event_view(request, event_id):
     event = get_object_or_404(events_for_user(user=request.user), pk=event_id)
     delete_event(event=event)
+    messages.success(request, "Event deleted.")
     return redirect(_event_workspace_url(request))
 
 
@@ -501,8 +544,34 @@ def edit_event_view(request, event_id):
         instance=event,
         auto_id="edit_event_%s",
     )
-    if form.is_valid():
-        update_event(event=event, **form.cleaned_data)
+    managing_contacts = request.POST.get("manage_contacts") == "1"
+    contacts_form = EventContactForm(
+        request.POST,
+        user=request.user,
+        event=event,
+        include_existing=True,
+        auto_id="edit_contacts_%s",
+    )
+    before = snapshot_form_values(form)
+    event_is_valid = form.is_valid()
+    contacts_are_valid = not managing_contacts or contacts_form.is_valid()
+    if event_is_valid and contacts_are_valid:
+        event_changed = form_values_changed(before, form)
+        participants_changed = False
+        if managing_contacts:
+            editable_ids = set(contacts_form.fields["contacts"].queryset.values_list("pk", flat=True))
+            current_ids = set(EventContact.objects.filter(
+                event=event, contact_id__in=editable_ids,
+            ).values_list("contact_id", flat=True))
+            chosen_ids = {contact.pk for contact in contacts_form.cleaned_data["contacts"]}
+            participants_changed = chosen_ids != current_ids
+        with transaction.atomic():
+            if event_changed:
+                update_event(event=event, **form.cleaned_data)
+            if participants_changed:
+                set_event_contacts(event=event, contacts=contacts_form.cleaned_data["contacts"])
+        if event_changed or participants_changed:
+            messages.success(request, "Event updated.")
         return redirect(_event_workspace_url(request, event_id=event.pk))
     return _redirect_with_event_form_state(
         request,
@@ -518,6 +587,7 @@ def mark_event_occurred_view(request, event_id):
         events_for_user(user=request.user), pk=event_id, state=Event.State.SCHEDULED
     )
     mark_event_occurred(event=event)
+    messages.success(request, "Event marked as occurred.")
     return redirect(
         _event_workspace_url(request, event_id=event_id, state="all")
     )
@@ -530,6 +600,7 @@ def cancel_event_view(request, event_id):
         events_for_user(user=request.user), pk=event_id, state=Event.State.SCHEDULED
     )
     cancel_event(event=event)
+    messages.success(request, "Event cancelled.")
     property_url = f"{reverse('property:property_detail', args=[event.property_id])}?tab=schedule" if event.property_id else None
     if property_url and request.POST.get("next") == property_url:
         return redirect(property_url)
@@ -541,8 +612,12 @@ def cancel_event_view(request, event_id):
 @login_required
 @require_POST
 def reactivate_event_view(request, event_id):
-    event = get_object_or_404(events_for_user(user=request.user), pk=event_id)
+    event = get_object_or_404(
+        events_for_user(user=request.user), pk=event_id,
+        state__in=(Event.State.OCCURRED, Event.State.CANCELLED),
+    )
     reactivate_event(event=event)
+    messages.success(request, "Event reactivated.")
     return redirect(_event_workspace_url(request, event_id=event_id))
 
 
@@ -554,7 +629,11 @@ def add_event_contacts_to_event_view(request, event_id):
     )
     form = EventContactForm(request.POST, user=request.user, event=event)
     if form.is_valid():
+        before_count = EventContact.objects.filter(event=event).count()
         add_contacts_to_event(event=event, contacts=form.cleaned_data["contacts"])
+        added = EventContact.objects.filter(event=event).count() - before_count
+        if added:
+            messages.success(request, f"{added} participant{'s' if added != 1 else ''} added.")
         return redirect(_event_workspace_url(request, event_id=event.pk))
     return _redirect_with_event_form_state(
         request,
@@ -575,4 +654,5 @@ def delete_event_contact_from_event_view(request, event_id, event_contact_id):
         event=event,
     )
     remove_contact_from_event(event_contact=event_contact)
+    messages.success(request, "Participant removed.")
     return redirect(_event_workspace_url(request, event_id=event.pk))

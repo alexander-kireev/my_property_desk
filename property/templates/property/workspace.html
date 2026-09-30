@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if is_detail_route %}{{ selected_property.name }}{% else %}Properties{% endif %} | Property Operations Manager{% endblock %}
+{% block title %}{% if is_detail_route %}{{ selected_property.name }}{% else %}Properties{% endif %} | My Property Desk{% endblock %}
 {% block body_class %}bg-body-tertiary property-command-page{% endblock %}
 {% block main_class %}property-command-main flex-grow-1 app-main{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/event.css' %}"><link rel="stylesheet" href="{% static 'css/property-workspace.css' %}">{% endblock %}
@@ -31,28 +31,24 @@
                         </select>
                         <label class="visually-hidden" for="propertyState">Property state</label>
                         <select class="form-select form-select-sm" id="propertyState" name="state">
-                            <option value="active" {% if not state or state == "active" %}selected{% endif %}>Active</option>
+                            <option value="active" {% if state == "active" %}selected{% endif %}>Active</option>
                             <option value="deactivated" {% if state == "deactivated" %}selected{% endif %}>Deactivated</option>
-                            <option value="all" {% if state == "all" %}selected{% endif %}>All states</option>
+                            <option value="all" {% if not state or state == "all" %}selected{% endif %}>All states</option>
                         </select>
                     </div>
                 </form>
 
                 <div class="property-command-list list-group list-group-flush" data-workspace-scroll-list>
-                    {% if selected_property and not selected_in_page %}
-                        <a class="property-command-row list-group-item list-group-item-action is-selected" href="{% url 'property:property_detail' selected_property.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" aria-current="true" data-workspace-scroll-row>
-                            <strong>{{ selected_property.name }}</strong><small>{{ selected_property.address|default:"No address provided" }} · Selected property</small>
-                        </a>
-                    {% endif %}
+                    {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">Selected property is outside these filters. <a class="btn btn-sm btn-outline-secondary" href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
                     {% for record in page_obj %}
                         <a class="property-command-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}" href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" data-workspace-scroll-row{% if selected_property.pk == record.pk %} aria-current="true"{% endif %}>
-                            <strong>{{ record.name }}</strong>
-                            <small>{{ record.address|default:"No address provided" }}</small>
+                            <strong title="{{ record.name }}">{{ record.name }}</strong>
+                            <small class="property-command-address" title="{{ record.address|default:'No address provided' }}">{{ record.address|default:"No address provided" }}</small>
                             <small>{% if record.state == "deactivated" %}Deactivated{% else %}{{ record.open_issues }} issue{{ record.open_issues|pluralize }} · {{ record.open_direct_tasks|add:record.open_issue_tasks }} task{{ record.open_direct_tasks|add:record.open_issue_tasks|pluralize }}{% if record.next_event_date %} · Next event {{ record.next_event_date|date:"j M" }}{% endif %}{% endif %}</small>
                         </a>
                     {% empty %}
                         <div class="p-4 text-center text-body-secondary">
-                            {% if has_filters %}No matching properties. <a href="{% url 'property:properties' %}">Clear filters</a>{% elif property_count %}No active properties. <a href="{% url 'property:properties' %}?state=all">Show all states</a>{% else %}No properties yet. Add your first property to begin.{% endif %}
+                            {% if has_filters %}<strong class="d-block text-body mb-1">No matching properties</strong><span class="d-block small mb-2">Try changing your search or state filter.</span><a class="btn btn-sm btn-outline-secondary" href="{% url 'property:properties' %}">Clear filters</a>{% else %}No properties yet. Add your first property to begin.{% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -74,8 +70,11 @@
                                 <h2 class="property-heading-title workspace-detail-title h3">{{ selected_property.name }}</h2>
                                 <div class="property-heading-meta workspace-detail-meta">
                                     <span class="work-pill {% if selected_property.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_property.get_state_display }}</span>
-                                    <span class="text-body-secondary">{{ selected_property.address|default:"No address provided" }}</span>
                                     <span class="small text-body-secondary">Added {{ selected_property.created_at|date:"j M Y" }}</span>
+                                </div>
+                                <div class="expandable-text expandable-text--single-line property-heading-address" data-expandable-text>
+                                    <span class="expandable-text-content text-body-secondary" id="property-detail-address" data-expandable-content>{{ selected_property.address|default:"No address provided" }}</span>
+                                    {% if selected_property.address %}<button class="expandable-text-toggle" type="button" aria-controls="property-detail-address" aria-expanded="false" hidden data-expandable-toggle>See more</button>{% endif %}
                                 </div>
                             </div>
                             <div class="property-heading-actions workspace-detail-actions">
@@ -99,8 +98,7 @@
                         <section class="property-heading-description" aria-label="Property description">
                             <h3>Description</h3>
                             {% if selected_property.description %}
-                                <p class="property-description-preview mb-0" data-property-description-preview>{{ selected_property.description|linebreaksbr }}</p>
-                                <button class="property-description-open" type="button" data-bs-toggle="modal" data-bs-target="#propertyDescriptionModal" data-property-description-open hidden>Read full description</button>
+                                {% include "includes/expandable_text.html" with text=selected_property.description text_id="property-detail-description" %}
                             {% else %}<p class="text-body-secondary mb-0">No description provided.</p>{% endif %}
                         </section>
                         <div class="property-related-heading">
@@ -127,7 +125,7 @@
                             <div class="property-related-result-heading">{{ related_page.paginator.count }} record{{ related_page.paginator.count|pluralize }}</div>
                             <div class="property-related-scroll" tabindex="0" aria-label="Related records list">
                                 {% for entry in related_page %}{% include "property/includes/related_record.html" with entry=entry %}
-                                {% empty %}<p class="property-related-empty text-body-secondary">No records match these filters.</p>{% endfor %}
+                                {% empty %}<div class="property-related-empty text-center text-body-secondary p-3">{% if related_has_filters %}<strong class="d-block text-body mb-1">No matching records</strong><span class="d-block small mb-2">Try changing the related-record filters.</span><a class="btn btn-sm btn-outline-secondary" href="{% url 'property:property_detail' selected_property.pk %}">Clear filters</a>{% else %}No current related records.{% endif %}</div>{% endfor %}
                             </div>
                         </div>
                         {% if related_page.paginator.num_pages > 1 %}<nav class="property-related-pagination" aria-label="Related record pages">

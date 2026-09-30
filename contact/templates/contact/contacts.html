@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Contacts | Property Operations Manager{% endblock %}
+{% block title %}Contacts | My Property Desk{% endblock %}
 {% block body_class %}bg-body-tertiary contact-command-page{% endblock %}
 {% block main_class %}contact-command-main flex-grow-1 app-main{% endblock %}
 
@@ -43,8 +43,8 @@
                                     <option value="created_at" {% if sort == "created_at" %}selected{% endif %}>Oldest first</option>
                                 </select>
                                 <select class="form-select form-select-sm" name="state" aria-label="Filter by state">
-                                    <option value="all" {% if state == "all" %}selected{% endif %}>All states</option>
-                                    <option value="active" {% if not state or state == "active" %}selected{% endif %}>Active</option>
+                                    <option value="all" {% if not state or state == "all" %}selected{% endif %}>All states</option>
+                                    <option value="active" {% if state == "active" %}selected{% endif %}>Active</option>
                                     <option value="deactivated" {% if state == "deactivated" %}selected{% endif %}>Deactivated</option>
                                 </select>
                             </div>
@@ -54,6 +54,8 @@
                         {% if page_obj.object_list %}
                             <div class="contact-command-list list-group list-group-flush" aria-label="Contacts" data-workspace-scroll-list>
                                 {% if has_filters %}<div class="workspace-list-filter-summary"><a class="command-filter-clear" href="{% url 'contact:contacts' %}">Clear all</a></div>{% endif %}
+                                {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This contact is outside the current filters. <a href="{% url 'contact:contacts' %}?selected={{ selected_contact.pk }}">Clear filters to find it in the list</a>.</div>{% endif %}
+                                {% if selected_outside_filters %}<a class="contact-command-row list-group-item list-group-item-action is-selected" href="{% url 'contact:contacts' %}?selected={{ selected_contact.pk }}" data-workspace-scroll-row aria-current="true"><span class="contact-command-title">{{ selected_contact }}</span><span class="contact-command-methods mt-2">Selected contact</span></a>{% endif %}
                                 {% for contact in page_obj %}
                                     <a
                                         class="contact-command-row list-group-item list-group-item-action{% if contact == selected_contact %} is-selected{% endif %}{% if contact.state != 'active' %} terminated{% endif %}"
@@ -65,11 +67,13 @@
                                             <span class="contact-command-title" title="{{ contact }}">{{ contact }}</span>
                                             {% if contact.state != "active" %}<span class="badge bg-secondary-subtle border text-secondary-emphasis">{{ contact.get_state_display }}</span>{% endif %}
                                         </span>
-                                        <span class="contact-command-methods mt-2">
-                                            {% if contact.first_telephone %}<span class="contact-command-primary-method" title="{{ contact.first_telephone }}">{{ contact.first_telephone }}</span>{% endif %}
-                                            {% if contact.first_telephone and contact.first_email %}<span aria-hidden="true">·</span>{% endif %}
-                                            {% if contact.first_email %}<span class="contact-command-primary-method" title="{{ contact.first_email }}">{{ contact.first_email }}</span>{% endif %}
-                                            {% if not contact.first_telephone and not contact.first_email %}<span>No contact details</span>{% endif %}
+                                        <span class="contact-command-methods mt-2{% if not contact.first_telephone and not contact.first_email %} contact-command-methods--empty{% endif %}">
+                                            {% if contact.first_telephone or contact.first_email %}
+                                                <span class="contact-command-primary-method contact-command-primary-method--telephone{% if not contact.first_telephone %} contact-command-primary-method--missing{% endif %}" title="{% if contact.first_telephone %}{{ contact.first_telephone }}{% else %}No phone number{% endif %}">{% if contact.first_telephone %}{{ contact.first_telephone }}{% else %}No phone number{% endif %}</span>
+                                                <span class="contact-command-primary-method contact-command-primary-method--email{% if not contact.first_email %} contact-command-primary-method--missing{% endif %}" title="{% if contact.first_email %}{{ contact.first_email }}{% else %}No email{% endif %}">{% if contact.first_email %}{{ contact.first_email|truncatechars:25 }}{% else %}No email{% endif %}</span>
+                                            {% else %}
+                                                <span>No contact details</span>
+                                            {% endif %}
                                             {% if contact.remaining_method_count %}<span class="contact-command-more">+{{ contact.remaining_method_count }} more</span>{% endif %}
                                         </span>
                                     </a>
@@ -86,10 +90,11 @@
                                 {% endif %}
                             </div>
                         {% else %}
+                            {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This contact is outside the current filters. <a href="{% url 'contact:contacts' %}?selected={{ selected_contact.pk }}">Clear filters to find it in the list</a>.</div><a class="contact-command-row list-group-item list-group-item-action is-selected" href="{% url 'contact:contacts' %}?selected={{ selected_contact.pk }}" data-workspace-scroll-row aria-current="true"><span class="contact-command-title">{{ selected_contact }}</span></a>{% endif %}
                             <div class="flex-grow-1 d-flex align-items-center justify-content-center p-4 text-center">
                                 <div>
                                     {% if has_filters %}<h2 class="h5">No matching contacts</h2><p class="small text-body-secondary mb-3">Try changing your search or state filter.</p><a class="btn btn-sm btn-outline-secondary" href="{% url 'contact:contacts' %}">Clear filters</a>
-                                    {% else %}<h2 class="h5">No active contacts</h2><p class="small text-body-secondary mb-3">Deactivated contacts are hidden from this view.</p><a class="btn btn-sm btn-outline-secondary" href="{% url 'contact:contacts' %}?state=all">Show all states</a>{% endif %}
+                                    {% else %}<h2 class="h5">No contacts yet</h2><p class="small text-body-secondary mb-0">Add your first contact to begin.</p>{% endif %}
                                 </div>
                             </div>
                         {% endif %}
@@ -152,11 +157,11 @@
                                             {% if contact_methods %}
                                                 <div class="contact-methods-grid">
                                                     <section class="contact-method-group card" aria-labelledby="contact-telephones-heading">
-                                                        <div class="contact-method-group-head"><h4 class="contact-method-group-title" id="contact-telephones-heading">Telephone numbers</h4><small>Tap a number to call</small></div>
+                                                        <div class="contact-method-group-head"><h4 class="contact-method-group-title" id="contact-telephones-heading">Telephone numbers</h4></div>
                                                         <div class="contact-method-list">{% for method in telephone_methods %}{% include "contact/includes/contact_method_row.html" %}{% empty %}<p class="contact-method-group-empty">No telephone numbers added.</p>{% endfor %}</div>
                                                     </section>
                                                     <section class="contact-method-group card" aria-labelledby="contact-emails-heading">
-                                                        <div class="contact-method-group-head"><h4 class="contact-method-group-title" id="contact-emails-heading">Email addresses</h4><small>Tap an address to compose</small></div>
+                                                        <div class="contact-method-group-head"><h4 class="contact-method-group-title" id="contact-emails-heading">Email addresses</h4></div>
                                                         <div class="contact-method-list">{% for method in email_methods %}{% include "contact/includes/contact_method_row.html" %}{% empty %}<p class="contact-method-group-empty">No email addresses added.</p>{% endfor %}</div>
                                                     </section>
                                                 </div>
@@ -181,6 +186,7 @@
         {% endif %}
     </section>
 </div>
+{% if note_undo_token %}<div class="note-undo-toast" data-note-undo-toast data-token="{{ note_undo_token }}" data-url="{% url 'contact:undo_contact_note' selected_contact.pk %}" role="status" aria-live="polite"><span class="app-feedback-icon" aria-hidden="true">✓</span><div class="app-feedback-copy"><strong data-note-undo-message>Note deleted.</strong></div><button type="button" data-note-undo>Undo</button><button type="button" class="btn-close" data-note-undo-close aria-label="Dismiss notification"></button></div>{% endif %}
 
 <div class="modal fade modal-resilient" id="addContactModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
@@ -201,13 +207,13 @@
             <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
                 <div class="modal-header"><h2 class="modal-title fs-5" id="editContactModalLabel">Edit contact</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
                 <form action="{% url 'contact:edit_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post" autocomplete="off">
-                    <div class="modal-body">{% csrf_token %}{% for field in edit_contact_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>{% endfor %}</div>
+                    <div class="modal-body">{% csrf_token %}{% for error in edit_contact_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endfor %}{% for field in edit_contact_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>{% endfor %}</div>
                     <div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn theme-action" type="submit">Save changes</button></div>
                 </form>
             </div></div>
         </div>
 
-        <div class="modal fade modal-resilient" id="addContactMethodModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="addContactMethodModalLabel" aria-hidden="true">
+        <div class="modal fade modal-resilient contact-method-modal" id="addContactMethodModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="addContactMethodModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
                 <div class="modal-header"><h2 class="modal-title fs-5" id="addContactMethodModalLabel">Add contact detail</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
                 <form action="{% url 'contact:add_contact_method' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post" autocomplete="off">
@@ -218,7 +224,7 @@
         </div>
 
         {% if edit_contact_method and edit_contact_method_form %}
-            <div class="modal fade modal-resilient" id="editContactMethodModal" data-modal-clear-query="edit_method form_state" tabindex="-1" aria-labelledby="editContactMethodModalLabel" aria-hidden="true">
+            <div class="modal fade modal-resilient contact-method-modal" id="editContactMethodModal" data-modal-clear-query="edit_method form_state" tabindex="-1" aria-labelledby="editContactMethodModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
                     <div class="modal-header"><h2 class="modal-title fs-5" id="editContactMethodModalLabel">Edit contact detail</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
                     <form action="{% url 'contact:edit_contact_method' selected_contact.pk edit_contact_method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post" autocomplete="off">
@@ -230,18 +236,18 @@
         {% endif %}
 
         <div class="modal fade modal-resilient" id="deactivateContactModal" tabindex="-1" aria-labelledby="deactivateContactModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deactivateContactModalLabel">Deactivate contact?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>The contact will become read-only and remain available as history.</p><div class="modal-context"><span class="small text-body-secondary d-block">Contact</span><span class="modal-context-value">{{ selected_contact }}</span></div></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep contact</button><form action="{% url 'contact:deactivate_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-outline-secondary" type="submit">Deactivate contact</button></form></div></div></div>
+            <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deactivateContactModalLabel">Deactivate contact?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>The contact will become read-only and remain available as history.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep contact</button><form action="{% url 'contact:deactivate_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn theme-action" type="submit">Deactivate contact</button></form></div></div></div>
         </div>
 
         {% for method in contact_methods %}
             <div class="modal fade modal-resilient" id="deleteContactMethodModal{{ method.pk }}" tabindex="-1" aria-labelledby="deleteContactMethodModalLabel{{ method.pk }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deleteContactMethodModalLabel{{ method.pk }}">Delete {{ method.get_type_display|lower }}?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>Remove this {{ method.get_type_display|lower }} from the contact?</p><div class="modal-context"><span class="small text-body-secondary d-block">{{ method.get_type_display }}</span><span class="modal-context-value">{{ method.value }}</span></div><p class="text-body-secondary mb-0 mt-3">This detail will be permanently removed.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep detail</button><form action="{% url 'contact:delete_contact_method' selected_contact.pk method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Delete detail</button></form></div></div></div>
+            <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deleteContactMethodModalLabel{{ method.pk }}">Delete {{ method.get_type_display|lower }}?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>This detail will be permanently removed from the contact.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep detail</button><form action="{% url 'contact:delete_contact_method' selected_contact.pk method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Delete detail</button></form></div></div></div>
             </div>
         {% endfor %}
     {% endif %}
 
     <div class="modal fade modal-resilient" id="deleteContactModal" tabindex="-1" aria-labelledby="deleteContactModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deleteContactModalLabel">Delete contact?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>Remove this contact from your workspace?</p><div class="modal-context"><span class="small text-body-secondary d-block">Contact</span><span class="modal-context-value">{{ selected_contact }}</span></div><p class="text-body-secondary mb-0 mt-3">The underlying record and its contact details are retained as history.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep contact</button><form action="{% url 'contact:delete_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Delete contact</button></form></div></div></div>
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="deleteContactModalLabel">Delete contact?</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>This contact will be removed from your workspace. Its details will remain in history.</p></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Keep contact</button><form action="{% url 'contact:delete_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Delete contact</button></form></div></div></div>
     </div>
 {% endif %}
 {% endblock %}

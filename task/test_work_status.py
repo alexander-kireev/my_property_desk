@@ -26,9 +26,9 @@ class WorkStatusTests(SimpleTestCase):
         self.assertEqual(status_for(due_soon, today=self.today).list_label, "Due soon")
         self.assertEqual(status_for(later, today=self.today).kind, "neutral")
 
-    def test_past_scheduled_is_secondary_to_overdue_or_due_soon(self):
+    def test_past_scheduled_date_is_not_a_warning(self):
         task = Task(scheduled_date=self.today - timedelta(days=2))
-        self.assertEqual(status_for(task, today=self.today).kind, "missed")
+        self.assertEqual(status_for(task, today=self.today).kind, "neutral")
 
         task.completion_deadline = self.today + timedelta(days=2)
         self.assertEqual(status_for(task, today=self.today).kind, "soon")
@@ -81,7 +81,7 @@ class WorkStatusRenderingTests(TestCase):
         response = self.client.get(reverse("task:tasks"))
 
         self.assertContains(response, "Overdue by 2 days")
-        self.assertContains(response, 'class="work-status-strip work-status-strip--overdue"')
+        self.assertNotContains(response, 'class="work-status-strip work-status-strip--overdue"')
         self.assertContains(response, 'class="work-pill work-pill--priority-3"')
         self.assertContains(response, 'class="task-related-link"')
         self.assertNotContains(response, 'class="badge rounded-pill text-bg-secondary">1</span>')
@@ -98,6 +98,6 @@ class WorkStatusRenderingTests(TestCase):
         response = self.client.get(reverse("issue:issues"))
 
         self.assertContains(response, "Overdue by 1 day")
-        self.assertContains(response, 'class="work-status-strip work-status-strip--overdue"')
+        self.assertNotContains(response, 'class="work-status-strip work-status-strip--overdue"')
         self.assertContains(response, 'class="work-pill work-pill--priority-4"')
         self.assertContains(response, 'class="task-related-link"')

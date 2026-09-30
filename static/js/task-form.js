@@ -26,10 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const relationshipChoices = relationshipFieldset.querySelectorAll(
-            'input[name="relationship_type"]'
-        );
-        const standalonePanel = relationshipFieldset.querySelector(
-            '[data-relationship-panel="standalone"]'
+            '[name="relationship_type"]'
         );
         const propertyPanel = relationshipFieldset.querySelector(
             '[data-relationship-panel="property"]'
@@ -41,6 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const issueSelect = issuePanel.querySelector("select");
 
         function selectedRelationshipType() {
+            const relationshipSelect = relationshipFieldset.querySelector(
+                'select[name="relationship_type"]'
+            );
+            if (relationshipSelect) {
+                return relationshipSelect.value;
+            }
             const selectedChoice = relationshipFieldset.querySelector(
                 'input[name="relationship_type"]:checked'
             );
@@ -60,33 +63,38 @@ document.addEventListener("DOMContentLoaded", () => {
             return "standalone";
         }
 
-        function updateRelationshipFields({clearInactive = false} = {}) {
+        const relationshipSelect = relationshipFieldset.querySelector(
+            'select[name="relationship_type"]'
+        );
+        const propertyChoice = relationshipSelect?.querySelector('option[value="property"]') ||
+            relationshipFieldset.querySelector('input[name="relationship_type"][value="property"]');
+        const issueChoice = relationshipSelect?.querySelector('option[value="issue"]') ||
+            relationshipFieldset.querySelector('input[name="relationship_type"][value="issue"]');
+        const fallbackType = propertyChoice && !propertyChoice.disabled ? "property" :
+            issueChoice && !issueChoice.disabled ? "issue" : null;
+        let lastLinkedType = propertySelect.value ? "property" :
+            issueSelect.value ? "issue" : null;
+
+        function updateRelationshipFields() {
             const relationshipType = selectedRelationshipType();
-            const showProperty = relationshipType === "property";
-            const showIssue = relationshipType === "issue";
-
-            standalonePanel.hidden = relationshipType !== "standalone";
-            propertyPanel.hidden = !showProperty;
-            issuePanel.hidden = !showIssue;
-            propertySelect.disabled = !showProperty;
-            issueSelect.disabled = !showIssue;
-
-            if (clearInactive && !showProperty) {
-                propertySelect.value = "";
+            if (relationshipType === "property" || relationshipType === "issue") {
+                lastLinkedType = relationshipType;
             }
+            const visibleType = relationshipType === "standalone"
+                ? lastLinkedType || fallbackType
+                : relationshipType;
 
-            if (clearInactive && !showIssue) {
-                issueSelect.value = "";
-            }
+            propertyPanel.hidden = visibleType !== "property";
+            issuePanel.hidden = visibleType !== "issue";
+            propertySelect.disabled = relationshipType !== "property";
+            issueSelect.disabled = relationshipType !== "issue";
 
             window.SearchableSelect?.refresh(propertySelect);
             window.SearchableSelect?.refresh(issueSelect);
         }
 
         relationshipChoices.forEach((choice) => {
-            choice.addEventListener("change", () => {
-                updateRelationshipFields({clearInactive: true});
-            });
+            choice.addEventListener("change", updateRelationshipFields);
         });
 
         updateRelationshipFields();

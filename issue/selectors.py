@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.db.models.functions import Lower
 from django.utils import timezone
 
@@ -11,7 +11,6 @@ ISSUE_DEADLINE_PERIOD_OPTIONS = {
     "overdue": "Overdue",
     "today": "Today",
     "next_7_days": "Next 7 days",
-    "upcoming": "Upcoming",
     "no_deadline": "No target date",
 }
 
@@ -81,10 +80,14 @@ def filtered_issues_for_user(
         issues = issues.filter(resolution_deadline=today)
     elif deadline_period == "next_7_days":
         issues = issues.filter(resolution_deadline__range=(today, period_end))
-    elif deadline_period == "upcoming":
-        issues = issues.filter(resolution_deadline__gte=today)
     elif deadline_period == "no_deadline":
         issues = issues.filter(resolution_deadline__isnull=True)
 
     ordering = ISSUE_SORT_OPTIONS.get(sort, ISSUE_SORT_OPTIONS["title"])
-    return issues.order_by(*ordering)
+    return issues.annotate(
+        active_task_count=Count(
+            "tasks",
+            filter=Q(tasks__state="active", tasks__deleted_at__isnull=True),
+            distinct=True,
+        ),
+    ).order_by(*ordering)

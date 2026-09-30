@@ -38,12 +38,6 @@ def status_for(record, *, today=None):
             headline = "Due today" if days == 0 else f"Due in {days} {'day' if days == 1 else 'days'}"
             return WorkStatus("soon", headline, "Still active · deadline approaching.", "Due soon")
 
-    scheduled = getattr(record, "scheduled_date", None)
-    if scheduled is not None and scheduled < today:
-        return WorkStatus(
-            "missed", "Scheduled date passed", "Still active · scheduled date passed.",
-            "Past scheduled",
-        )
     if deadline is not None:
         return WorkStatus("neutral", "On track", "This work remains active.")
     return WorkStatus("neutral", "Active", "No deadline set.")

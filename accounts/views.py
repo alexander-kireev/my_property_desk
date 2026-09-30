@@ -127,7 +127,7 @@ def register_view(request):
             send_mail(
                 subject="Confirm your registration",
                 message=(
-                    "Confirm your Property Operations Manager account:\n\n"
+                    "Confirm your My Property Desk account:\n\n"
                     f"{confirmation_url}"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
@@ -201,6 +201,7 @@ def confirm_registration_view(request, token):
         pending_registration.delete()
 
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    messages.success(request, "Account confirmed.")
 
     return redirect("pages:dashboard")
 
@@ -209,9 +210,12 @@ def profile_page_view(request):
 
     if request.method == "POST":
         profile_form = ProfileForm(data=request.POST, instance=request.user)
+        before_profile = {name: getattr(request.user, name) for name in profile_form.fields}
 
         if profile_form.is_valid():
-            profile_form.save()
+            if any(profile_form.cleaned_data[name] != before_profile[name] for name in before_profile):
+                profile_form.save()
+                messages.success(request, "Profile updated.")
             return redirect("accounts:profile_page")
 
         return _redirect_with_account_form_state(
@@ -281,7 +285,7 @@ def change_password_view(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
-            messages.success(request, "Your password has been changed.")
+            messages.success(request, "Password changed.")
             return redirect("accounts:profile_page")
 
         return _redirect_with_account_form_state(
@@ -389,6 +393,7 @@ def reset_password_protected_view(request):
             email_template_name="accounts/password_reset_email.txt",
             subject_template_name="accounts/password_reset_subject.txt"
         )
+        messages.success(request, "Password reset link sent.")
 
     return redirect("accounts:profile_page")
 

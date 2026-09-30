@@ -1,6 +1,6 @@
 <div class="modal fade" id="propertyAddTaskModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="propertyAddTaskTitle" aria-hidden="true">
     <div class="task-form-dialog modal-dialog modal-dialog-centered"><div class="modal-content">
-        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddTaskTitle">Add task · {{ selected_property.name }}</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddTaskTitle">Add task</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
         <form action="{% url 'property:add_property_record' selected_property.pk 'task' %}" method="post" autocomplete="off" data-task-form>
             {% csrf_token %}<input type="hidden" name="property" value="{{ selected_property.pk }}"><input type="hidden" name="relationship_type" value="property">
             <div class="modal-body">{% include "task/includes/task_form_fields.html" with task_form=property_add_task_form property_context=True %}</div>
@@ -11,7 +11,7 @@
 
 <div class="modal fade" id="propertyAddIssueModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="propertyAddIssueTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
-        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddIssueTitle">Add issue · {{ selected_property.name }}</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddIssueTitle">Add issue</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
         <form action="{% url 'property:add_property_record' selected_property.pk 'issue' %}" method="post" autocomplete="off">
             {% csrf_token %}<input type="hidden" name="property" value="{{ selected_property.pk }}">
             <div class="modal-body p-4">{% include "issue/includes/issue_form_fields.html" with issue_form=property_add_issue_form property_context=True %}</div>
@@ -22,7 +22,7 @@
 
 <div class="modal fade" id="propertyAddEventModal" data-modal-clear-query="form_state" tabindex="-1" aria-labelledby="propertyAddEventTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddEventTitle">Add event · {{ selected_property.name }}</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-header"><h2 class="modal-title fs-5" id="propertyAddEventTitle">Add event</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
         <form class="event-tabbed-form" action="{% url 'property:add_property_record' selected_property.pk 'event' %}" method="post" autocomplete="off" data-event-form data-event-tabs>
             {% csrf_token %}<input type="hidden" name="property" value="{{ selected_property.pk }}">
             <div class="event-form-tabs" role="tablist" aria-label="Add event sections">

@@ -39,7 +39,7 @@ def request_email_change(*, user, new_email, confirmation_url_for_token):
         delivered = send_mail(
             subject="Verify your new email address",
             message=(
-                "Confirm your new Property Operations Manager email address by opening this link:\n\n"
+                "Confirm your new My Property Desk email address by opening this link:\n\n"
                 f"{confirmation_url_for_token(token)}\n\n"
                 "This link expires in 24 hours. Your existing sign-in email remains active until you confirm."
             ),
@@ -78,7 +78,7 @@ def confirm_email_change(token):
             transaction.on_commit(lambda: send_mail(
                 subject="Your sign-in email address changed",
                 message=(
-                    "The sign-in email address for your Property Operations Manager account "
+                    "The sign-in email address for your My Property Desk account "
                     f"was changed to {user.email}. If you did not request this, contact support immediately."
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,

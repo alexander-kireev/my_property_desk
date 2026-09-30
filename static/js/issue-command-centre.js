@@ -8,19 +8,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".issue-list-row[aria-expanded]").forEach((row) => {
         row.addEventListener("click", (event) => {
-            if (!window.matchMedia("(max-width: 991.98px)").matches || event.button !== 0 ||
+            if (!window.matchMedia("(max-width: 860px)").matches || event.button !== 0 ||
                 event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const expanded = row.nextElementSibling;
             if (expanded?.classList.contains("work-mobile-expanded")) {
                 event.preventDefault();
                 expanded.hidden = !expanded.hidden;
                 row.setAttribute("aria-expanded", String(!expanded.hidden));
+                if (!expanded.hidden) window.WorkspaceReveal?.queueRange(
+                    row, expanded, () => window.ExpandableText?.refresh(expanded),
+                );
             }
         });
     });
 
-    document.querySelectorAll("[data-no-task-toggle]").forEach((element) => {
-        element.addEventListener("click", (event) => event.stopPropagation());
+    document.querySelectorAll(".issue-task-summary[role='button']").forEach((summary) => {
+        summary.addEventListener("keydown", (event) => {
+            if (event.target !== summary || !["Enter", " "].includes(event.key)) return;
+            event.preventDefault();
+            summary.click();
+        });
+    });
+
+    const filterForm = document.getElementById("issueFilterForm");
+    filterForm?.querySelectorAll("[data-clear-issue-filter]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const field = filterForm.elements.namedItem(button.dataset.clearIssueFilter);
+            if (field) {
+                field.value = "";
+                filterForm.requestSubmit();
+            }
+        });
+    });
+
+    document.querySelectorAll(".issue-task-details").forEach((details) => {
+        details.addEventListener("shown.bs.collapse", () => {
+            const row = details.closest(".issue-task-row");
+            window.WorkspaceReveal?.queueRange(
+                row.querySelector(".issue-task-summary"), details,
+                () => window.ExpandableText?.refresh(details),
+            );
+        });
     });
 
     const editForm = document.getElementById("editIssueTaskForm");

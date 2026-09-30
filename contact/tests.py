@@ -279,6 +279,20 @@ class ContactFormTests(ContactTestMixin, TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(list(form.errors["value"]), ["Enter a valid email address."])
 
+    def test_changing_email_to_invalid_phone_shows_one_format_error(self):
+        contact = self.create_contact(self.create_user())
+        method = self.create_method(contact)
+        form = ContactMethodForm(
+            data={"type": ContactMethod.Type.TELEPHONE, "value": "alice@example.com"},
+            contact=contact, instance=method,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            list(form.errors["value"]),
+            ["Enter an international number, for example +447700900123."],
+        )
+
 
 class ContactSelectorTests(ContactTestMixin, TestCase):
     def setUp(self):
@@ -523,7 +537,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertNotContains(response, str(other_contact))
         self.assertEqual(response.context["selected_contact"], contact)
 
-    def test_confirmation_dialogs_keep_long_contact_values_out_of_titles(self):
+    def test_confirmation_dialogs_omit_redundant_record_boxes(self):
         long_name = "A" * 50
         contact = self.create_contact(self.user, first_name=long_name)
         long_email = f"contact{'2' * 85}@example.com"
@@ -533,8 +547,9 @@ class ContactViewTests(ContactTestMixin, TestCase):
 
         self.assertContains(response, 'id="editContactModalLabel">Edit contact</h2>')
         self.assertContains(response, 'id="deleteContactModalLabel">Delete contact?</h2>')
-        self.assertContains(response, 'class="modal-context-value">' + long_name)
-        self.assertContains(response, 'class="modal-context-value">' + long_email)
+        self.assertNotContains(response, 'class="modal-context')
+        self.assertContains(response, long_name)
+        self.assertContains(response, long_email)
         self.assertContains(response, 'class="btn btn-danger" type="submit">Delete contact')
         self.assertContains(response, 'class="btn btn-danger" type="submit">Delete detail')
 
@@ -564,7 +579,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertContains(response, 'class="contact-method-group card"', count=2)
         self.assertContains(response, 'id="contact-methods-heading">Contact methods</h3>')
 
-    def test_long_email_keeps_full_value_in_link_and_label(self):
+    def test_long_email_is_plain_text_with_full_value_available(self):
         contact = self.create_contact(self.user)
         email = f"contact72{'2' * 90}@example.com"
         self.create_method(contact, value=email)
@@ -572,9 +587,12 @@ class ContactViewTests(ContactTestMixin, TestCase):
         response = self.client.get(reverse("contact:contacts"))
 
         self.assertContains(response, 'contact-method-value--email')
-        self.assertContains(response, f'href="mailto:{email}"')
+        self.assertContains(response, f'<span class="contact-method-value contact-method-value--email" title="{email}">{email}</span>')
         self.assertContains(response, f'title="{email}"')
-        self.assertContains(response, f'aria-label="Email {email}"')
+        self.assertNotContains(response, 'href="mailto:')
+        self.assertNotContains(response, 'href="tel:')
+        self.assertNotContains(response, 'Tap a number to call')
+        self.assertNotContains(response, 'Tap an address to compose')
 
     def test_contact_list_shows_first_phone_then_email_and_combined_remaining_count(self):
         contact = self.create_contact(self.user)
@@ -618,9 +636,27 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertEqual(listed[phone_only.pk].remaining_method_count, 0)
         self.assertEqual(listed[both.pk].remaining_method_count, 0)
         self.assertContains(response, "No contact details")
+        self.assertContains(response, "No phone number")
+        self.assertContains(response, "No email")
         self.assertContains(response, "both@example.com")
         self.assertContains(response, "+447700900088")
         self.assertNotContains(response, "+0 more")
+
+    def test_contact_list_reserves_phone_and_truncates_long_email_preview(self):
+        contact = self.create_contact(self.user, "Long methods")
+        phone = "+447700900123456"
+        email = "averylongcontactemailaddress@example.com"
+        self.create_method(contact, type=ContactMethod.Type.TELEPHONE, value=phone)
+        self.create_method(contact, value=email)
+
+        response = self.client.get(reverse("contact:contacts"))
+        list_html = response.content.decode().split('class="contact-command-list', 1)[1]
+        list_html = list_html.split('class="contact-detail-column', 1)[0]
+
+        self.assertIn(f'title="{phone}">{phone}</span>', list_html)
+        self.assertIn(f'title="{email}"', list_html)
+        self.assertIn("averylongcontactemailadd…", list_html)
+        self.assertNotIn(f'>{email}</span>', list_html)
 
     def test_mobile_back_link_keeps_contact_list_page(self):
         for index in range(21):
@@ -652,7 +688,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertContains(response, "alice@example.com")
         self.assertNotContains(response, 'class="contact-method-actions"')
 
-    def test_contact_list_defaults_to_active_and_can_show_deactivated(self):
+    def test_contact_list_defaults_to_all_and_can_filter_by_state(self):
         active = self.create_contact(self.user, "Active")
         deactivated = self.create_contact(
             self.user,
@@ -661,7 +697,8 @@ class ContactViewTests(ContactTestMixin, TestCase):
         )
 
         for query, expected in (
-            ({}, [active]),
+            ({}, [active, deactivated]),
+            ({"state": Contact.State.ACTIVE}, [active]),
             ({"state": Contact.State.DEACTIVATED}, [deactivated]),
             ({"state": "all"}, [active, deactivated]),
         ):
@@ -669,13 +706,13 @@ class ContactViewTests(ContactTestMixin, TestCase):
                 response = self.client.get(reverse("contact:contacts"), query)
                 self.assertCountEqual(response.context["page_obj"].object_list, expected)
 
-    def test_deactivated_only_contact_list_offers_all_states(self):
-        self.create_contact(self.user, state=Contact.State.DEACTIVATED)
+    def test_deactivated_only_contact_is_visible_by_default(self):
+        deactivated = self.create_contact(self.user, state=Contact.State.DEACTIVATED)
 
         response = self.client.get(reverse("contact:contacts"))
 
-        self.assertContains(response, "No active contacts")
-        self.assertContains(response, "Show all states")
+        self.assertEqual(list(response.context["page_obj"].object_list), [deactivated])
+        self.assertContains(response, 'value="all" selected')
 
     def test_contacts_view_paginates_twenty_at_a_time(self):
         for number in range(21):
@@ -737,6 +774,14 @@ class ContactViewTests(ContactTestMixin, TestCase):
             response,
             f"{reverse('contact:contacts')}?selected={contact.pk}",
         )
+
+    def test_add_contact_clears_stale_search_and_page(self):
+        response = self.client.post(
+            f"{reverse('contact:add_contact')}?search=unrelated&page=3",
+            {"first_name": "Alice", "last_name": "Smith"},
+        )
+        contact = Contact.objects.get(first_name="Alice")
+        self.assertEqual(response.url, f"{reverse('contact:contacts')}?selected={contact.pk}")
 
     def test_invalid_add_contact_reopens_modal_without_partial_creation(self):
         post_response = self.client.post(
@@ -911,6 +956,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
             'data-modal-auto-open="editContactMethodModal"',
         )
         self.assertContains(response, 'data-contact-method-form', count=2)
+        self.assertContains(response, 'contact-method-modal', count=2)
         self.assertContains(response, 'js/contact-method-form.js')
         self.assertContains(response, "Choose email or telephone")
         self.assertContains(response, "Use international format beginning with +")
@@ -1039,7 +1085,9 @@ class ContactViewTests(ContactTestMixin, TestCase):
             {"first_name": "Changed"},
         )
 
-        self.assertIsNone(list_response.context["selected_contact"])
+        self.assertEqual(list_response.status_code, 302)
+        self.assertNotIn("selected=", list_response.url)
+        self.assertIsNone(self.client.get(list_response.url).context["selected_contact"])
         self.assertEqual(edit_response.status_code, 404)
 
     def test_mutation_views_reject_get_requests(self):
@@ -1095,6 +1143,19 @@ class ContactViewTests(ContactTestMixin, TestCase):
         )
         self.assertRedirects(delete_response, expected_url)
         self.assertFalse(Note.objects.filter(pk=note.pk).exists())
+
+    def test_contact_note_delete_offers_undo_and_restores_note(self):
+        contact = self.create_contact(self.user)
+        note = self.create_note(self.user, contact)
+        original_time = note.created_at
+        deleted = self.client.post(reverse("contact:delete_contact_note", args=[contact.pk, note.pk]), follow=True)
+        self.assertContains(deleted, 'data-note-undo-toast')
+        token = deleted.context["note_undo_token"]
+        undone = self.client.post(reverse("contact:undo_contact_note", args=[contact.pk]), {"token": token})
+        self.assertEqual(undone.status_code, 200)
+        note.refresh_from_db()
+        self.assertEqual(note.created_at, original_time)
+        self.assertEqual(self.client.post(reverse("contact:undo_contact_note", args=[contact.pk]), {"token": token}).status_code, 409)
 
     def test_note_from_different_owned_contact_cannot_be_mutated(self):
         contact = self.create_contact(self.user)

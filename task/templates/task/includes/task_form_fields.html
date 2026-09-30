@@ -2,30 +2,49 @@
     <div class="alert alert-danger" role="alert">{{ error }}</div>
 {% endfor %}
 
-<div class="row align-items-start mb-3">
-    <label class="col-md-4 col-form-label" for="{{ task_form.title.id_for_label }}">{{ task_form.title.label }}</label>
-    <div class="col-md-8">
+<div class="mb-3">
+    <label class="form-label" for="{{ task_form.title.id_for_label }}">{{ task_form.title.label }}</label>
+    <div>
         {{ task_form.title }}
         {% for error in task_form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>
 
-<div class="row align-items-start mb-3">
-    <label class="col-md-4 col-form-label" for="{{ task_form.description.id_for_label }}">{{ task_form.description.label }}</label>
-    <div class="col-md-8">
+<div class="mb-3">
+    <label class="form-label" for="{{ task_form.description.id_for_label }}">{{ task_form.description.label }}</label>
+    <div>
         {{ task_form.description }}
         {% for error in task_form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>
 
 {% if property_context %}
-<p class="small text-body-secondary mb-3">Linked to {{ selected_property.name }}</p>
-{% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+<div class="mb-3">
+    <label class="form-label" for="propertyAddTaskRelatedProperty">Related property</label>
+    <div>
+        <input class="form-control property-context-readonly" id="propertyAddTaskRelatedProperty" type="text" value="{{ selected_property.name }}" title="{{ selected_property.name }}" readonly>
+        {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+</div>
 {% else %}
-<fieldset class="row align-items-start mb-3" data-task-relationship>
-    <legend class="col-md-4 col-form-label pt-0 pt-md-2">Related to</legend>
-    <div class="col-md-8">
-        <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Task relationship type">
+{% if dashboard_add %}
+<div class="mb-3 dashboard-add-relationship" data-task-relationship>
+    <div class="dashboard-add-form-row">
+        <label class="form-label" for="{{ task_form.title.id_for_label }}_relationship">Related to</label>
+        <div>
+            <select class="form-select" id="{{ task_form.title.id_for_label }}_relationship" name="relationship_type">
+                <option value="standalone"{% if task_form.data.relationship_type == "standalone" or not task_form.is_bound and not task_form.initial.property and not task_form.instance.property_id and not task_form.instance.issue_id or task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %} selected{% endif %}>Not linked</option>
+                <option value="property"{% if task_form.data.relationship_type == "property" or not task_form.is_bound and task_form.initial.property or not task_form.is_bound and task_form.instance.property_id %} selected{% endif %}{% if not task_form.has_property_choices %} disabled{% endif %}>Property</option>
+                <option value="issue"{% if task_form.data.relationship_type == "issue" or not task_form.is_bound and task_form.instance.issue_id %} selected{% endif %}{% if not task_form.has_issue_choices %} disabled{% endif %}>Issue</option>
+            </select>
+            {% if not task_form.has_property_choices or not task_form.has_issue_choices %}<div class="form-text">{% if not task_form.has_property_choices %}No active properties available.{% endif %} {% if not task_form.has_issue_choices %}No active issues available.{% endif %}</div>{% endif %}
+        </div>
+    </div>
+{% else %}
+<div class="mb-3" data-task-relationship>
+    <span class="task-relationship-label" id="{{ task_form.title.id_for_label }}_relationship_label">Related to</span>
+    <div class="task-relationship-options">
+        <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-labelledby="{{ task_form.title.id_for_label }}_relationship_label">
             <input
                 class="btn-check"
                 id="{{ task_form.title.id_for_label }}_relationship_standalone"
@@ -35,7 +54,7 @@
                 autocomplete="off"
                 {% if task_form.data.relationship_type == "standalone" %}checked{% elif not task_form.is_bound and not task_form.instance.property_id and not task_form.instance.issue_id and not task_form.initial.property %}checked{% elif task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %}checked{% endif %}
             >
-            <label class="btn btn-outline-secondary" for="{{ task_form.title.id_for_label }}_relationship_standalone">Standalone</label>
+            <label class="btn btn-outline-secondary" for="{{ task_form.title.id_for_label }}_relationship_standalone">Not linked</label>
 
             <input
                 class="btn-check"
@@ -72,54 +91,44 @@
 
     </div>
 
-    <div class="col-12 mt-3" data-relationship-panel="standalone">
-        <div class="row align-items-start">
-            <span class="col-md-4 col-form-label text-body-secondary">Link</span>
-            <div class="col-md-8"><div class="form-control-plaintext text-body-secondary">No linked property or issue</div></div>
-        </div>
-    </div>
-
-    <div class="col-12 mt-3" data-relationship-panel="property">
-        <div class="row align-items-start">
-            <label class="col-md-4 col-form-label" for="{{ task_form.property.id_for_label }}">Property</label>
-            <div class="col-md-8">
+{% endif %}
+    <div class="mt-3" data-relationship-panel="property">
+            <label class="form-label" for="{{ task_form.property.id_for_label }}">Property</label>
+            <div>
                 <div data-searchable-select>{{ task_form.property }}</div>
                 {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
-        </div>
     </div>
 
-    <div class="col-12 mt-3" data-relationship-panel="issue">
-        <div class="row align-items-start">
-            <label class="col-md-4 col-form-label" for="{{ task_form.issue.id_for_label }}">Issue</label>
-            <div class="col-md-8">
+    <div class="mt-3" data-relationship-panel="issue">
+            <label class="form-label" for="{{ task_form.issue.id_for_label }}">Issue</label>
+            <div>
                 <div data-searchable-select>{{ task_form.issue }}</div>
                 {% for error in task_form.issue.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
-        </div>
     </div>
-</fieldset>
+</div>
 {% endif %}
 
-<div class="row align-items-start mb-3">
-    <label class="col-md-4 col-form-label" for="{{ task_form.priority.id_for_label }}">{{ task_form.priority.label }}</label>
-    <div class="col-md-8 task-form-field-compact">
+<div class="mb-3">
+    <label class="form-label" for="{{ task_form.priority.id_for_label }}">{{ task_form.priority.label }}</label>
+    <div class="task-form-field-compact">
         {{ task_form.priority }}
         {% for error in task_form.priority.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>
 
-<div class="row align-items-start mb-3">
-    <label class="col-md-4 col-form-label" for="{{ task_form.scheduled_date.id_for_label }}">{{ task_form.scheduled_date.label }}</label>
-    <div class="col-md-8 task-form-field-compact">
+<div class="mb-3">
+    <label class="form-label" for="{{ task_form.scheduled_date.id_for_label }}">{{ task_form.scheduled_date.label }}</label>
+    <div class="task-form-field-compact">
         {{ task_form.scheduled_date }}
         {% for error in task_form.scheduled_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>
 
-<div class="row align-items-start mb-0">
-    <label class="col-md-4 col-form-label" for="{{ task_form.completion_deadline.id_for_label }}">{{ task_form.completion_deadline.label }}</label>
-    <div class="col-md-8 task-form-field-compact">
+<div>
+    <label class="form-label" for="{{ task_form.completion_deadline.id_for_label }}">{{ task_form.completion_deadline.label }}</label>
+    <div class="task-form-field-compact">
         {{ task_form.completion_deadline }}
         {% for error in task_form.completion_deadline.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
