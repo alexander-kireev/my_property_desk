@@ -4,11 +4,28 @@ const path = require("node:path");
 const test = require("node:test");
 
 const read = (file) => readFileSync(path.join(__dirname, "..", file), "utf8");
-const dashboardCss = read("static/css/dashboard.css");
+const readCss = (file) => read(file).replace(/\s+/g, " ");
+const dashboardCss = readCss("static/css/dashboard.css");
 const dashboardJs = read("static/js/dashboard.js");
-const siteCss = read("static/css/site.css");
-const eventCss = read("static/css/event.css");
+const siteCss = readCss("static/css/site.css");
+const eventComponentsCss = readCss("static/css/event-components.css");
+const eventCss = readCss("static/css/event-page.css");
 const eventJs = read("static/js/event-command-centre.js");
+
+test("Event CSS keeps reusable forms separate from the My Work page", () => {
+    const dashboard = read("pages/templates/pages/dashboard.html");
+    const property = read("property/templates/property/workspace.html");
+    const events = read("event/templates/event/events.html");
+    assert.match(eventComponentsCss, /\.event-duration \{/);
+    assert.match(eventComponentsCss, /\.event-contact-picker-heading \{/);
+    assert.doesNotMatch(eventComponentsCss, /\.event-command-centre \{/);
+    assert.match(eventCss, /\.event-command-centre \{/);
+    assert.doesNotMatch(eventCss, /\.event-contact-picker-heading \{/);
+    assert.match(dashboard, /css\/event-components\.css/);
+    assert.match(property, /css\/event-components\.css/);
+    assert.doesNotMatch(dashboard + property, /css\/event-page\.css/);
+    assert.match(events, /css\/event-components\.css[\s\S]*css\/event-page\.css/);
+});
 
 test("Dashboard has distinct intermediate and compact panel boundaries", () => {
     assert.match(dashboardCss, /min-width: 861px\) and \(max-width: 1100px/);
@@ -70,7 +87,7 @@ test("shared modal cleanup removes record boxes and footer dividers", () => {
     assert.match(siteCss, /\.modal \[data-task-relationship\] \{ display: grid; grid-template-columns: 140px minmax\(0, 1fr\)/);
     assert.match(siteCss, /\.modal \[data-task-relationship\] > \.task-relationship-label \{ grid-column: 1;/);
     assert.match(siteCss, /\.modal \[data-task-relationship\] > \.task-relationship-options \{ grid-column: 2; min-width: 0; \}/);
-    assert.match(read("task/templates/task/includes/task_form_fields.html"), /<span class="task-relationship-label" id="[^"]+">Related to<\/span>\s*<div class="task-relationship-options">\s*<div class="d-flex flex-wrap gap-2" role="radiogroup" aria-labelledby="[^"]+">/);
+    assert.match(read("task/templates/task/includes/task_form_fields.html"), /<span class="task-relationship-label"\s+id="[^"]+">Related to<\/span>\s*<div class="task-relationship-options">\s*<div class="d-flex flex-wrap gap-2"\s+role="radiogroup"\s+aria-labelledby="[^"]+">/);
 });
 
 test("navbar toggler and links use the same soft-white color", () => {
@@ -93,7 +110,7 @@ test("My Work uses the same 860px inline boundary across layout and input", () =
 
 test("compact tabs and linked-task rows retain readable layouts", () => {
     const events = read("event/templates/event/events.html");
-    assert.match(siteCss, /\.my-work-section-nav \.nav \{ display: grid; grid-template-columns: repeat\(3,minmax\(0,1fr\)\)/);
+    assert.match(siteCss, /\.my-work-section-nav \.nav \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
     assert.match(siteCss, /@container issue-tasks \(max-width: 32rem\)/);
     assert.match(siteCss, /\.issue-linked-task-grid \{ display: grid; grid-template-columns:/);
     assert.match(siteCss, /\.issue-linked-tasks-card \{\s*container: linked-task-card \/ inline-size;\s*border: 1px solid/);
@@ -127,8 +144,8 @@ test("Issue Tasks uses its tab row for Add task and starts the pane with task ro
 test("narrow task actions keep the primary controls and move secondary actions into a kebab", () => {
     const mobileTask = read("task/templates/task/includes/mobile_task_details.html");
     assert.match(siteCss, /:is\(\.task-inline-more, \.issue-inline-more, \.event-inline-more\) \{ display: none; \}/);
-    assert.match(siteCss, /:is\(\.task-inline-actions > \.task-inline-secondary-action, \.issue-inline-actions > \.issue-inline-secondary-action, \.event-mobile-inline-actions > \.event-inline-secondary-action\) \{ display: none; \}/);
-    assert.match(siteCss, /:is\(\.task-inline-actions > \.task-inline-more, \.issue-inline-actions > \.issue-inline-more, \.event-mobile-inline-actions > \.event-inline-more\) \{ display: block; \}/);
+    assert.match(siteCss, /:is\(\s*\.task-inline-actions > \.task-inline-secondary-action, \.issue-inline-actions > \.issue-inline-secondary-action, \.event-mobile-inline-actions > \.event-inline-secondary-action\s*\) \{ display: none; \}/);
+    assert.match(siteCss, /:is\(\s*\.task-inline-actions > \.task-inline-more, \.issue-inline-actions > \.issue-inline-more, \.event-mobile-inline-actions > \.event-inline-more\s*\) \{ display: block; \}/);
     assert.match(mobileTask, /class="dropdown task-inline-more"/);
     assert.match(mobileTask, /aria-label="More task actions"/);
     assert.match(mobileTask, /data-bs-target="#dismissTaskModal">Dismiss task/);
@@ -163,7 +180,7 @@ test("mobile Open record stays right until its action row is too narrow", () => 
     assert.match(siteCss, /\.work-mobile-open \{\s*display: inline-flex;\s*align-items: center;\s*margin-left: auto;/);
     assert.match(siteCss, /@container mobile-work \(max-width: 19rem\) \{\s*:is\(\.task-inline-actions, \.issue-inline-actions, \.event-mobile-inline-actions\) \.work-mobile-open \{ display: none; \}\s*\.work-mobile-open-menu-item \{ display: list-item; \}/);
     for (const template of [taskMobile, issueMobile]) {
-        assert.match(template, /class="work-mobile-open-menu-item"><a class="dropdown-item"[^>]*>Open record<\/a><\/li>/);
+        assert.match(template, /class="work-mobile-open-menu-item">\s*<a class="dropdown-item"[^>]*>Open record<\/a>\s*<\/li>/);
     }
 });
 

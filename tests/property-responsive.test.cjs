@@ -5,8 +5,9 @@ const test = require("node:test");
 const vm = require("node:vm");
 
 const root = path.join(__dirname, "..");
-const css = readFileSync(path.join(root, "static/css/property-workspace.css"), "utf8");
-const eventCss = readFileSync(path.join(root, "static/css/event.css"), "utf8");
+const readCss = (file) => readFileSync(path.join(root, file), "utf8").replace(/\s+/g, " ");
+const css = readCss("static/css/property-workspace.css");
+const eventCss = readCss("static/css/event-page.css");
 const alignSource = readFileSync(path.join(root, "static/js/workspace-header-align.js"), "utf8");
 
 function alignedHeights(width, height, property = true) {
@@ -56,8 +57,8 @@ test("intermediate Property detail uses two filter rows and content-driven resul
 });
 
 test("Property related Event date shares My Work desktop typography while keeping compact mobile size", () => {
-    assert.match(eventCss, /\.event-command-when \{[^}]*font-size: \.8rem; line-height: 1\.2;/);
-    assert.match(css, /\.property-related-record\[data-kind="event"\] \.property-related-record-aside > small \{ font-size: \.8rem; font-weight: 400; line-height: 1\.2; \}/);
-    assert.match(css, /@media \(max-width: 860px\) \{\s*\.property-related-record\[data-kind="event"\] \.property-related-record-aside > small \{ font-size: \.75rem; \}\s*\}/);
+    assert.match(eventCss, /\.event-command-when \{[^}]*font-size: 0\.8rem; line-height: 1\.2;/);
+    assert.match(css, /\.property-related-record\[data-kind="event"\] \.property-related-record-aside > small \{ font-size: 0\.8rem; font-weight: 400; line-height: 1\.2; \}/);
+    assert.match(css, /@media \(max-width: 860px\) \{\s*\.property-related-record\[data-kind="event"\] \.property-related-record-aside > small \{ font-size: 0\.75rem; \}\s*\}/);
     assert.doesNotMatch(css, /@media \(max-width: 1199\.98px\) \{\s*\.property-related-record\[data-kind="event"\] \.property-related-record-aside > small/);
 });
