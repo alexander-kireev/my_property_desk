@@ -12,6 +12,7 @@ const siteCss = [
     "static/css/foundation.css",
     "static/css/components.css",
     "static/css/site.css",
+    "static/css/workspace.css",
 ].map(readCss).join(" ");
 const eventComponentsCss = readCss("static/css/event-components.css");
 const eventCss = readCss("static/css/event-page.css");
