@@ -1,5 +1,13 @@
-<div class="expandable-text{% if fit_card %} expandable-text--fit-card{% endif %}{% if inline_end_toggle %} expandable-text--inline-end{% endif %}" data-expandable-text>
-    <p class="expandable-text-content {{ text_class }}{% if not text %} is-expanded{% endif %}" id="{{ text_id }}{% if kind %}{{ kind }}-{% endif %}{{ record_id }}" data-expandable-content>{% if text %}{{ text|linebreaksbr }}{% else %}{{ fallback|default:"No description supplied." }}{% endif %}</p>
+<div class="expandable-text{% if fit_card %} expandable-text--fit-card{% endif %}{% if inline_end_toggle %} expandable-text--inline-end{% endif %}"
+     data-expandable-text>
+    <p class="expandable-text-content {{ text_class }}{% if not text %} is-expanded{% endif %}"
+       id="{{ text_id }}{% if kind %}{{ kind }}-{% endif %}{{ record_id }}"
+       data-expandable-content>{% if text %}{{ text|linebreaksbr }}{% else %}{{ fallback|default:"No description supplied." }}{% endif %}</p>
     {% if inline_end_toggle and text %}<p class="expandable-text-preview" hidden data-expandable-preview></p>{% endif %}
-    {% if text %}<button class="expandable-text-toggle" type="button" aria-controls="{{ text_id }}{% if kind %}{{ kind }}-{% endif %}{{ record_id }}" aria-expanded="false" hidden data-expandable-toggle>See more</button>{% endif %}
+    {% if text %}<button class="expandable-text-toggle"
+        type="button"
+        aria-controls="{{ text_id }}{% if kind %}{{ kind }}-{% endif %}{{ record_id }}"
+        aria-expanded="false"
+        hidden
+        data-expandable-toggle>See more</button>{% endif %}
 </div>

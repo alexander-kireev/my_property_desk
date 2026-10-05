@@ -1,25 +1,13 @@
 <nav class="my-work-section-nav" aria-label="My Work sections">
     <div class="nav px-3">
-        <a
-            class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'tasks' %} active{% endif %}"
-            href="{% url 'task:tasks' %}"
-            {% if active_section == "tasks" %}aria-current="page"{% endif %}
-        >
-            Tasks
-        </a>
-        <a
-            class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'issues' %} active{% endif %}"
-            href="{% url 'issue:issues' %}"
-            {% if active_section == "issues" %}aria-current="page"{% endif %}
-        >
-            Issues
-        </a>
-        <a
-            class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'events' %} active{% endif %}"
-            href="{% url 'event:events' %}"
-            {% if active_section == "events" %}aria-current="page"{% endif %}
-        >
-            Events
-        </a>
+        <a class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'tasks' %} active{% endif %}"
+           href="{% url 'task:tasks' %}"
+           {% if active_section == "tasks" %}aria-current="page"{% endif %}>Tasks</a>
+        <a class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'issues' %} active{% endif %}"
+           href="{% url 'issue:issues' %}"
+           {% if active_section == "issues" %}aria-current="page"{% endif %}>Issues</a>
+        <a class="nav-link px-4 py-3 d-flex align-items-center gap-2{% if active_section == 'events' %} active{% endif %}"
+           href="{% url 'event:events' %}"
+           {% if active_section == "events" %}aria-current="page"{% endif %}>Events</a>
     </div>
 </nav>
