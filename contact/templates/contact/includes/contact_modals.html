@@ -1,233 +1,29 @@
 {# Create and maintain contacts and their contact methods #}
 {# Add Contact dialog #}
-<div class="modal fade modal-resilient"
-     id="addContactModal"
-     data-modal-clear-query="form_state"
-     tabindex="-1"
-     aria-labelledby="addContactModalLabel"
-     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="addContactModalLabel">Add contact</h2>
-                <button class="btn-close"
-                        type="button"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <form action="{% url 'contact:add_contact' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                  method="post"
-                  autocomplete="off">
-                <div class="modal-body">
-                    {% csrf_token %}
-                    {% for error in add_contact_form.non_field_errors %}<div class="alert alert-danger"
-     role="alert">{{ error }}</div>{% endfor %}
-                    {% for field in add_contact_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>{% endfor %}
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary"
-                            type="button"
-                            data-bs-dismiss="modal">Cancel</button><button class="btn theme-action px-4" type="submit">Save contact</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+{% include "contact/includes/modals/add_contact_modal.html" %}
 
 {% if selected_contact %}
     {% if selected_contact.state == "active" %}
         {# Edit Contact dialog #}
-        <div class="modal fade modal-resilient"
-             id="editContactModal"
-             data-modal-clear-query="form_state"
-             tabindex="-1"
-             aria-labelledby="editContactModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title fs-5" id="editContactModalLabel">Edit contact</h2>
-                        <button class="btn-close"
-                                type="button"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <form action="{% url 'contact:edit_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                          method="post"
-                          autocomplete="off">
-                        <div class="modal-body">{% csrf_token %}{% for error in edit_contact_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endfor %}{% for field in edit_contact_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>{% endfor %}</div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary"
-                                    type="button"
-                                    data-bs-dismiss="modal">Cancel</button><button class="btn theme-action" type="submit">Save changes</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        {% include "contact/includes/modals/edit_contact_modal.html" %}
 
         {# Add Contact Method dialog #}
-        <div class="modal fade modal-resilient contact-method-modal"
-             id="addContactMethodModal"
-             data-modal-clear-query="form_state"
-             tabindex="-1"
-             aria-labelledby="addContactMethodModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title fs-5" id="addContactMethodModalLabel">Add contact detail</h2>
-                        <button class="btn-close"
-                                type="button"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <form action="{% url 'contact:add_contact_method' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                          method="post"
-                          autocomplete="off">
-                        <div class="modal-body">
-                            {% csrf_token %}
-                            {% include "contact/includes/contact_method_form_fields.html" with method_form=add_contact_method_form %}
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary"
-                                    type="button"
-                                    data-bs-dismiss="modal">Cancel</button><button class="btn theme-action" type="submit">Add detail</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+        {% include "contact/includes/modals/add_contact_method_modal.html" %}
 
         {% if edit_contact_method and edit_contact_method_form %}
             {# Edit Contact Method dialog #}
-            <div class="modal fade modal-resilient contact-method-modal"
-                 id="editContactMethodModal"
-                 data-modal-clear-query="edit_method form_state"
-                 tabindex="-1"
-                 aria-labelledby="editContactMethodModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title fs-5" id="editContactMethodModalLabel">Edit contact detail</h2>
-                            <button class="btn-close"
-                                    type="button"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <form action="{% url 'contact:edit_contact_method' selected_contact.pk edit_contact_method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                              method="post"
-                              autocomplete="off">
-                            <div class="modal-body">
-                                {% csrf_token %}
-                                {% include "contact/includes/contact_method_form_fields.html" with method_form=edit_contact_method_form %}
-                            </div>
-                            <div class="modal-footer"><a class="btn btn-outline-secondary"
-   href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ selected_contact.pk }}">Cancel</a><button class="btn theme-action" type="submit">Save changes</button></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            {% include "contact/includes/modals/edit_contact_method_modal.html" %}
         {% endif %}
 
         {# Deactivate Contact dialog #}
-        <div class="modal fade modal-resilient"
-             id="deactivateContactModal"
-             tabindex="-1"
-             aria-labelledby="deactivateContactModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="modal-title fs-5" id="deactivateContactModalLabel">Deactivate contact?</h2>
-                        <button class="btn-close"
-                                type="button"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>The contact will become read-only and remain available as history.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline-secondary"
-                                type="button"
-                                data-bs-dismiss="modal">Keep contact</button>
-                        <form action="{% url 'contact:deactivate_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                              method="post">
-                            {% csrf_token %}
-                            <button class="btn theme-action" type="submit">Deactivate contact</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include "contact/includes/modals/deactivate_contact_modal.html" %}
 
         {% for method in contact_methods %}
             {# Delete Contact Method dialog{{ method.pk }} #}
-            <div class="modal fade modal-resilient"
-                 id="deleteContactMethodModal{{ method.pk }}"
-                 tabindex="-1"
-                 aria-labelledby="deleteContactMethodModalLabel{{ method.pk }}"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2 class="modal-title fs-5"
-                                id="deleteContactMethodModalLabel{{ method.pk }}">Delete {{ method.get_type_display|lower }}?</h2>
-                            <button class="btn-close"
-                                    type="button"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>This detail will be permanently removed from the contact.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline-secondary"
-                                    type="button"
-                                    data-bs-dismiss="modal">Keep detail</button>
-                            <form action="{% url 'contact:delete_contact_method' selected_contact.pk method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                                  method="post">
-                                {% csrf_token %}
-                                <button class="btn btn-danger" type="submit">Delete detail</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include "contact/includes/modals/delete_contact_method_modal.html" %}
         {% endfor %}
     {% endif %}
 
     {# Delete Contact dialog #}
-    <div class="modal fade modal-resilient"
-         id="deleteContactModal"
-         tabindex="-1"
-         aria-labelledby="deleteContactModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title fs-5" id="deleteContactModalLabel">Delete contact?</h2>
-                    <button class="btn-close"
-                            type="button"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>This contact will be removed from your workspace. Its details will remain in history.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary"
-                            type="button"
-                            data-bs-dismiss="modal">Keep contact</button>
-                    <form action="{% url 'contact:delete_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                          method="post">
-                        {% csrf_token %}
-                        <button class="btn btn-danger" type="submit">Delete contact</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include "contact/includes/modals/delete_contact_modal.html" %}
 {% endif %}

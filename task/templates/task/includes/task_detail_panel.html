@@ -94,7 +94,9 @@
                                     <dt class="fw-normal text-body-secondary">Scheduled</dt>
                                     <dd>{{ selected_task.scheduled_date|date:"j M Y"|default:"Not scheduled" }}{% if selected_task.scheduled_date %}<span class="work-date-relative">{{ selected_task.scheduled_date|relative_day:today }}</span>{% endif %}</dd>
                                     <dt class="fw-normal text-body-secondary">Deadline</dt>
-                                    <dd><span {% if selected_status.kind == 'overdue' %} class="task-detail-overdue-date"{% endif %}>{{ selected_task.completion_deadline|date:"j M Y"|default:"No deadline" }}</span>{% if selected_task.completion_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == "overdue" %}{{ selected_status.headline }}{% else %}{{ selected_task.completion_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
+                                    <dd>
+                                        {% include "task/includes/deadline_detail.html" with task=selected_task status=selected_status today=today only %}
+                                    </dd>
                                     {% if selected_task.terminated_at %}
                                         <dt class="fw-normal text-body-secondary">Terminated</dt>
                                         <dd>

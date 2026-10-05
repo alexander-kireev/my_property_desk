@@ -1,0 +1,13 @@
+{# Form-wide errors precede the labelled fields and their own validation messages. #}
+{% for error in contact_form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+{% endfor %}
+{% for field in contact_form %}
+    <div class="mb-3">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+{% endfor %}

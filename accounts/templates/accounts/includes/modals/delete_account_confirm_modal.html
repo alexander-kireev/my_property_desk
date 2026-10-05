@@ -1,0 +1,56 @@
+{# delete Account Confirm Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade"
+     id="deleteAccountConfirmModal"
+     tabindex="-1"
+     data-modal-return-focus="#deleteAccountTrigger"
+     data-profile-account-modal
+     data-modal-clear-query="form_state modal"
+     aria-labelledby="deleteAccountConfirmTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteAccountConfirmTitle">Confirm permanent deletion</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form method="post"
+                  action="{% url 'accounts:delete_account' %}"
+                  autocomplete="off"
+                  data-fresh-account-form>
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-body-secondary">
+                        Enter your password and type DELETE to confirm. If deletion fails, your account and data remain intact.
+                    </p>
+                    {% for error in delete_form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                    <div class="mb-3">
+                        <label class="form-label"
+                               for="{{ delete_form.current_password.id_for_label }}">Current password</label>
+                        {{ delete_form.current_password }}
+                        {% for error in delete_form.current_password.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label class="form-label" for="{{ delete_form.confirmation.id_for_label }}">Type DELETE</label>
+                        {{ delete_form.confirmation }}
+                        {% for error in delete_form.confirmation.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" type="submit">Permanently delete account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

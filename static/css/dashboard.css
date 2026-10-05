@@ -1567,9 +1567,7 @@
         font-size: 0.65rem;
         padding: 1px 2px;
     }
-}
 
-@media (max-width: 1100px) {
     .dashboard-panel-nav:not([hidden]) {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));

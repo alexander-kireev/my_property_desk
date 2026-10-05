@@ -1,0 +1,32 @@
+{# delete Contact Method Modal{{ method.pk }}; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="deleteContactMethodModal{{ method.pk }}"
+     tabindex="-1"
+     aria-labelledby="deleteContactMethodModalLabel{{ method.pk }}"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5"
+                    id="deleteContactMethodModalLabel{{ method.pk }}">Delete {{ method.get_type_display|lower }}?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This detail will be permanently removed from the contact.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        data-bs-dismiss="modal">Keep detail</button>
+                <form action="{% url 'contact:delete_contact_method' selected_contact.pk method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete detail</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

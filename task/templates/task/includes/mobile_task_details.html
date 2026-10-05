@@ -33,7 +33,10 @@
                 <dd>{{ task.scheduled_date|date:"j M Y"|default:"Not scheduled" }}{% if task.scheduled_date %}<span class="work-date-relative">{{ task.scheduled_date|relative_day:today }}</span>{% endif %}</dd></div>
             <div class="task-inline-fact">
                 <dt>Deadline</dt>
-                <dd><span {% if task_status.kind == 'overdue' %} class="task-detail-overdue-date"{% endif %}>{{ task.completion_deadline|date:"j M Y"|default:"No deadline" }}</span>{% if task.completion_deadline %}<span class="work-date-relative{% if task_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if task_status.kind == "overdue" %}{{ task_status.headline }}{% else %}{{ task.completion_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd></div>
+                <dd>
+                    {% include "task/includes/deadline_detail.html" with task=task status=task_status today=today only %}
+                </dd>
+            </div>
             {% if task.terminated_at %}<div class="task-inline-fact"><dt>Terminated</dt>
                 <dd>{{ task.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
             {% if task.issue or task.property %}

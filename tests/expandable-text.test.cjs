@@ -171,11 +171,11 @@ test("Task inline preview uses separate cards and compact two-column facts", () 
     assert.match(taskInlineTemplate, /class="task-inline-section task-inline-description"/);
     assert.match(taskInlineTemplate, /<h3 class="task-inline-section-title">Details<\/h3>/);
     assert.match(taskInlineTemplate, /<dl class="task-inline-facts">/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Status<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Priority<\/dt>/);
+    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Status<\/dt>/);
+    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Priority<\/dt>/);
     assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Created<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Scheduled<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Deadline<\/dt>/);
+    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Scheduled<\/dt>/);
+    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Deadline<\/dt>/);
     assert.match(taskInlineTemplate, /\{% if task.issue or task.property %\}[\s\S]*class="task-inline-fact task-inline-relationship"/);
     assert.match(styles, /:is\(\.task-inline-relationship, \.issue-inline-relationship, \.event-inline-relationship\)\s+:is\(\.task-related-link, \.task-related-deleted\)\s*\{[^}]*max-width: min\(100%, 16rem\)/s);
     assert.match(styles, /@media \(min-width: 600px\) and \(max-width: 860px\)[\s\S]*?:is\(\.task-inline-facts, \.issue-inline-facts, \.event-inline-facts\)\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/s);

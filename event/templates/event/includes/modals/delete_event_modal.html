@@ -1,0 +1,32 @@
+{# delete Event Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="deleteEventModal"
+     tabindex="-1"
+     aria-labelledby="deleteEventModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteEventModalLabel">Delete event?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This event will be removed from your workspace.</p>
+                <p class="text-body-secondary mb-0 mt-3">The underlying record is retained as operational history.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        data-bs-dismiss="modal">Keep event</button>
+                <form action="{% url 'event:delete_event' selected_event.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete event</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

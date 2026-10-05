@@ -1,0 +1,31 @@
+{# delete Contact Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="deleteContactModal"
+     tabindex="-1"
+     aria-labelledby="deleteContactModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteContactModalLabel">Delete contact?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This contact will be removed from your workspace. Its details will remain in history.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        data-bs-dismiss="modal">Keep contact</button>
+                <form action="{% url 'contact:delete_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete contact</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

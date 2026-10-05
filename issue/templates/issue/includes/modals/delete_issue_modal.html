@@ -1,0 +1,41 @@
+{# delete Issue Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="deleteIssueModal"
+     tabindex="-1"
+     aria-labelledby="deleteIssueModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteIssueModalLabel">Delete issue?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form action="{% url 'issue:delete_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>This issue will be removed from your workspace.</p>
+                    {% if linked_task_count %}
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   id="deleteLinkedTasks"
+                                   name="affect_linked_tasks"
+                                   value="yes"
+                                   type="checkbox">
+                            <label class="form-check-label" for="deleteLinkedTasks">Also delete {{ linked_task_count }} linked task{{ linked_task_count|pluralize }}</label>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Keep issue</button>
+                    <button class="btn btn-danger" type="submit">Delete issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

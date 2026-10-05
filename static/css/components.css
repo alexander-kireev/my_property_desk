@@ -710,9 +710,7 @@
     .dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row > div {
         grid-column: 1;
     }
-}
 
-@media (max-width: 700px) {
     .modal .modal-body div:has(> label.form-label),
     .modal .modal-body div:has(> span.form-label) {
         grid-template-columns: minmax(0, 1fr);
@@ -1245,9 +1243,7 @@
     .task-detail-actions {
         justify-content: flex-start;
     }
-}
 
-@media (min-width: 768px) and (max-width: 1199.98px) {
     .task-list-column {
         width: 40%;
     }

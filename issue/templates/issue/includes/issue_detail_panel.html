@@ -140,7 +140,7 @@
                                              aria-controls="issueTask{{ task.pk }}"
                                              aria-expanded="false">
                                             <span class="issue-linked-task-copy"><strong class="issue-task-title" title="{{ task.title }}">{{ task.title }}</strong><small class="issue-linked-task-context">{% if task.scheduled_date %}Scheduled {{ task.scheduled_date|date:"j M Y" }}{% else %}Not scheduled{% endif %}</small></span>
-                                            <span class="issue-linked-task-meta">{% if task.state == "active" %}{% include "task/includes/priority_badge.html" with task=task %}{% else %}{% include "includes/work_state_badge.html" with item=task only %}{% endif %}<small class="issue-linked-task-deadline{% if linked_status.kind == 'overdue' %} task-command-deadline--overdue{% elif linked_status.kind == 'soon' %} task-command-deadline--soon{% endif %}">{% if task.state != "active" %}{{ task.get_state_display }}{% if task.terminated_at %} {{ task.terminated_at|date:"j M Y" }}{% endif %}{% elif task.completion_deadline %}{% if linked_status.kind == "overdue" %}Overdue{% elif linked_status.kind == "soon" %}Due soon{% else %}Due{% endif %} {{ task.completion_deadline|date:"j M Y" }}{% else %}No deadline{% endif %}</small></span>
+                                            {% include "issue/includes/linked_task_metadata.html" with task=task status=linked_status only %}
                                             <span class="issue-task-chevron" aria-hidden="true">
                                                 <svg viewBox="0 0 24 24" focusable="false">
                                                     <path d="m5 9 7 7 7-7" />

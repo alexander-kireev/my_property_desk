@@ -1,0 +1,32 @@
+{# add Issue Task Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade"
+     id="addIssueTaskModal"
+     data-modal-clear-query="form_state"
+     tabindex="-1"
+     aria-labelledby="addIssueTaskModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addIssueTaskModalLabel">Add task to issue</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form action="{% url 'issue:add_issue_task' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    {% include "issue/includes/issue_task_form_fields.html" with task_form=add_task_form %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn theme-action" type="submit">Add task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

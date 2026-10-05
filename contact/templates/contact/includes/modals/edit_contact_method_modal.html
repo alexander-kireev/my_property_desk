@@ -1,0 +1,29 @@
+{# edit Contact Method Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient contact-method-modal"
+     id="editContactMethodModal"
+     data-modal-clear-query="edit_method form_state"
+     tabindex="-1"
+     aria-labelledby="editContactMethodModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="editContactMethodModalLabel">Edit contact detail</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form action="{% url 'contact:edit_contact_method' selected_contact.pk edit_contact_method.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post"
+                  autocomplete="off">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {% include "contact/includes/contact_method_form_fields.html" with method_form=edit_contact_method_form %}
+                </div>
+                <div class="modal-footer"><a class="btn btn-outline-secondary"
+   href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ selected_contact.pk }}">Cancel</a><button class="btn theme-action" type="submit">Save changes</button></div>
+            </form>
+        </div>
+    </div>
+</div>

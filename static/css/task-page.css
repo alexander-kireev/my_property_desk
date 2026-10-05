@@ -277,9 +277,7 @@
     .task-detail-facts-meta :is(.work-pill--active, .work-pill--terminal) {
         min-height: 1.375rem;
     }
-}
 
-@media (min-width: 1200px) {
     @container task-details (min-width: 36rem) {
         .task-detail-description-column {
             width: 58.333333%;

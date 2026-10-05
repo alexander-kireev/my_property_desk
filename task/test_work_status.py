@@ -101,3 +101,62 @@ class WorkStatusRenderingTests(TestCase):
         self.assertNotContains(response, 'class="work-status-strip work-status-strip--overdue"')
         self.assertContains(response, 'class="work-pill work-pill--priority-4"')
         self.assertContains(response, 'class="task-related-link"')
+
+
+class DeadlinePartialTests(SimpleTestCase):
+    """Keep the shared date presentation aligned with existing urgency rules."""
+
+    today = date(2026, 9, 23)
+
+    def render_deadline(self, task):
+        from django.template.loader import render_to_string
+
+        return render_to_string(
+            "task/includes/deadline_detail.html",
+            {"task": task, "status": status_for(task, today=self.today), "today": self.today},
+        )
+
+    def test_missing_deadline_has_no_relative_date(self):
+        rendered = self.render_deadline(Task())
+        self.assertIn("No deadline", rendered)
+        self.assertNotIn('class="work-date-relative', rendered)
+
+    def test_overdue_deadline_explains_urgency(self):
+        rendered = self.render_deadline(Task(completion_deadline=self.today - timedelta(days=2)))
+        self.assertIn("21 Sep 2026", rendered)
+        self.assertIn("Overdue by 2 days", rendered)
+        self.assertIn("task-detail-overdue-date", rendered)
+
+    def test_future_deadline_uses_relative_day(self):
+        rendered = self.render_deadline(Task(completion_deadline=self.today + timedelta(days=4)))
+        self.assertIn("27 Sep 2026", rendered)
+        self.assertIn("In 4 days", rendered)
+        self.assertNotIn("task-detail-overdue-date", rendered)
+
+    def test_terminal_deadline_keeps_history_without_active_warning(self):
+        task = Task(state=Task.State.COMPLETED, completion_deadline=self.today - timedelta(days=2))
+        rendered = self.render_deadline(task)
+        self.assertIn("21 Sep 2026", rendered)
+        self.assertIn("2 days ago", rendered)
+        self.assertNotIn("task-detail-overdue-date", rendered)
+
+    def test_linked_task_labels_preserve_existing_states(self):
+        from django.template.loader import render_to_string
+
+        cases = [
+            (Task(), "No deadline"),
+            (Task(completion_deadline=self.today - timedelta(days=2)), "Overdue"),
+            (Task(completion_deadline=self.today), "Due soon"),
+            (Task(completion_deadline=self.today + timedelta(days=5)), "Due"),
+            (Task(state=Task.State.COMPLETED), "Completed"),
+            (Task(state=Task.State.DISMISSED), "Dismissed"),
+        ]
+        for task, expected in cases:
+            with self.subTest(state=task.state, deadline=task.completion_deadline):
+                rendered = render_to_string(
+                    "issue/includes/linked_task_metadata.html",
+                    {"task": task, "status": status_for(task, today=self.today)},
+                )
+                self.assertIn(expected, rendered)
+                if task.state != Task.State.ACTIVE:
+                    self.assertNotIn("task-command-deadline--overdue", rendered)
