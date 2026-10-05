@@ -1,0 +1,25 @@
+{# Calendar and day agenda #}
+<section class="event-right-column col-lg-8"
+         aria-label="Calendar and selected event">
+    <div class="event-pane">
+        <nav class="event-right-tabs border-bottom px-3"
+             aria-label="Event workspace views">
+            <ul class="nav h-100" role="tablist">
+                <li class="nav-item"><button class="nav-link px-4{% if active_tab != 'details' %} active{% endif %}"
+        data-bs-toggle="tab"
+        data-bs-target="#eventCalendarPanel"
+        type="button"
+        role="tab">Calendar</button></li>
+                <li class="nav-item"><button class="nav-link px-4{% if active_tab == 'details' %} active{% endif %}"
+        data-bs-toggle="tab"
+        data-bs-target="#eventDetailsPanel"
+        type="button"
+        role="tab">Event details</button></li>
+            </ul>
+        </nav>
+        <div class="event-right-body tab-content">
+            {% include "event/includes/event_calendar_panel.html" %}
+            {% include "event/includes/event_detail_panel.html" %}
+        </div>
+    </div>
+</section>

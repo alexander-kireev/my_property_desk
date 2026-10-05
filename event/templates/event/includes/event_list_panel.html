@@ -1,0 +1,164 @@
+{# Event controls and result list #}
+<aside class="event-list-column col-lg-4 border-end"
+       aria-label="Event results"
+       id="eventResults">
+    <div class="event-pane">
+        <form class="event-list-controls border-bottom p-3"
+              id="eventFilterForm"
+              method="get"
+              autocomplete="off">
+            {% if selected_day %}<input type="hidden" name="day" value="{{ selected_day|date:'Y-m-d' }}">{% endif %}
+            <input type="hidden" name="month" value="{{ calendar_month_number }}">
+            <input type="hidden" name="year" value="{{ calendar_year }}">
+            <input type="hidden" name="tab" value="{{ active_tab }}" data-event-list-tab>
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                <h1 class="h5 mb-0">Events</h1>
+                <button class="btn btn-sm theme-action work-add-button"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addEventModal"
+                        {% if not add_event_form %} disabled{% endif %}>+ Add event</button>
+            </div>
+            <div class="event-control-row">
+                <label class="visually-hidden" for="eventSearch">Search events</label>
+                <input class="form-control form-control-sm"
+                       id="eventSearch"
+                       name="search"
+                       type="search"
+                       value="{{ search }}"
+                       placeholder="Search events">
+                <button class="btn btn-sm theme-action" type="submit">Apply</button>
+            </div>
+            <div class="event-control-row mt-2">
+                <label class="visually-hidden" for="eventSort">Sort events</label>
+                <select class="form-select form-select-sm" id="eventSort" name="sort">
+                    <option value="scheduled_date"
+                            {% if sort == "scheduled_date" %} selected{% endif %}>Date: soonest</option>
+                    <option value="-scheduled_date"
+                            {% if sort == "-scheduled_date" %} selected{% endif %}>Date: latest</option>
+                    <option value="title" {% if sort == "title" %} selected{% endif %}>Title: A–Z</option>
+                    <option value="-title" {% if sort == "-title" %} selected{% endif %}>Title: Z–A</option>
+                    <option value="-created_at"
+                            {% if sort == "-created_at" %} selected{% endif %}>Newest first</option>
+                </select>
+                <button class="btn btn-sm btn-outline-secondary"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#eventFilters"
+                        aria-expanded="false"
+                        aria-controls="eventFilters">
+                    Filters{% if filter_count %} <span class="badge text-bg-secondary">{{ filter_count }}</span>{% endif %}
+                </button>
+            </div>
+            <div class="collapse" id="eventFilters">
+                <div class="row g-2 pt-3">
+                    <div class="col-6">
+                        <label class="small text-body-secondary" for="eventState">State</label>
+                        <select class="form-select form-select-sm" id="eventState" name="state">
+                            <option value="all" {% if state == "all" %} selected{% endif %}>All states</option>
+                            {% for value, label in event_state_choices %}<option value="{{ value }}"
+        {% if state == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-body-secondary" for="eventProperty">Property</label>
+                        <select class="form-select form-select-sm" id="eventProperty" name="property">
+                            <option value="">All properties</option>
+                            {% for property in properties %}<option value="{{ property.pk }}"
+        {% if property_id == property.pk %} selected{% endif %}>{{ property.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-body-secondary" for="eventParticipation">Participation</label>
+                        <select class="form-select form-select-sm"
+                                id="eventParticipation"
+                                name="participation">
+                            <option value="">Any</option>
+                            <option value="required"
+                                    {% if participation == "required" %} selected{% endif %}>Required</option>
+                            <option value="not_required"
+                                    {% if participation == "not_required" %} selected{% endif %}>Not required</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-body-secondary" for="eventPresence">Presence</label>
+                        <select class="form-select form-select-sm" id="eventPresence" name="presence">
+                            <option value="">Any</option>
+                            <option value="required"
+                                    {% if presence == "required" %} selected{% endif %}>Required</option>
+                            <option value="not_required"
+                                    {% if presence == "not_required" %} selected{% endif %}>Not required</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="small text-body-secondary mt-2"
+                     id="eventFilterCompatibility"
+                     aria-live="polite"></div>
+            </div>
+            {% if has_filters %}
+                <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
+                    {% if search %}<button class="event-filter-chip"
+        type="button"
+        data-clear-event-filter="search">Search: {{ search }} ×</button>{% endif %}
+                    {% if state != "all" %}<button class="event-filter-chip"
+        type="button"
+        data-clear-event-filter="state">{{ state|title }} ×</button>{% endif %}
+                    {% if property_id %}{% for property in properties %}{% if property.pk == property_id %}<button class="event-filter-chip event-filter-chip--property"
+        type="button"
+        data-clear-event-filter="property"
+        title="{{ property.name }}"><span class="event-filter-chip-label">{{ property.name }}</span><span aria-hidden="true">×</span></button>{% endif %}{% endfor %}{% endif %}
+                    {% if participation != "any" %}<button class="event-filter-chip"
+        type="button"
+        data-clear-event-filter="participation">Participation: {% if participation == "required" %}required{% else %}not required{% endif %} ×</button>{% endif %}
+                    {% if presence != "any" %}<button class="event-filter-chip"
+        type="button"
+        data-clear-event-filter="presence">Presence: {% if presence == "required" %}required{% else %}not required{% endif %} ×</button>{% endif %}
+                    {% if page_obj.object_list %}<a class="command-filter-clear ms-1"
+   href="{% url 'event:events' %}">Clear all</a>{% endif %}
+                </div>
+            {% endif %}
+        </form>
+
+        {% if selected_day %}<div class="event-day-filter border-bottom px-3 py-2"><a class="event-day-chip"
+   href="?{{ clear_day_query }}#eventResults"
+   aria-label="Clear date filter for {{ selected_day|date:'j F Y' }}"><span>Date: {{ selected_day|date:"j M Y" }}</span><span class="event-day-chip-remove" aria-hidden="true">×</span></a></div>{% endif %}
+
+        <div class="event-command-list list-group list-group-flush"
+             data-workspace-scroll-list>
+            {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This event is outside the current filters. <a href="{% url 'event:events' %}?selected={{ selected_event.pk }}&amp;tab=details">Clear filters to find it in the list</a>.</div>{% endif %}
+            {% for event in page_obj %}
+                <div class="event-command-entry" id="eventRow{{ event.pk }}">
+                    <a class="event-command-row list-group-item list-group-item-action{% if selected_event.pk == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}"
+                       href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ event.pk }}&amp;tab=details"
+                       data-workspace-scroll-row{% if not mobile_calendar_view and mobile_expanded_event_id == event.pk %}
+                       data-mobile-event-expanded
+                       aria-expanded="true"
+                       aria-controls="eventInlineDetails{{ event.pk }}"
+                       {% endif %}
+                       {% if selected_event.pk == event.pk %} aria-current="true"{% endif %}>
+                        <span class="event-command-row-grid">
+                            <span class="event-command-copy"><strong class="event-command-title" title="{{ event.title }}">{{ event.title }}</strong><span class="event-command-context"
+      {% if event.property %} title="{{ event.property.name }}"{% else %} aria-hidden="true"{% endif %}>{% if event.property %}{{ event.property.name }}{% endif %}</span></span>
+                            <span class="event-command-meta">{% include "includes/work_state_badge.html" with item=event only %}<span class="event-command-when"><span>{{ event.scheduled_date|date:"j M Y" }} ·</span><span>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span></span>
+                            <span class="work-mobile-chevron event-mobile-row-arrow" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="m5 9 7 7 7-7" />
+                                </svg>
+                            </span>
+                        </span>
+                    </a>
+                    {% if mobile_expanded_event_id == event.pk %}
+                        {% if not mobile_calendar_view %}
+                            {% include "event/includes/mobile_event_details.html" %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="p-3 text-center text-body-secondary">{% if selected_day or has_filters %}<strong class="d-block text-body mb-1">No matching events</strong><span class="d-block small mb-2">Try changing the date or filters.</span>{% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary"
+   href="{% url 'event:events' %}">Clear filters</a>{% endif %}{% else %}No events yet.{% endif %}</div>
+            {% endfor %}
+        </div>
+
+        {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Event pagination" pagination_class="event-pagination command-pagination border-top bg-body p-3" only %}
+    </div>
+</aside>

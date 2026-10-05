@@ -1,0 +1,61 @@
+{# Work queue and filters #}
+<section class="dashboard-panel dashboard-operations"
+         aria-labelledby="operationsHeading">
+    <header class="dashboard-panel-heading">
+        <h2 id="operationsHeading">Operations</h2>
+        <div class="dashboard-add-wrap">
+            <button id="dashboardAddToggle"
+                    class="dashboard-add-toggle btn theme-action btn-sm dropdown-toggle"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls="dashboardAddMenu"><span class="dashboard-add-plus" aria-hidden="true">+</span> Add</button>
+            <div id="dashboardAddMenu"
+                 class="dashboard-add-menu dropdown-menu dropdown-menu-end"
+                 aria-label="Add work item"
+                 hidden>
+                <button class="dropdown-item" type="button" data-add="task">Add task</button>
+                <button class="dropdown-item" type="button" data-add="issue">Add issue</button>
+                <button class="dropdown-item" type="button" data-add="event">Add event</button>
+            </div>
+        </div>
+    </header>
+    <div class="dashboard-tabs nav nav-underline"
+         role="tablist"
+         aria-label="Work item type">
+        <button class="nav-link active"
+                type="button"
+                data-kind="task"
+                role="tab"
+                aria-selected="true">Tasks <span class="badge text-bg-secondary" data-count="task">0</span></button>
+        <button class="nav-link"
+                type="button"
+                data-kind="issue"
+                role="tab"
+                aria-selected="false">Issues <span class="badge text-bg-secondary" data-count="issue">0</span></button>
+        <button class="nav-link"
+                type="button"
+                data-kind="event"
+                role="tab"
+                aria-selected="false">Events <span class="badge text-bg-secondary" data-count="event">0</span></button>
+    </div>
+    <div class="dashboard-filters">
+        <label class="visually-hidden" for="workSearch">Search work items</label>
+        <input class="form-control form-control-sm"
+               id="workSearch"
+               type="search"
+               placeholder="Search tasks">
+        <div class="dashboard-filter-controls">
+            <label class="visually-hidden" id="workFilterLabel" for="workFilter">Filter tasks by schedule</label>
+            <select class="form-select form-select-sm" id="workFilter"></select>
+            <div id="workSecondaryWrap">
+                <label class="visually-hidden" for="workSecondaryFilter">Filter by priority</label>
+                <select class="form-select form-select-sm"
+                        id="workSecondaryFilter"
+                        aria-label="Priority"></select>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-work-list list-group list-group-flush"
+         id="workList"
+         aria-live="polite"></div>
+</section>

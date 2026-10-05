@@ -4,6 +4,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 const read = (file) => readFileSync(path.join(__dirname, "..", file), "utf8");
+const readAll = (...files) => files.map(read).join("\n");
 const readCss = (file) => read(file).replace(/\s+/g, " ");
 const dashboardCss = readCss("static/css/dashboard.css");
 const dashboardJs = read("static/js/dashboard.js");
@@ -11,6 +12,26 @@ const siteCss = readCss("static/css/site.css");
 const eventComponentsCss = readCss("static/css/event-components.css");
 const eventCss = readCss("static/css/event-page.css");
 const eventJs = read("static/js/event-command-centre.js");
+const taskPage = readAll(
+    "task/templates/task/tasks.html",
+    "task/templates/task/includes/task_list_panel.html",
+    "task/templates/task/includes/task_detail_panel.html",
+    "task/templates/task/includes/task_modals.html",
+);
+const issuePage = readAll(
+    "issue/templates/issue/issues.html",
+    "issue/templates/issue/includes/issue_list_panel.html",
+    "issue/templates/issue/includes/issue_detail_panel.html",
+    "issue/templates/issue/includes/issue_modals.html",
+);
+const eventPage = readAll(
+    "event/templates/event/events.html",
+    "event/templates/event/includes/event_list_panel.html",
+    "event/templates/event/includes/event_right_panel.html",
+    "event/templates/event/includes/event_calendar_panel.html",
+    "event/templates/event/includes/event_detail_panel.html",
+    "event/templates/event/includes/event_modals.html",
+);
 
 test("Event CSS keeps reusable forms separate from the My Work page", () => {
     const dashboard = read("pages/templates/pages/dashboard.html");
@@ -45,7 +66,6 @@ test("Dashboard caps only its single-panel board and tabs from 768 through 860px
 
 test("Task relationship labels say Not linked while retaining standalone values", () => {
     const fields = read("task/templates/task/includes/task_form_fields.html");
-    const taskPage = read("task/templates/task/tasks.html");
     const mobileDetails = read("task/templates/task/includes/mobile_task_details.html");
     assert.match(fields, /value="standalone"[^>]*>Not linked<\/option>/);
     assert.match(fields, /relationship_standalone">Not linked<\/label>/);
@@ -66,9 +86,9 @@ test("My Work single-panel width cap and issue row sizing preserve responsive bo
 
 test("relationship details keep a single-line box without deleted badges or unlinked placeholders", () => {
     const paths = [
-        "task/templates/task/tasks.html", "task/templates/task/includes/mobile_task_details.html",
-        "issue/templates/issue/issues.html", "issue/templates/issue/includes/mobile_issue_details.html",
-        "event/templates/event/events.html", "event/templates/event/includes/mobile_event_details.html",
+        "task/templates/task/includes/task_detail_panel.html", "task/templates/task/includes/mobile_task_details.html",
+        "issue/templates/issue/includes/issue_detail_panel.html", "issue/templates/issue/includes/mobile_issue_details.html",
+        "event/templates/event/includes/event_detail_panel.html", "event/templates/event/includes/mobile_event_details.html",
     ];
     const templates = paths.map(read).join("\n");
     assert.match(siteCss, /\.task-related-copy \{[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap/s);
@@ -109,12 +129,11 @@ test("My Work uses the same 860px inline boundary across layout and input", () =
 });
 
 test("compact tabs and linked-task rows retain readable layouts", () => {
-    const events = read("event/templates/event/events.html");
+    const events = eventPage;
     assert.match(siteCss, /\.my-work-section-nav \.nav \{ display: grid; grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
     assert.match(siteCss, /@container issue-tasks \(max-width: 32rem\)/);
     assert.match(siteCss, /\.issue-linked-task-grid \{ display: grid; grid-template-columns:/);
     assert.match(siteCss, /\.issue-linked-tasks-card \{\s*container: linked-task-card \/ inline-size;\s*border: 1px solid/);
-    const issuePage = read("issue/templates/issue/issues.html");
     assert.match(issuePage, /issue-task-scroll">\s*<div class="issue-linked-tasks-card">/);
     assert.match(eventCss, /\.event-mobile-participant-row \.event-participant-remove \{\s*width: 2\.75rem;\s*height: 2\.75rem/);
     assert.match(eventCss, /@media \(max-width: 575\.98px\) \{\s*\.event-participant-methods \{\s*grid-template-columns: minmax\(0, 1fr\)/);
@@ -132,7 +151,6 @@ test("compact tabs and linked-task rows retain readable layouts", () => {
 });
 
 test("Issue Tasks uses its tab row for Add task and starts the pane with task rows", () => {
-    const issuePage = read("issue/templates/issue/issues.html");
     assert.match(issuePage, /class="issue-detail-tabs[^\"]*">[\s\S]*?data-bs-target="#issueTasksPanel"[\s\S]*?class="btn btn-sm theme-action issue-add-task-button"/);
     assert.match(issuePage, /class="issue-linked-tasks-card">\s*<div class="issue-task-list">/);
     assert.doesNotMatch(issuePage, /issue-task-toolbar|Work linked to this issue/);
@@ -154,7 +172,6 @@ test("narrow task actions keep the primary controls and move secondary actions i
 });
 
 test("issue-linked task actions compact when their pane narrows", () => {
-    const issuePage = read("issue/templates/issue/issues.html");
     assert.match(siteCss, /\.issue-linked-tasks-card \{\s*container: linked-task-card \/ inline-size;/);
     assert.match(siteCss, /@container linked-task-card \(max-width: 38rem\) \{\s*\.issue-task-details-actions > \.issue-task-secondary-action \{ display: none; \}\s*\.issue-task-details-actions > \.issue-task-more \{ display: block; \}/);
     assert.match(siteCss, /\.issue-task-more \.task-menu-button \{ min-width: 2rem; min-height: 2rem; width: 2rem; height: 2rem;/);
@@ -185,7 +202,7 @@ test("mobile Open record stays right until its action row is too narrow", () => 
 });
 
 test("Events share work cards and disclosure while retaining a mobile calendar", () => {
-    const events = read("event/templates/event/events.html");
+    const events = eventPage;
     const inline = read("event/templates/event/includes/mobile_event_details.html");
     const scrollJs = read("static/js/workspace-list-scroll.js");
     assert.match(events, /class="event-command-row-grid"/);
@@ -205,7 +222,7 @@ test("Events share work cards and disclosure while retaining a mobile calendar",
 });
 
 test("Event Add and Apply controls share the same compact button footprint", () => {
-    const events = read("event/templates/event/events.html");
+    const events = eventPage;
     assert.match(events, /class="btn btn-sm theme-action work-add-button"[^>]*>\+ Add event<\/button>/);
     assert.match(events, /class="event-control-row">[\s\S]*?class="btn btn-sm theme-action" type="submit">Apply<\/button>/);
     assert.match(siteCss, /\.event-list-controls :is\(\.work-add-button, \.event-control-row \.theme-action\) \{\s*width: 6\.5rem;\s*height: 2rem;/);
