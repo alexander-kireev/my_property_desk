@@ -4,9 +4,19 @@
   "scripts": {
     "lint:css": "stylelint \"static/css/*.css\"",
     "format:css": "prettier --write \"static/css/*.css\"",
-    "format:css:check": "prettier --check \"static/css/*.css\""
+    "format:css:check": "prettier --check \"static/css/*.css\"",
+    "lint:js": "eslint \"static/js/*.js\" --max-warnings 0",
+    "format:js": "prettier --write \"static/js/*.js\"",
+    "format:js:check": "prettier --check \"static/js/*.js\"",
+    "test:browser:select": "node --test tests/browser/searchable-select.browser.cjs",
+    "test:browser:dashboard": "node --test tests/browser/dashboard.browser.cjs",
+    "test:browser:event-form": "node --test tests/browser/event-form.browser.cjs"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "playwright-core": "^1.63.0",
     "prettier": "^3.9.9",
     "stylelint": "^17.16.0",
     "stylelint-config-standard": "^40.0.0"

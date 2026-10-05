@@ -2,15 +2,15 @@
 <div class="mb-3">
     <label class="form-label" for="{{ form.name.id_for_label }}">Name</label>
     {{ form.name }}
-    {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% include "includes/field_feedback.html" with field=form.name only %}
 </div>
 <div class="mb-3">
     <label class="form-label" for="{{ form.description.id_for_label }}">Description</label>
     {{ form.description }}
-    {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% include "includes/field_feedback.html" with field=form.description only %}
 </div>
 <div>
     <label class="form-label" for="{{ form.address.id_for_label }}">Address</label>
     {{ form.address }}
-    {% for error in form.address.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% include "includes/field_feedback.html" with field=form.address only %}
 </div>

@@ -3,7 +3,7 @@ const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 
-const dashboard = readFileSync(path.join(__dirname, "../static/js/dashboard.js"), "utf8");
+const dashboard = readFileSync(path.join(__dirname, "../static/js/dashboard-dialogs.js"), "utf8");
 const styles = readFileSync(path.join(__dirname, "../static/css/dashboard.css"), "utf8");
 
 test("Dashboard Delete alone receives the red confirmation variant", () => {

@@ -1,3 +1,4 @@
+// Close the phone navigation on outside clicks or Escape, unless a dialog is active.
 (() => {
     const navbar = document.querySelector(".app-navbar");
     const menu = navbar?.querySelector("#siteNavbar");
@@ -9,7 +10,7 @@
         if (!menu.classList.contains("show")) return;
         if (menu.contains(event.target) || toggle.contains(event.target)) return;
         if (event.target.closest('.modal.show, [role="dialog"][aria-modal="true"]')) return;
-        bootstrap.Collapse.getOrCreateInstance(menu, {toggle: false}).hide();
+        bootstrap.Collapse.getOrCreateInstance(menu, { toggle: false }).hide();
     });
 
     document.addEventListener("keydown", (event) => {
@@ -19,8 +20,10 @@
         if (document.querySelector('.modal.show, [role="dialog"][aria-modal="true"]')) return;
 
         event.preventDefault();
-        menu.addEventListener("hidden.bs.collapse", () => toggle.focus({preventScroll: true}), {once: true});
-        bootstrap.Collapse.getOrCreateInstance(menu, {toggle: false}).hide();
+        menu.addEventListener("hidden.bs.collapse", () => toggle.focus({ preventScroll: true }), {
+            once: true,
+        });
+        bootstrap.Collapse.getOrCreateInstance(menu, { toggle: false }).hide();
     });
 
     // Bootstrap closes the desktop menu on Escape, but hover CSS can keep it visible.

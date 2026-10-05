@@ -9,8 +9,10 @@
              height="60">
         <span class="small text-light-emphasis">A lighter way to manage property work</span>
         <nav class="d-flex gap-3 small" aria-label="Footer navigation">
-            <a class="footer-link text-light-emphasis" href="#">About</a>
-            <a class="footer-link text-light-emphasis" href="#">Contact</a>
+            <a class="footer-link text-light-emphasis"
+               href="{% url 'pages:about_us' %}">About</a>
+            <a class="footer-link text-light-emphasis"
+               href="{% url 'pages:contact_us' %}">Contact</a>
         </nav>
     </div>
 </footer>

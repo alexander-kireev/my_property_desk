@@ -1,13 +1,16 @@
+// Warn about conflicting Task dates and remember choices when switching between Property and Issue links.
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-task-form]").forEach((form) => {
         const scheduledDate = form.querySelector('[name="scheduled_date"]');
         const completionDeadline = form.querySelector('[name="completion_deadline"]');
-        const dateWarning = form.querySelector('[data-task-date-warning]');
+        const dateWarning = form.querySelector("[data-task-date-warning]");
 
+        // Date inputs use YYYY-MM-DD, so string comparison preserves date order.
         function updateDateWarning() {
             if (scheduledDate && completionDeadline && dateWarning) {
                 dateWarning.hidden = !(
-                    scheduledDate.value && completionDeadline.value &&
+                    scheduledDate.value &&
+                    completionDeadline.value &&
                     completionDeadline.value < scheduledDate.value
                 );
             }
@@ -26,26 +29,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const relationshipChoices = relationshipFieldset.querySelectorAll(
-            '[name="relationship_type"]'
+            '[name="relationship_type"]',
         );
         const propertyPanel = relationshipFieldset.querySelector(
-            '[data-relationship-panel="property"]'
+            '[data-relationship-panel="property"]',
         );
-        const issuePanel = relationshipFieldset.querySelector(
-            '[data-relationship-panel="issue"]'
-        );
+        const issuePanel = relationshipFieldset.querySelector('[data-relationship-panel="issue"]');
         const propertySelect = propertyPanel.querySelector("select");
         const issueSelect = issuePanel.querySelector("select");
 
         function selectedRelationshipType() {
             const relationshipSelect = relationshipFieldset.querySelector(
-                'select[name="relationship_type"]'
+                'select[name="relationship_type"]',
             );
             if (relationshipSelect) {
                 return relationshipSelect.value;
             }
             const selectedChoice = relationshipFieldset.querySelector(
-                'input[name="relationship_type"]:checked'
+                'input[name="relationship_type"]:checked',
             );
 
             if (selectedChoice) {
@@ -64,25 +65,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const relationshipSelect = relationshipFieldset.querySelector(
-            'select[name="relationship_type"]'
+            'select[name="relationship_type"]',
         );
-        const propertyChoice = relationshipSelect?.querySelector('option[value="property"]') ||
+        const propertyChoice =
+            relationshipSelect?.querySelector('option[value="property"]') ||
             relationshipFieldset.querySelector('input[name="relationship_type"][value="property"]');
-        const issueChoice = relationshipSelect?.querySelector('option[value="issue"]') ||
+        const issueChoice =
+            relationshipSelect?.querySelector('option[value="issue"]') ||
             relationshipFieldset.querySelector('input[name="relationship_type"][value="issue"]');
-        const fallbackType = propertyChoice && !propertyChoice.disabled ? "property" :
-            issueChoice && !issueChoice.disabled ? "issue" : null;
-        let lastLinkedType = propertySelect.value ? "property" :
-            issueSelect.value ? "issue" : null;
+        const fallbackType =
+            propertyChoice && !propertyChoice.disabled
+                ? "property"
+                : issueChoice && !issueChoice.disabled
+                  ? "issue"
+                  : null;
+        let lastLinkedType = propertySelect.value ? "property" : issueSelect.value ? "issue" : null;
 
         function updateRelationshipFields() {
             const relationshipType = selectedRelationshipType();
             if (relationshipType === "property" || relationshipType === "issue") {
                 lastLinkedType = relationshipType;
             }
-            const visibleType = relationshipType === "standalone"
-                ? lastLinkedType || fallbackType
-                : relationshipType;
+            // Not linked keeps the previous choice visible but disabled, so its value is not submitted.
+            const visibleType =
+                relationshipType === "standalone"
+                    ? lastLinkedType || fallbackType
+                    : relationshipType;
 
             propertyPanel.hidden = visibleType !== "property";
             issuePanel.hidden = visibleType !== "issue";

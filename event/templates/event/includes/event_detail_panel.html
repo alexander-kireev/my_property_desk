@@ -1,6 +1,7 @@
 {# Selected event details and participants #}
 <section class="tab-pane fade h-100{% if active_tab == 'details' %} show active{% endif %}"
          id="eventDetailsPanel"
+         aria-labelledby="eventDetailsTab"
          role="tabpanel">
     <div class="event-detail-pane">
         {% if selected_event %}
@@ -96,10 +97,11 @@
                                     <dt>Presence</dt>
                                     <dd>{% if selected_event.user_presence_required %}Required{% else %}Not required{% endif %}</dd>
                                     {% if selected_event.property %}<dt>Related to</dt>
-                                        <dd>{% if selected_event.property.deleted_at %}<span class="task-related-deleted"
-      title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' selected_event.property.pk %}"
-   title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}
+                                        <dd>
+                                            {% url 'property:property_detail' selected_event.property.pk as related_url %}
+                                            {% include "includes/related_record_link.html" with label=selected_event.property.name url=related_url deleted=selected_event.property.deleted_at only %}
+                                        </dd>
+                                    {% endif %}
                                 </dl>
                             </div>
                         </article>

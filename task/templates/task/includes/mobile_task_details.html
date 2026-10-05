@@ -43,11 +43,17 @@
                 <div class="task-inline-fact task-inline-relationship">
                     <dt>Related to</dt>
                     <dd>
-                        {% if task.issue %}{% if task.issue.deleted_at %}<span class="task-related-deleted" title="{{ task.issue.title }}"><span class="task-related-copy">{{ task.issue.title }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'issue:issues' %}?selected={{ task.issue.pk }}"
-   title="{{ task.issue.title }}"><span class="task-related-copy">{{ task.issue.title }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}{% else %}{% if task.property.deleted_at %}<span class="task-related-deleted" title="{{ task.property.name }}"><span class="task-related-copy">{{ task.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' task.property.pk %}"
-   title="{{ task.property.name }}"><span class="task-related-copy">{{ task.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}{% endif %}
+                        {% if task.issue %}
+                            {% url 'issue:issues' as issue_list_url %}
+                            {% with issue_id=task.issue.pk|stringformat:"s" %}
+                                {% with related_url=issue_list_url|add:"?selected="|add:issue_id %}
+                                    {% include "includes/related_record_link.html" with label=task.issue.title url=related_url deleted=task.issue.deleted_at only %}
+                                {% endwith %}
+                            {% endwith %}
+                        {% else %}
+                            {% url 'property:property_detail' task.property.pk as related_url %}
+                            {% include "includes/related_record_link.html" with label=task.property.name url=related_url deleted=task.property.deleted_at only %}
+                        {% endif %}
                     </dd>
                 </div>
             {% endif %}

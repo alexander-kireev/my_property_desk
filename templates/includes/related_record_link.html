@@ -1,0 +1,6 @@
+{# Deleted parents remain readable in historical records but cannot be opened. #}
+{% if deleted %}
+    <span class="task-related-deleted" title="{{ label }}"><span class="task-related-copy">{{ label }}</span></span>
+{% else %}
+    <a class="task-related-link" href="{{ url }}" title="{{ label }}"><span class="task-related-copy">{{ label }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>
+{% endif %}

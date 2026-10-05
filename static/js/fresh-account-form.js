@@ -1,12 +1,11 @@
-// These sensitive account forms start blank, including after browser back/forward restore.
-// Password managers can still offer a credential after the user focuses a field.
+// Clear account values restored by the browser. Keep fields the user has edited
+// and the email value marked for redisplay after a validation error.
 (() => {
     document.querySelectorAll("[data-fresh-account-form]").forEach((form) => {
         const fields = [...form.querySelectorAll("input:not([type=hidden])")];
         const edited = new Set();
-        const preserveEmail = (field) => (
-            field.name === "new_email" && form.hasAttribute("data-preserve-restored-email")
-        );
+        const preserveEmail = (field) =>
+            field.name === "new_email" && form.hasAttribute("data-preserve-restored-email");
         const clearUntouched = () => {
             fields.forEach((field) => {
                 if (!edited.has(field) && !preserveEmail(field)) field.value = "";

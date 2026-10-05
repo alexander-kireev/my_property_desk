@@ -1,4 +1,3 @@
-{# change Email Modal; visibility is controlled by the parent dialog collection. #}
 <div class="modal fade"
      id="changeEmailModal"
      data-profile-account-modal
@@ -33,17 +32,13 @@
                     <div class="mb-3">
                         <label class="form-label" for="{{ email_form.new_email.id_for_label }}">New email</label>
                         {{ email_form.new_email }}
-                        {% for error in email_form.new_email.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+                        {% include "includes/field_feedback.html" with field=email_form.new_email only %}
                     </div>
                     <div>
                         <label class="form-label"
                                for="{{ email_form.current_password.id_for_label }}">Current password</label>
                         {{ email_form.current_password }}
-                        {% for error in email_form.current_password.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+                        {% include "includes/field_feedback.html" with field=email_form.current_password only %}
                     </div>
                     <p class="form-text mb-0">Your current email stays active until you confirm the link sent to the new address.</p>
                 </div>

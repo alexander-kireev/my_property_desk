@@ -43,9 +43,12 @@
             {% if event.terminated_at %}<div class="event-inline-fact"><dt>Terminated</dt>
                 <dd>{{ event.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
             {% if event.property %}<div class="event-inline-fact event-inline-relationship"><dt>Related to</dt>
-                <dd>{% if event.property.deleted_at %}<span class="task-related-deleted" title="{{ event.property.name }}"><span class="task-related-copy">{{ event.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' event.property.pk %}"
-   title="{{ event.property.name }}"><span class="task-related-copy">{{ event.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd></div>{% endif %}
+                <dd>
+                    {% url 'property:property_detail' event.property.pk as related_url %}
+                    {% include "includes/related_record_link.html" with label=event.property.name url=related_url deleted=event.property.deleted_at only %}
+                </dd>
+                </div>
+            {% endif %}
         </dl>
     </div>
     {# Participants and removal controls #}

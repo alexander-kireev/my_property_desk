@@ -17,7 +17,7 @@
                  data-workspace-scroll-root="tasks"
                  data-navigation-query="{{ navigation_query }}"
                  {% if open_modal %}data-modal-auto-open="{{ open_modal }}"{% endif %}>
-            {% include "includes/my_work_nav.html" with active_section="tasks" task_count=task_count issue_count=issue_count %}
+            {% include "includes/my_work_nav.html" with active_section="tasks" %}
 
             {% if task_count == 0 %}
                 <div class="task-first-empty flex-grow-1 d-flex align-items-center justify-content-center p-4 p-md-5 text-center">

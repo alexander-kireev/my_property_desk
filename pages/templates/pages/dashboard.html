@@ -46,6 +46,7 @@
                             id="notesViewToggle"
                             role="tab"
                             aria-selected="false"
+                            tabindex="-1"
                             aria-controls="notesView">My notes <span class="dashboard-notes-count badge text-bg-secondary" id="notesCount">0</span></button>
                 </div>
                 {% include "pages/includes/dashboard_day_plan.html" %}
@@ -79,5 +80,11 @@
     {% include "pages/includes/dashboard_modals.html" %}
 {% endblock %}
 {% block extra_js %}
+    <script src="{% static 'js/event-form.js' %}"></script>
+    <script src="{% static 'js/dashboard-records.js' %}"></script>
+    <script src="{% static 'js/dashboard-api.js' %}"></script>
+    <script src="{% static 'js/dashboard-feedback.js' %}"></script>
+    <script src="{% static 'js/dashboard-notes.js' %}"></script>
+    <script src="{% static 'js/dashboard-dialogs.js' %}" defer></script>
     <script src="{% static 'js/dashboard.js' %}" defer></script>
 {% endblock %}

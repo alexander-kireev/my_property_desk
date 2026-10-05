@@ -30,7 +30,7 @@
                     {% if return_property_id %}
                         <input type="hidden" name="return_property" value="{{ return_property_id }}">
                     {% endif %}
-                    {% include "task/includes/task_form_fields.html" with task_form=add_task_form dashboard_add=True %}
+                    {% include "task/includes/task_form_fields.html" with task_form=add_task_form compact_relationship_picker=True %}
                 </div>
                 <div class="modal-footer">
                     {% if return_property_id %}

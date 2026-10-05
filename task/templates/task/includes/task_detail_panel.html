@@ -106,25 +106,18 @@
                                     {% if selected_task.issue %}
                                         <dt class="fw-normal text-body-secondary">Related to</dt>
                                         <dd>
-                                            {% if selected_task.issue.deleted_at %}<span class="task-related-deleted" title="{{ selected_task.issue.title }}"><span class="task-related-copy">{{ selected_task.issue.title }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'issue:issues' %}?selected={{ selected_task.issue.pk }}"
-   title="{{ selected_task.issue.title }}">
-                                                <span class="task-related-copy">{{ selected_task.issue.title }}</span>
-                                                <span class="task-related-arrow" aria-hidden="true">→</span>
-                                                </a>
-                                            {% endif %}
+                                            {% url 'issue:issues' as issue_list_url %}
+                                            {% with issue_id=selected_task.issue.pk|stringformat:"s" %}
+                                                {% with related_url=issue_list_url|add:"?selected="|add:issue_id %}
+                                                    {% include "includes/related_record_link.html" with label=selected_task.issue.title url=related_url deleted=selected_task.issue.deleted_at only %}
+                                                {% endwith %}
+                                            {% endwith %}
                                         </dd>
                                     {% elif selected_task.property %}
                                         <dt class="fw-normal text-body-secondary">Related to</dt>
                                         <dd>
-                                            {% if selected_task.property.deleted_at %}<span class="task-related-deleted"
-      title="{{ selected_task.property.name }}"><span class="task-related-copy">{{ selected_task.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' selected_task.property.pk %}"
-   title="{{ selected_task.property.name }}">
-                                                <span class="task-related-copy">{{ selected_task.property.name }}</span>
-                                                <span class="task-related-arrow" aria-hidden="true">→</span>
-                                                </a>
-                                            {% endif %}
+                                            {% url 'property:property_detail' selected_task.property.pk as related_url %}
+                                            {% include "includes/related_record_link.html" with label=selected_task.property.name url=related_url deleted=selected_task.property.deleted_at only %}
                                         </dd>
                                     {% endif %}
                                 </dl>

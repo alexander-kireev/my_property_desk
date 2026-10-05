@@ -1,0 +1,22 @@
+<small class="property-related-date{% if timing.kind == 'overdue' and entry.current %} property-related-date--overdue{% elif timing.kind == 'soon' and entry.current %} property-related-date--soon{% endif %}">
+    {# Historical records keep their state and termination date, falling back to creation date. #}
+    {% if not entry.current %}
+        {{ entry.item.get_state_display }} · {{ entry.item.terminated_at|default:entry.item.created_at|date:"j M Y" }}
+    {% elif entry.kind == "issue" %}
+        {% if entry.date %}
+            {% if timing.kind == "overdue" %}Overdue{% elif timing.kind == "soon" %}Due soon{% else %}Resolve by{% endif %} {{ entry.date|date:"j M Y" }}
+        {% else %}
+            No target date
+        {% endif %}
+    {% elif entry.kind == "task" %}
+        {% if entry.date %}
+            {% if timing.kind == "overdue" %}Overdue{% elif timing.kind == "soon" %}Due soon{% else %}Due{% endif %} · {{ entry.date|date:"j M Y" }}
+        {% elif entry.item.scheduled_date %}
+            Scheduled · {{ entry.item.scheduled_date|date:"j M Y" }}
+        {% else %}
+            No date
+        {% endif %}
+    {% else %}
+        {{ entry.date|date:"j M Y" }}{% if entry.item.all_day %} · All day{% elif entry.item.start_time %} · {{ entry.item.start_time|time:"H:i" }}{% if entry.item.end_time %}–{{ entry.item.end_time|time:"H:i" }}{% endif %}{% endif %}
+    {% endif %}
+</small>

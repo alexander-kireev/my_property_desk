@@ -1,3 +1,4 @@
+// Switch Contact detail labels and input types between email, telephone and other methods.
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-contact-method-form]").forEach((form) => {
         const method = form.querySelector('[name="type"]');
@@ -9,13 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
         function update() {
             const isEmail = method.value === "email";
             const isTelephone = method.value === "telephone";
-            label.textContent = isEmail ? "Email address" : isTelephone ? "Telephone number" : "Contact information";
+            label.textContent = isEmail
+                ? "Email address"
+                : isTelephone
+                  ? "Telephone number"
+                  : "Contact information";
             value.type = isEmail ? "email" : isTelephone ? "tel" : "text";
             value.placeholder = isEmail ? "name@example.com" : isTelephone ? "+44 7700 900123" : "";
             value.inputMode = isTelephone ? "tel" : "";
-            help.hidden = !isTelephone || Boolean(value.parentElement.querySelector(".invalid-feedback"));
+            help.hidden =
+                !isTelephone || Boolean(value.parentElement.querySelector(".invalid-feedback"));
         }
 
+        // Keep saved or rejected input on load; clear it only when the user chooses another method.
         method.addEventListener("change", () => {
             value.value = "";
             update();

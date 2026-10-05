@@ -24,16 +24,25 @@
          aria-label="Work item type">
         <button class="nav-link active"
                 type="button"
+                id="workTabTask"
+                aria-controls="workList"
+                tabindex="0"
                 data-kind="task"
                 role="tab"
                 aria-selected="true">Tasks <span class="badge text-bg-secondary" data-count="task">0</span></button>
         <button class="nav-link"
                 type="button"
+                id="workTabIssue"
+                aria-controls="workList"
+                tabindex="-1"
                 data-kind="issue"
                 role="tab"
                 aria-selected="false">Issues <span class="badge text-bg-secondary" data-count="issue">0</span></button>
         <button class="nav-link"
                 type="button"
+                id="workTabEvent"
+                aria-controls="workList"
+                tabindex="-1"
                 data-kind="event"
                 role="tab"
                 aria-selected="false">Events <span class="badge text-bg-secondary" data-count="event">0</span></button>
@@ -57,5 +66,8 @@
     </div>
     <div class="dashboard-work-list list-group list-group-flush"
          id="workList"
+         role="tabpanel"
+         tabindex="0"
+         aria-labelledby="workTabTask"
          aria-live="polite"></div>
 </section>

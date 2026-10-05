@@ -143,5 +143,5 @@ test("Dashboard and Property expansions use the shared range reveal", () => {
     assert.match(dashboardSource, /function revealExpandedRow\(row\) \{[\s\S]*?WorkspaceReveal\?\.queueRange\(/);
     assert.doesNotMatch(dashboardSource, /scrollIntoView\(/);
     assert.match(propertySource, /querySelectorAll\("\.property-related-record, \.property-record"\)/);
-    assert.match(propertySource, /WorkspaceReveal\?\.queueRange\([\s\S]*?record\.querySelector\("summary"\), record\.lastElementChild/);
+    assert.match(propertySource, /WorkspaceReveal\?\.queueRange\([\s\S]*?record\.querySelector\("summary"\),\s*record\.lastElementChild/);
 });

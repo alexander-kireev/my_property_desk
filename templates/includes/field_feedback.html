@@ -1,0 +1,11 @@
+{# Match the IDs Django adds to the bound field's aria-describedby attribute. #}
+{% if field.errors %}
+    <div class="invalid-feedback d-block" id="{{ field.auto_id }}_error">
+        {% for error in field.errors %}<div>{{ error }}</div>{% endfor %}
+    </div>
+{% endif %}
+{% if field.help_text and not hide_help %}
+    <div class="form-text"
+         id="{{ field.auto_id }}_helptext"
+         data-validation-help>{{ field.help_text|safe }}</div>
+{% endif %}

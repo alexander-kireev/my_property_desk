@@ -1,4 +1,3 @@
-{# edit Event Modal; visibility is controlled by the parent dialog collection. #}
 <div class="modal fade"
      id="editEventModal"
      data-modal-clear-query="form_state open"
@@ -22,40 +21,7 @@
                   data-event-tabs>
                 {% csrf_token %}
                 <input type="hidden" name="manage_contacts" value="1">
-                <div class="event-form-tabs"
-                     role="tablist"
-                     aria-label="Edit event sections">
-                    <button class="event-form-tab{% if not edit_contacts_form.errors or edit_event_form.errors %} is-active{% endif %}"
-                            id="editEventDetailsTab"
-                            type="button"
-                            role="tab"
-                            aria-controls="editEventDetailsPanel"
-                            aria-selected="{% if edit_contacts_form.errors and not edit_event_form.errors %}false{% else %}true{% endif %}"
-                            data-event-tab="details">Details</button>
-                    <button class="event-form-tab{% if edit_contacts_form.errors and not edit_event_form.errors %} is-active{% endif %}"
-                            id="editEventParticipantsTab"
-                            type="button"
-                            role="tab"
-                            aria-controls="editEventParticipantsPanel"
-                            aria-selected="{% if edit_contacts_form.errors and not edit_event_form.errors %}true{% else %}false{% endif %}"
-                            data-event-tab="participants">Participants <span class="event-form-tab-count" data-contact-tab-count>{{ edit_contacts_form.contacts.value|length }}</span></button>
-                </div>
-                <div class="modal-body event-form-body">
-                    <div id="editEventDetailsPanel"
-                         role="tabpanel"
-                         aria-labelledby="editEventDetailsTab"
-                         data-event-panel="details"
-                         {% if edit_contacts_form.errors and not edit_event_form.errors %} hidden{% endif %}>
-                        {% include "event/includes/event_form_fields.html" with event_form=edit_event_form %}
-                    </div>
-                    <div id="editEventParticipantsPanel"
-                         role="tabpanel"
-                         aria-labelledby="editEventParticipantsTab"
-                         data-event-panel="participants"
-                         {% if not edit_contacts_form.errors or edit_event_form.errors %} hidden{% endif %}>
-                        {% include "event/includes/contact_picker.html" with picker_field=edit_contacts_form.contacts picker_id="editEventContacts" picker_mode="edit" %}
-                    </div>
-                </div>
+                {% include "event/includes/tabbed_form_body.html" with id_prefix="editEvent" tab_label="Edit event sections" event_form=edit_event_form contacts_form=edit_contacts_form picker_id="editEventContacts" picker_mode="edit" only %}
                 <div class="modal-footer">
                     <button class="btn btn-outline-secondary"
                             type="button"

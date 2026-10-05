@@ -38,41 +38,11 @@
                         aria-label="Close"></button>
             </div>
             <form id="dashboardAddEventForm"
+                  data-event-form
+                  data-event-tabs
                   class="event-tabbed-form"
                   autocomplete="off">
-                <div class="event-form-tabs"
-                     role="tablist"
-                     aria-label="Add event sections">
-                    <button class="event-form-tab is-active"
-                            id="dashboardAddEventDetailsTab"
-                            type="button"
-                            role="tab"
-                            aria-controls="dashboardAddEventDetailsPanel"
-                            aria-selected="true"
-                            data-event-tab="details">Details</button>
-                    <button class="event-form-tab"
-                            id="dashboardAddEventParticipantsTab"
-                            type="button"
-                            role="tab"
-                            aria-controls="dashboardAddEventParticipantsPanel"
-                            aria-selected="false"
-                            data-event-tab="participants">Participants <span class="event-form-tab-count" data-contact-tab-count>0</span></button>
-                </div>
-                <div class="modal-body event-form-body">
-                    <div id="dashboardAddEventDetailsPanel"
-                         role="tabpanel"
-                         aria-labelledby="dashboardAddEventDetailsTab"
-                         data-event-panel="details">
-                        {% include "event/includes/event_form_fields.html" with event_form=add_event_form %}
-                    </div>
-                    <div id="dashboardAddEventParticipantsPanel"
-                         role="tabpanel"
-                         aria-labelledby="dashboardAddEventParticipantsTab"
-                         data-event-panel="participants"
-                         hidden>
-                        {% include "event/includes/contact_picker.html" with picker_field=initial_contacts_form.contacts picker_id="dashboardEventContacts" %}
-                    </div>
-                </div>
+                {% include "event/includes/tabbed_form_body.html" with id_prefix="dashboardAddEvent" tab_label="Add event sections" event_form=add_event_form contacts_form=initial_contacts_form picker_id="dashboardEventContacts" only %}
                 <div class="modal-footer">
                     <button class="btn btn-outline-secondary"
                             type="button"

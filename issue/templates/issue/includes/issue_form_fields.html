@@ -5,8 +5,8 @@
         <div class="mb-3">
             <span class="form-label" id="propertyAddIssueRelatedPropertyLabel">Related property</span>
             <div>
-                {% include "includes/locked_relation.html" with locked_id="propertyAddIssueRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
-                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                {% include "includes/locked_relation.html" with locked_id="propertyAddIssueRelatedProperty" locked_value=selected_property.name property_context=True %}
+                {% include "includes/field_feedback.html" with field=field only %}
             </div>
         </div>
     {% else %}
@@ -14,7 +14,7 @@
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             <div {% if field.name == 'priority' or field.name == 'resolution_deadline' %} class="issue-form-field-compact"{% endif %}>
                 {% if field.name == "property" %}<div data-searchable-select>{{ field }}</div>{% else %}{{ field }}{% endif %}
-                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                {% include "includes/field_feedback.html" with field=field only %}
             </div>
         </div>
     {% endif %}

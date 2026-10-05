@@ -16,7 +16,7 @@
                  aria-label="Issues command centre"
                  data-workspace-scroll-root="issues"
                  data-navigation-query="{{ navigation_query }}">
-            {% include "includes/my_work_nav.html" with active_section="issues" task_count=task_count issue_count=issue_count %}
+            {% include "includes/my_work_nav.html" with active_section="issues" %}
 
             {% if issue_count == 0 %}
                 <div class="issue-first-empty flex-grow-1 d-flex align-items-center justify-content-center p-4 p-md-5 text-center">

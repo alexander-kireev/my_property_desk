@@ -1,29 +1,22 @@
+{# This collection decides which dialogs exist; each included partial owns one modal. Bootstrap controls visibility. #}
 {# Create and edit dialogs #}
-{# Add Issue dialog #}
 {% include "issue/includes/modals/add_issue_modal.html" %}
 
 {% if selected_issue %}
     {% if edit_issue_form %}
-        {# Edit Issue dialog #}
         {% include "issue/includes/modals/edit_issue_modal.html" %}
     {% endif %}
     {% if add_task_form %}
-        {# Add Issue Task dialog #}
         {% include "issue/includes/modals/add_issue_task_modal.html" %}
     {% endif %}
     {% if edit_task_form %}
-        {# Edit Issue Task dialog #}
         {% include "issue/includes/modals/edit_issue_task_modal.html" %}
     {% endif %}
 
     {# Issue state and deletion confirmations #}
-    {# Resolve Issue dialog #}
     {% include "issue/includes/modals/resolve_issue_modal.html" %}
-    {# Dismiss Issue dialog #}
     {% include "issue/includes/modals/dismiss_issue_modal.html" %}
-    {# Delete Issue dialog #}
     {% include "issue/includes/modals/delete_issue_modal.html" %}
-    {# Reactivate Issue dialog #}
     {% include "issue/includes/modals/reactivate_issue_modal.html" %}
 {% endif %}
 {% if open_modal %}

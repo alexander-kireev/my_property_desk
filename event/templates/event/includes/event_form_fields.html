@@ -7,32 +7,32 @@
     <div class="col-12">
         <label class="form-label" for="{{ event_form.title.id_for_label }}">{{ event_form.title.label }}</label>
         {{ event_form.title }}
-        {% for error in event_form.title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        {% include "includes/field_feedback.html" with field=event_form.title only %}
     </div>
     <div class="col-12">
         <label class="form-label"
                for="{{ event_form.description.id_for_label }}">{{ event_form.description.label }}</label>
         {{ event_form.description }}
-        {% for error in event_form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        {% include "includes/field_feedback.html" with field=event_form.description only %}
     </div>
     {% if not property_context %}
         <div class="col-md-6">
             <label class="form-label"
                    for="{{ event_form.property.id_for_label }}">{{ event_form.property.label }}</label>
             <div data-searchable-select>{{ event_form.property }}</div>
-            {% for error in event_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% include "includes/field_feedback.html" with field=event_form.property only %}
         </div>
     {% else %}
         <div class="col-md-6">
             <span class="form-label" id="propertyAddEventRelatedPropertyLabel">Related property</span>
-            {% include "includes/locked_relation.html" with locked_id="propertyAddEventRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
-            {% for error in event_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% include "includes/locked_relation.html" with locked_id="propertyAddEventRelatedProperty" locked_value=selected_property.name property_context=True %}
+            {% include "includes/field_feedback.html" with field=event_form.property only %}
         </div>
     {% endif %}
     <div class="col-md-6">
         <label class="form-label" for="{{ event_form.scheduled_date.id_for_label }}">Date</label>
         {{ event_form.scheduled_date }}
-        {% for error in event_form.scheduled_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        {% include "includes/field_feedback.html" with field=event_form.scheduled_date only %}
     </div>
     <div class="col-12">
         {# All-day and timed scheduling controls #}
@@ -58,7 +58,7 @@
                 </label>
             </div>
         </div>
-        {% for error in event_form.all_day.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        {% include "includes/field_feedback.html" with field=event_form.all_day only %}
     </div>
     <div class="modal-event-time-fields">
         <span class="form-label">Hours</span>
@@ -67,14 +67,14 @@
                 <label class="form-label"
                        for="{{ event_form.start_time.id_for_label }}">{{ event_form.start_time.label }}</label>
                 {{ event_form.start_time }}
-                {% for error in event_form.start_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                {% include "includes/field_feedback.html" with field=event_form.start_time only %}
             </div>
             <div>
                 <label class="form-label" for="{{ event_form.end_time.id_for_label }}">
                     {{ event_form.end_time.label }} <span class="text-body-secondary fw-normal">(optional)</span>
                 </label>
                 {{ event_form.end_time }}
-                {% for error in event_form.end_time.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                {% include "includes/field_feedback.html" with field=event_form.end_time only %}
             </div>
             <p class="form-text mt-0 mb-0"
                {% if event_form.start_time.errors or event_form.end_time.errors %} hidden{% endif %}>Use 24-hour time (HH:MM), for example 09:30.</p>
@@ -88,13 +88,13 @@
                 <label class="form-check-label"
                        for="{{ event_form.user_participation_required.id_for_label }}">My participation is required</label>
             </div>
-            {% for error in event_form.user_participation_required.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% include "includes/field_feedback.html" with field=event_form.user_participation_required only %}
             <div class="form-check">
                 {{ event_form.user_presence_required }}
                 <label class="form-check-label"
                        for="{{ event_form.user_presence_required.id_for_label }}">My physical presence is required</label>
             </div>
-            {% for error in event_form.user_presence_required.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% include "includes/field_feedback.html" with field=event_form.user_presence_required only %}
             <div class="form-text">Requires participation.</div>
         </div>
     </div>
