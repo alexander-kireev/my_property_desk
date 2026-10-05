@@ -43,6 +43,8 @@ Development follows a structured but lightweight software-development lifecycle:
 
 ## Development formatting
 
+Read the [maintainer guide](docs/MAINTAINER_GUIDE.md) for HTML/CSS ownership, shared templates, commenting conventions, and the refactoring checks.
+
 Install the optional formatting tools after installing the application requirements:
 
 ```powershell

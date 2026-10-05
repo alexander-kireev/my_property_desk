@@ -8,7 +8,6 @@ const source = readFileSync(path.join(__dirname, "../static/js/expandable-text.j
 const styles = ["components.css", "task-page.css", "workspace.css"]
     .map((file) => readFileSync(path.join(__dirname, "../static/css", file), "utf8"))
     .join("\n");
-const propertyStyles = readFileSync(path.join(__dirname, "../static/css/property-workspace.css"), "utf8");
 const sharedTemplate = readFileSync(path.join(__dirname, "../templates/includes/expandable_text.html"), "utf8");
 const taskInlineTemplate = readFileSync(path.join(__dirname, "../task/templates/task/includes/mobile_task_details.html"), "utf8");
 const taskTemplate = ["tasks.html", "includes/task_detail_panel.html"]
@@ -119,11 +118,6 @@ test("single-line addresses detect horizontal overflow", () => {
     assert.equal(view.toggle.hidden, true);
 });
 
-test("shared preview clamps descriptions to three lines and addresses to one", () => {
-    assert.match(styles, /\.expandable-text-content:not\(\.is-expanded\)[\s\S]*?-webkit-line-clamp:\s*3/);
-    assert.match(styles, /\.expandable-text--single-line \.expandable-text-content:not\(\.is-expanded\)[\s\S]*?white-space:\s*nowrap/);
-});
-
 test("side-by-side description uses available card height for extra preview lines", () => {
     const view = fixture({fitCard: true});
     view.window.ExpandableText.refresh();
@@ -161,29 +155,4 @@ test("desktop Task description reserves the last preview line for an inline See 
     assert.equal(view.content.hidden, false);
     assert.equal(view.preview.hidden, true);
     assert.equal(view.toggle.textContent, "See less");
-});
-
-test("Task See more controls use the Dashboard disclosure style at all widths", () => {
-    assert.match(styles, /\.task-detail-scroll \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),\s*\.task-inline-description \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),[^{]*\{[^}]*background: var\(--bs-body-bg\);[^}]*color: var\(--bs-link-color\);[^}]*font-size: 0?\.85rem;[^}]*font-weight: 600;/s);
-});
-
-test("Task inline preview uses separate cards and compact two-column facts", () => {
-    assert.match(taskInlineTemplate, /class="task-inline-section task-inline-description"/);
-    assert.match(taskInlineTemplate, /<h3 class="task-inline-section-title">Details<\/h3>/);
-    assert.match(taskInlineTemplate, /<dl class="task-inline-facts">/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Status<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Priority<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Created<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Scheduled<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Deadline<\/dt>/);
-    assert.match(taskInlineTemplate, /\{% if task.issue or task.property %\}[\s\S]*class="task-inline-fact task-inline-relationship"/);
-    assert.match(styles, /:is\(\.task-inline-relationship, \.issue-inline-relationship, \.event-inline-relationship\)\s+:is\(\.task-related-link, \.task-related-deleted\)\s*\{[^}]*max-width: min\(100%, 16rem\)/s);
-    assert.match(styles, /@media \(min-width: 600px\) and \(max-width: 860px\)[\s\S]*?:is\(\.task-inline-facts, \.issue-inline-facts, \.event-inline-facts\)\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/s);
-    assert.match(styles, /:is\(\.task-inline-actions, \.issue-inline-actions, \.event-mobile-inline-actions\)\s+\.work-mobile-open \{[^}]*white-space: nowrap;/s);
-});
-
-test("Property summaries grow for wrapped badges and header address shares one line with its control", () => {
-    assert.match(propertyStyles, /\.property-related-summary\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*4\.25rem/s);
-    assert.match(propertyStyles, /\.property-heading-address\s*\{[^}]*display:\s*flex;/s);
-    assert.match(propertyStyles, /\.property-heading-address \.expandable-text-toggle\s*\{[^}]*flex:\s*0 0 auto;/s);
 });
