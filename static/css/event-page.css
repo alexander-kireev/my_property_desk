@@ -187,9 +187,9 @@
     border-bottom-color: var(--pom-brand-blue);
 }
 
+/* Calendar and detail panel containers */
 .event-right-body,
 .event-right-body > .tab-pane,
-/* Calendar and detail panel containers */
 .event-calendar-pane,
 .event-detail-pane {
     height: 100%;
