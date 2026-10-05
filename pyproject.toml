@@ -4,4 +4,5 @@ indent = 4
 max_line_length = 120
 preserve_blank_lines = true
 ignore = "H020,H023,H054"
+per-file-ignores = { 'navbar\.html$' = "H053" }
 exclude = ".venv,.worktrees,build_docs,docs,static/vendor,wireframes"
