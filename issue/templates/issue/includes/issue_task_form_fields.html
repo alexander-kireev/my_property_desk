@@ -1,17 +1,20 @@
+{# Task fields with the originating issue locked into the relationship field #}
 {% for error in task_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endfor %}
 {% for field in task_form %}
     <div class="mb-3">
         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        <div{% if field.name == 'priority' or field.name == 'scheduled_date' or field.name == 'completion_deadline' %} class="task-form-field-compact"{% endif %}>
+        <div {% if field.name == 'priority' or field.name == 'scheduled_date' or field.name == 'completion_deadline' %} class="task-form-field-compact"{% endif %}>
             {{ field }}
             {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
         </div>
     </div>
-    {% if field.name == 'description' %}
-    <div class="mb-3">
-        <span class="form-label" id="issueAddTaskRelatedIssueLabel">Related issue</span>
-        {% include "includes/locked_relation.html" with locked_id="issueAddTaskRelatedIssue" locked_label="Related issue" locked_value=selected_issue.title %}
-    </div>
+    {% if field.name == "description" %}
+        <div class="mb-3">
+            <span class="form-label" id="issueAddTaskRelatedIssueLabel">Related issue</span>
+            {% include "includes/locked_relation.html" with locked_id="issueAddTaskRelatedIssue" locked_label="Related issue" locked_value=selected_issue.title %}
+        </div>
     {% endif %}
 {% endfor %}
-<p class="form-text task-date-warning mb-0" data-task-date-warning hidden>Deadline is before the scheduled date. You can save this, but check whether one date needs updating.</p>
+<p class="form-text task-date-warning mb-0"
+   data-task-date-warning
+   hidden>Deadline is before the scheduled date. You can save this, but check whether one date needs updating.</p>

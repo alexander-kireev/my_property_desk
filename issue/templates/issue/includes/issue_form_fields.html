@@ -1,20 +1,21 @@
+{# Issue fields; Property is read-only when the form opens from a property workspace #}
 {% for error in issue_form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endfor %}
 {% for field in issue_form %}
-    {% if property_context and field.name == 'property' %}
-    <div class="mb-3">
-        <span class="form-label" id="propertyAddIssueRelatedPropertyLabel">Related property</span>
-        <div>
-            {% include "includes/locked_relation.html" with locked_id="propertyAddIssueRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
-            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    {% if property_context and field.name == "property" %}
+        <div class="mb-3">
+            <span class="form-label" id="propertyAddIssueRelatedPropertyLabel">Related property</span>
+            <div>
+                {% include "includes/locked_relation.html" with locked_id="propertyAddIssueRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
         </div>
-    </div>
     {% else %}
-    <div class="mb-3">
-        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        <div{% if field.name == 'priority' or field.name == 'resolution_deadline' %} class="issue-form-field-compact"{% endif %}>
-            {% if field.name == 'property' %}<div data-searchable-select>{{ field }}</div>{% else %}{{ field }}{% endif %}
-            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <div {% if field.name == 'priority' or field.name == 'resolution_deadline' %} class="issue-form-field-compact"{% endif %}>
+                {% if field.name == "property" %}<div data-searchable-select>{{ field }}</div>{% else %}{{ field }}{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
         </div>
-    </div>
     {% endif %}
 {% endfor %}
