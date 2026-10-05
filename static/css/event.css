@@ -151,8 +151,7 @@
     white-space: nowrap;
 }
 
-.event-command-context,
-.event-command-time {
+.event-command-context {
     color: var(--bs-secondary-color);
     font-size: 0.85rem;
 }
@@ -167,18 +166,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.event-pagination .page-link {
-    min-width: 2.25rem;
-    color: var(--bs-emphasis-color);
-    text-align: center;
-}
-
-.event-pagination .page-item.active .page-link {
-    color: var(--bs-body-bg);
-    background: var(--bs-emphasis-color);
-    border-color: var(--bs-emphasis-color);
 }
 
 .event-right-tabs {
@@ -237,9 +224,7 @@
 }
 
 .event-detail-scroll .card,
-.event-detail-scroll .card-body,
-.event-detail-list,
-.event-detail-list dd {
+.event-detail-scroll .card-body {
     min-width: 0;
 }
 
@@ -816,59 +801,10 @@ a.event-participant-name:focus-visible {
     -webkit-line-clamp: 3;
 }
 
-.event-detail-meta,
 .event-detail-actions {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-}
-
-.event-detail-meta {
-    flex-wrap: wrap;
-    margin-top: 0.75rem;
-}
-
-.event-detail-meta .text-body-secondary {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-.event-header-property {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    min-width: 0;
-    max-width: min(18rem, 100%);
-    flex: 0 1 auto;
-}
-
-.event-header-property .badge {
-    flex: 0 0 auto;
-}
-
-.event-header-property-link,
-.event-header-property-name {
-    display: inline-block;
-    min-width: 0;
-    max-width: min(18rem, 100%);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.event-header-property-link {
-    color: var(--bs-body-color);
-    text-decoration: none;
-}
-
-.event-header-property-link:hover {
-    color: var(--bs-primary-text-emphasis);
-    text-decoration: underline;
-}
-
-.event-header-property-link:focus-visible {
-    outline: 2px solid var(--bs-focus-ring-color);
-    outline-offset: 2px;
 }
 
 .event-detail-actions {
@@ -885,73 +821,6 @@ a.event-participant-name:focus-visible {
 
 .event-menu-button::after {
     display: none;
-}
-
-.event-detail-list {
-    display: grid;
-    grid-template-columns: minmax(5rem, 36%) minmax(0, 1fr);
-    gap: 0.75rem 1rem;
-}
-
-.event-detail-list dt {
-    min-width: 0;
-    color: var(--bs-secondary-color);
-    font-weight: 400;
-}
-
-.event-detail-list dd {
-    margin: 0;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    text-align: right;
-}
-
-.event-property-value {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.35rem;
-}
-
-.event-property-name {
-    display: -webkit-box;
-    min-width: 0;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    flex: 1 1 auto;
-}
-
-.event-property-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    min-width: 0;
-    max-width: 100%;
-    padding: 0.3rem 0.45rem;
-    color: var(--bs-body-color);
-    background: var(--bs-tertiary-bg);
-    border: var(--bs-border-width) solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    text-decoration: none;
-}
-
-.event-property-link > span:last-child {
-    flex: 0 0 auto;
-}
-
-.event-property-link:hover {
-    color: var(--bs-emphasis-color);
-    background: var(--bs-secondary-bg);
-    border-color: var(--bs-secondary-color);
-}
-
-.event-property-link:focus-visible {
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.2);
 }
 
 .event-mobile-back {
@@ -1033,28 +902,6 @@ a.event-participant-name:focus-visible {
         padding: 1rem 1.25rem 1.25rem;
         border-bottom: 1px solid var(--bs-border-color);
         background: var(--bs-body-bg);
-    }
-
-    .event-mobile-description {
-        margin-bottom: 1rem;
-        overflow-wrap: anywhere;
-    }
-
-    .event-mobile-history-note {
-        padding: 0.65rem;
-        border-left: 2px solid var(--bs-border-color);
-        background: var(--bs-tertiary-bg);
-    }
-
-    .event-mobile-participants {
-        margin-top: 1rem;
-        border-top: 1px solid var(--bs-border-color);
-    }
-
-    .event-mobile-participants h3 {
-        margin: 0;
-        padding: 0.75rem 0 0.35rem;
-        font-size: 0.9rem;
     }
 
     .event-mobile-participant-row {
@@ -1395,10 +1242,6 @@ a.event-participant-name:focus-visible {
         font-size: 1.1rem;
         opacity: 1;
     }
-
-    .event-mobile-expanded .event-property-value {
-        flex-wrap: wrap;
-    }
 }
 
 /* My Work Events use the same stable copy / status / disclosure tracks as Tasks and Issues. */
@@ -1625,12 +1468,6 @@ a.event-participant-name:focus-visible {
 
     .event-mobile-inline-actions .work-mobile-open {
         margin-left: auto;
-    }
-
-    .event-mobile-description,
-    .event-mobile-participants {
-        margin: 0;
-        border: 0;
     }
 
     .event-workspace.show-mobile-calendar .event-list-column {
