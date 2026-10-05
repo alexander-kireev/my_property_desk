@@ -1,3 +1,5 @@
+/* Foundation: design tokens, page shell, navigation and account layout. Loaded first after Bootstrap. */
+
 /* Design tokens and page foundations */
 :root,
 [data-bs-theme="light"] {

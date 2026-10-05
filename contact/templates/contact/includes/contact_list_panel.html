@@ -3,6 +3,7 @@
 <aside class="contact-list-column col-lg-4 border-end"
        aria-label="Contact results">
     <div class="contact-pane">
+        {# Search and filter submission #}
         <form class="contact-list-controls workspace-list-controls border-bottom p-3"
               data-list-header
               method="get"
@@ -57,6 +58,7 @@
    href="{% url 'contact:contacts' %}?selected={{ selected_contact.pk }}"
    data-workspace-scroll-row
    aria-current="true"><span class="contact-command-heading workspace-compact-heading"><span class="contact-command-title">{{ selected_contact }}</span>{% include "includes/work_state_badge.html" with item=selected_contact only %}</span><span class="contact-command-methods">Selected contact</span></a>{% endif %}
+                {# Result rows: identity, state and date or contact summary #}
                 {% for contact in page_obj %}
                     <a class="contact-command-row workspace-compact-row list-group-item list-group-item-action{% if contact == selected_contact %} is-selected{% endif %}{% if contact.state != 'active' %} terminated{% endif %}"
                        href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ contact.pk }}"
@@ -81,6 +83,7 @@
             </div>
 
             <div class="contact-pagination d-flex justify-content-center border-top px-3 py-2">
+                {# Pagination preserves the current search and filter query #}
                 {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Contact pagination" only %}
             </div>
         {% else %}

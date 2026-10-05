@@ -13,7 +13,12 @@
     <div class="event-inline-section">
         <h3 class="event-inline-section-title">Details</h3>
         <dl class="event-inline-facts">
-            <div class="event-inline-fact"><dt>Status</dt><dd>{% include "includes/work_state_badge.html" with item=event only %}</dd></div>
+            <div class="event-inline-fact">
+                <dt>Status</dt>
+                <dd>
+                    {% include "includes/work_state_badge.html" with item=event only %}
+                </dd>
+            </div>
             <div class="event-inline-fact">
                 <dt>Created</dt>
                 <dd>
@@ -26,11 +31,19 @@
                     {{ event.scheduled_date|date:"j F Y" }}
                 </dd>
             </div>
-            <div class="event-inline-fact"><dt>Time</dt><dd>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</dd></div>
-            <div class="event-inline-fact"><dt>Participation</dt><dd>{% if event.user_participation_required %}Required{% else %}Not required{% endif %}</dd></div>
-            <div class="event-inline-fact"><dt>Presence</dt><dd>{% if event.user_presence_required %}Required{% else %}Not required{% endif %}</dd></div>
-            {% if event.terminated_at %}<div class="event-inline-fact"><dt>Terminated</dt><dd>{{ event.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
-            {% if event.property %}<div class="event-inline-fact event-inline-relationship"><dt>Related to</dt><dd>{% if event.property.deleted_at %}<span class="task-related-deleted" title="{{ event.property.name }}"><span class="task-related-copy">{{ event.property.name }}</span></span>{% else %}<a class="task-related-link"
+            <div class="event-inline-fact">
+                <dt>Time</dt>
+                <dd>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</dd></div>
+            <div class="event-inline-fact">
+                <dt>Participation</dt>
+                <dd>{% if event.user_participation_required %}Required{% else %}Not required{% endif %}</dd></div>
+            <div class="event-inline-fact">
+                <dt>Presence</dt>
+                <dd>{% if event.user_presence_required %}Required{% else %}Not required{% endif %}</dd></div>
+            {% if event.terminated_at %}<div class="event-inline-fact"><dt>Terminated</dt>
+                <dd>{{ event.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
+            {% if event.property %}<div class="event-inline-fact event-inline-relationship"><dt>Related to</dt>
+                <dd>{% if event.property.deleted_at %}<span class="task-related-deleted" title="{{ event.property.name }}"><span class="task-related-copy">{{ event.property.name }}</span></span>{% else %}<a class="task-related-link"
    href="{% url 'property:property_detail' event.property.pk %}"
    title="{{ event.property.name }}"><span class="task-related-copy">{{ event.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd></div>{% endif %}
         </dl>

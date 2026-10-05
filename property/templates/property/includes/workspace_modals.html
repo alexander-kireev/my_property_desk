@@ -1,4 +1,5 @@
 {# Create a property from the workspace #}
+{# Add Property dialog #}
 <div class="modal fade"
      id="addPropertyModal"
      data-modal-clear-query="form_state"
@@ -31,6 +32,7 @@
 
 {% if selected_property and selected_property.state == "active" %}
     {# Edit or deactivate the selected active property #}
+    {# {% if is_detail_route %}edit Property dialog{% else %}list Edit Property dialog{% endif %} #}
     <div class="modal fade"
          id="{% if is_detail_route %}editPropertyModal{% else %}listEditPropertyModal{% endif %}"
          data-modal-clear-query="form_state edit"
@@ -67,6 +69,7 @@
         </div>
     </div>
 
+    {# Deactivate Property dialog #}
     <div class="modal fade modal-resilient"
          id="deactivatePropertyModal"
          data-modal-clear-query="deactivate"
@@ -119,6 +122,7 @@
     {% if selected_property.state == "active" %}
         {% include "property/includes/record_add_modals.html" %}
     {% endif %}
+    {# Delete Property dialog #}
     <div class="modal fade modal-resilient"
          id="deletePropertyModal"
          data-modal-clear-query="confirm_delete"

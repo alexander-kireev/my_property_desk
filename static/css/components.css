@@ -1,3 +1,5 @@
+/* Reusable controls, forms and feedback. Loaded before page styles; some legacy workspace overrides remain grouped below. */
+
 /* Shared Bootstrap primitives, controls, expandable copy, and dialogs */
 
 .card {
@@ -238,6 +240,7 @@
     display: inline;
 }
 
+/* Compact and locked form fields */
 .task-form-field-compact {
     max-width: 18rem;
 }
@@ -1100,6 +1103,7 @@
     text-align: right;
 }
 
+/* Shared detail fact links */
 .work-detail-list .task-related-link {
     padding: 0.45rem 0.55rem;
 }
@@ -1161,6 +1165,7 @@
     }
 }
 
+/* Contact method dialog sizing and body scroll */
 .contact-method-modal .modal-dialog {
     max-width: 34rem;
 }
@@ -1192,6 +1197,7 @@
     }
 }
 
+/* Custom select option states */
 .app-select-option.is-selected {
     font-weight: 600;
 }
@@ -1205,6 +1211,7 @@
     color: var(--bs-secondary-color);
 }
 
+/* Task responsive workspace compatibility rules */
 .task-mobile-back {
     display: none;
 }

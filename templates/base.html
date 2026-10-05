@@ -23,6 +23,7 @@
 
         <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
         <link rel="stylesheet" href="{% static 'css/components.css' %}">
+        {# Page geometry loads before shared workspace overrides; extra_css supplies final feature styles. #}
         {% block page_css %}{% endblock %}
         <link rel="stylesheet" href="{% static 'css/workspace.css' %}">
 

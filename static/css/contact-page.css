@@ -1,3 +1,5 @@
+/* Contact page, contact methods and Notes. Shared workspace sections are marked for ownership cleanup. */
+
 /* Contact command centre */
 .contact-command-page,
 .contact-command-page .page-shell {
@@ -15,6 +17,7 @@
     overflow: hidden;
 }
 
+/* First-use empty state */
 .contact-first-empty {
     min-height: 28rem;
     background: var(--bs-body-bg);
@@ -37,6 +40,7 @@
     border-radius: 50%;
 }
 
+/* List and detail pane containers */
 .contact-workspace {
     flex: 1 1 auto;
     min-height: 0;
@@ -62,6 +66,7 @@
     flex: 0 0 auto;
 }
 
+/* Shared workspace controls; also used by Properties */
 .workspace-control-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 7rem;
@@ -92,6 +97,7 @@
     background: var(--bs-tertiary-bg);
 }
 
+/* Shared selected-record heading and actions */
 .workspace-detail-header {
     flex: 0 0 auto;
     padding: 1.25rem 1.5rem;
@@ -159,6 +165,7 @@
     }
 }
 
+/* Compact workspace and short-viewport behavior */
 @media (max-width: 991.98px), (max-width: 1199.98px) and (max-height: 700px) {
     .workspace-mobile-back {
         display: inline-flex;
@@ -175,6 +182,7 @@
     padding: 1.25rem 1.5rem;
 }
 
+/* Contact list, selection and state */
 .contact-command-list {
     flex: 1 1 auto;
     min-height: 0;
@@ -213,6 +221,7 @@
     color: var(--bs-secondary-color) !important;
 }
 
+/* Compact row heading and state badge */
 .workspace-compact-row {
     min-height: 4.25rem;
     padding: 0.625rem 1.25rem;
@@ -238,6 +247,7 @@
     white-space: nowrap;
 }
 
+/* Phone and compressed email summary */
 .contact-command-methods {
     display: grid;
     grid-template-columns: 16ch minmax(0, 1fr);
@@ -273,6 +283,7 @@
     overflow-wrap: anywhere;
 }
 
+/* Contact method cards and editable values */
 .contact-methods-section {
     container-type: inline-size;
 }
@@ -340,6 +351,7 @@
     min-width: 0;
 }
 
+/* Method actions: revealed on hover or keyboard focus */
 .contact-method-actions {
     position: absolute;
     top: 50%;
@@ -425,6 +437,7 @@
     }
 }
 
+/* Details and Notes tabs */
 .contact-detail-tabs {
     display: flex;
     flex: 0 0 auto;
@@ -485,6 +498,7 @@
     flex-direction: column;
 }
 
+/* Notes board: list, saved notes and editor */
 .notes-board-shell {
     width: 100%;
     min-height: 0;
@@ -620,6 +634,7 @@
     place-items: center;
 }
 
+/* New-note composer */
 .notes-board-shell__composer {
     padding: 1rem;
     display: grid;
@@ -644,6 +659,7 @@
     display: none;
 }
 
+/* Desktop workspace sizing */
 @media (min-width: 992px) {
     .contact-command-page {
         height: 100dvh;

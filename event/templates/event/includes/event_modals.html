@@ -1,5 +1,6 @@
 {# Create, edit, participant, and state dialogs #}
 {% if add_event_form %}
+    {# Add Event dialog #}
     <div class="modal fade"
          id="addEventModal"
          data-modal-clear-query="form_state"
@@ -85,6 +86,7 @@
 
 {% if selected_event %}
     {% if selected_event.state == "scheduled" and add_contacts_form %}
+        {# Add Event Contacts dialog #}
         <div class="modal fade"
              id="addEventContactsModal"
              data-modal-clear-query="form_state"
@@ -117,6 +119,7 @@
         </div>
     {% endif %}
     {% if selected_event.state == "scheduled" and edit_event_form %}
+        {# Edit Event dialog #}
         <div class="modal fade"
              id="editEventModal"
              data-modal-clear-query="form_state open"
@@ -186,6 +189,7 @@
     {% endif %}
 
     {% if selected_event.state == "scheduled" %}
+        {# Occur Event dialog #}
         <div class="modal fade modal-resilient"
              id="occurEventModal"
              tabindex="-1"
@@ -216,6 +220,7 @@
                 </div>
             </div>
         </div>
+        {# Cancel Event dialog #}
         <div class="modal fade modal-resilient"
              id="cancelEventModal"
              tabindex="-1"
@@ -247,6 +252,7 @@
             </div>
         </div>
     {% else %}
+        {# Reactivate Event dialog #}
         <div class="modal fade modal-resilient"
              id="reactivateEventModal"
              tabindex="-1"
@@ -278,6 +284,7 @@
             </div>
         </div>
     {% endif %}
+    {# Delete Event dialog #}
     <div class="modal fade modal-resilient"
          id="deleteEventModal"
          tabindex="-1"

@@ -4,6 +4,7 @@
 <aside class="issue-list-column col-lg-4 border-end"
        aria-label="Issue results">
     <div class="issue-pane">
+        {# Search and filter submission #}
         <form class="issue-list-controls border-bottom p-3"
               id="issueFilterForm"
               method="get"
@@ -117,6 +118,7 @@
         <div class="issue-list list-group list-group-flush"
              data-workspace-scroll-list>
             {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This issue is outside the current filters. <a href="{% url 'issue:issues' %}?selected={{ selected_issue.pk }}">Clear filters to find it in the list</a>.</div>{% endif %}
+            {# Result rows: identity, state and date or contact summary #}
             {% for issue in page_obj %}
                 {% work_status issue today as issue_status %}
                 <a class="issue-list-row list-group-item list-group-item-action{% if selected_issue.pk == issue.pk %} is-selected{% endif %}{% if issue.state != 'active' %} terminated{% endif %}"
@@ -160,6 +162,7 @@
 {% endfor %}
 </div>
 
+{# Pagination preserves the current search and filter query #}
 {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Issue pagination" pagination_class="issue-pagination command-pagination border-top bg-body p-3" only %}
 </div>
 </aside>

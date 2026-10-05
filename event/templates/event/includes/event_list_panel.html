@@ -3,6 +3,7 @@
        aria-label="Event results"
        id="eventResults">
     <div class="event-pane">
+        {# Search and filter submission #}
         <form class="event-list-controls border-bottom p-3"
               id="eventFilterForm"
               method="get"
@@ -126,6 +127,7 @@
         <div class="event-command-list list-group list-group-flush"
              data-workspace-scroll-list>
             {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This event is outside the current filters. <a href="{% url 'event:events' %}?selected={{ selected_event.pk }}&amp;tab=details">Clear filters to find it in the list</a>.</div>{% endif %}
+            {# Result rows: identity, state and date or contact summary #}
             {% for event in page_obj %}
                 <div class="event-command-entry" id="eventRow{{ event.pk }}">
                     <a class="event-command-row list-group-item list-group-item-action{% if selected_event.pk == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}"
@@ -159,6 +161,7 @@
             {% endfor %}
         </div>
 
+        {# Pagination preserves the current search and filter query #}
         {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Event pagination" pagination_class="event-pagination command-pagination border-top bg-body p-3" only %}
     </div>
 </aside>

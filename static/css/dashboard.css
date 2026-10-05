@@ -1,3 +1,5 @@
+/* Dashboard panels, calendar, notes and dialogs. Loaded only by the Dashboard page. */
+
 /* Dashboard frame and three-panel layout */
 .dashboard-main {
     min-height: 0;
@@ -1186,6 +1188,7 @@
     padding: 9px;
 }
 
+/* Saved notes and their hover actions */
 .dashboard-note {
     position: relative;
     margin-bottom: 7px;

@@ -1,3 +1,5 @@
+/* Property workspace and related records. Loaded after shared workspace styles. */
+
 /* Property workspace frame and column layout */
 .property-command-main,
 .property-command-main > .container-xl {

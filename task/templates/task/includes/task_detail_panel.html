@@ -6,6 +6,7 @@
             {% work_status selected_task today as selected_status %}
             {% if relationship_moved %}<div class="alert alert-success rounded-0 mb-0"
      role="status">Task saved. It is no longer linked to the previous issue.</div>{% endif %}
+            {# Selected record heading and available actions #}
             <header class="task-detail-header">
                 <a class="task-mobile-back btn btn-sm pom-quiet mb-3"
                    href="{{ task_list_url }}">← Back to tasks</a>
@@ -74,6 +75,7 @@
                         <article class="card h-100">
                             <div class="card-body p-4">
                                 <h3 class="h5 mb-3">Details</h3>
+                                {# Record facts and related-record links #}
                                 <dl class="work-detail-list task-detail-facts-meta small mb-1">
                                     <dt class="fw-normal text-body-secondary">Status</dt>
                                     <dd>

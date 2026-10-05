@@ -1,3 +1,5 @@
+/* My Work Events workspace, calendar and participants. Reusable Event forms live in event-components.css. */
+
 /* My Work Events shell and section navigation */
 .event-command-page,
 .event-command-page .page-shell {
@@ -105,6 +107,7 @@
     border-radius: 1rem;
 }
 
+/* Scrollable Event results */
 .event-command-list {
     flex: 1 1 auto;
     min-height: 0;
@@ -560,6 +563,7 @@ a.event-participant-name:focus-visible {
     -webkit-line-clamp: 3;
 }
 
+/* Selected Event actions */
 .event-detail-actions {
     display: flex;
     align-items: center;

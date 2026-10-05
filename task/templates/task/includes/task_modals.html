@@ -1,4 +1,5 @@
 {# Create and edit dialogs #}
+{# Add Task dialog #}
 <div class="modal fade"
      id="addTaskModal"
      data-modal-clear-query="form_state"
@@ -49,6 +50,7 @@
 
 {% if selected_task %}
     {% if selected_task.state == "active" %}
+        {# Edit Task dialog #}
         <div class="modal fade"
              id="editTaskModal"
              data-modal-clear-query="form_state open"
@@ -83,6 +85,7 @@
         </div>
 
         {# Task state confirmations #}
+        {# Complete Task dialog #}
         <div class="modal fade modal-resilient task-confirm-modal"
              id="completeTaskModal"
              tabindex="-1"
@@ -116,6 +119,7 @@
             </div>
         </div>
 
+        {# Dismiss Task dialog #}
         <div class="modal fade modal-resilient task-confirm-modal"
              id="dismissTaskModal"
              tabindex="-1"
@@ -150,6 +154,7 @@
         </div>
     {% endif %}
 
+    {# Delete Task dialog #}
     <div class="modal fade modal-resilient task-confirm-modal"
          id="deleteTaskModal"
          tabindex="-1"

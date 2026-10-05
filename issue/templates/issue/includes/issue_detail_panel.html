@@ -4,6 +4,7 @@
     <div class="issue-pane">
         {% if selected_issue %}
             {% work_status selected_issue today as selected_status %}
+            {# Selected record heading and available actions #}
             <header class="issue-detail-header">
                 <a class="issue-mobile-back btn btn-sm pom-quiet mb-2"
                    href="?{% if navigation_query %}{{ navigation_query }}{% endif %}">← Back to issues</a>
@@ -85,22 +86,32 @@
                                 <article class="card h-100">
                                     <div class="card-body p-4">
                                         <h3 class="h5 mb-3">Details</h3>
+                                        {# Record facts and related-record links #}
                                         <dl class="work-detail-list issue-detail-facts-meta small mb-1">
-                                            <dt>Status</dt><dd>{% include "includes/work_state_badge.html" with item=selected_issue only %}</dd>
-                                            <dt>Priority</dt><dd>{% include "issue/includes/priority_badge.html" with issue=selected_issue %}</dd>
+                                            <dt>Status</dt>
+                                            <dd>
+                                                {% include "includes/work_state_badge.html" with item=selected_issue only %}
+                                            </dd>
+                                            <dt>Priority</dt>
+                                            <dd>
+                                                {% include "issue/includes/priority_badge.html" with issue=selected_issue %}
+                                            </dd>
                                             <dt>Created</dt>
                                             <dd>
                                                 {{ selected_issue.created_at|date:"j F Y" }}
                                             </dd>
                                         </dl>
                                         <dl class="work-detail-list small mb-0">
-                                            <dt>Resolve by</dt><dd><span class="issue-detail-date{% if selected_status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}">{{ selected_issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if selected_issue.resolution_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == "overdue" %}{{ selected_status.headline }}{% else %}{{ selected_issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
-                                            {% if selected_issue.terminated_at %}<dt>Terminated</dt><dd>{{ selected_issue.terminated_at|date:"j M Y" }}</dd>{% endif %}
+                                            <dt>Resolve by</dt>
+                                            <dd><span class="issue-detail-date{% if selected_status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}">{{ selected_issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if selected_issue.resolution_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == "overdue" %}{{ selected_status.headline }}{% else %}{{ selected_issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
+                                            {% if selected_issue.terminated_at %}<dt>Terminated</dt>
+                                                <dd>{{ selected_issue.terminated_at|date:"j M Y" }}</dd>{% endif %}
                                             <dt>Active tasks</dt>
                                             <dd>
                                                 {{ active_task_count }}
                                             </dd>
-                                            {% if selected_issue.property %}<dt>Related to</dt><dd>{% if selected_issue.property.deleted_at %}<span class="task-related-deleted"
+                                            {% if selected_issue.property %}<dt>Related to</dt>
+                                                <dd>{% if selected_issue.property.deleted_at %}<span class="task-related-deleted"
       title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span></span>{% else %}<a class="task-related-link"
    href="{% url 'property:property_detail' selected_issue.property.pk %}"
    title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}
@@ -117,6 +128,7 @@
                     <div class="issue-task-scroll">
                         <div class="issue-linked-tasks-card">
                             <div class="issue-task-list">
+                                {# Linked Tasks: expandable summaries and actions #}
                                 {% for task in selected_tasks %}
                                     {% work_status task today as linked_status %}
                                     <article class="issue-task-row{% if task.state != 'active' %} terminated{% endif %}">

@@ -1,3 +1,5 @@
+/* Shared record indicators and responsive workspaces. Loaded after page_css so common workspace behavior wins. */
+
 /* Shared workspace summaries, responsive disclosure, and inline details */
 
 /* Shared mobile relationship summaries */
@@ -154,6 +156,7 @@
 }
 
 .work-mobile-chevron,
+/* Compact work rows and expanded inline details */
 .work-mobile-expanded {
     display: none;
 }
@@ -335,6 +338,7 @@
     display: none;
 }
 
+/* Move Open record into the menu when action space runs out */
 @container mobile-work (max-width: 19rem) {
     :is(.task-inline-actions, .issue-inline-actions, .event-mobile-inline-actions)
         .work-mobile-open {
@@ -346,6 +350,7 @@
     }
 }
 
+/* Two-column facts on wider compact screens */
 @media (min-width: 600px) and (max-width: 860px) {
     :is(.task-inline-facts, .issue-inline-facts, .event-inline-facts) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -412,6 +417,7 @@
     }
 }
 
+/* Stack detail cards below the desktop split threshold */
 @media (max-width: 1199.98px) {
     .task-command-row-grid {
         grid-template-columns: minmax(0, 1fr);
@@ -434,6 +440,7 @@
     }
 }
 
+/* Intermediate Task row proportions */
 @media (min-width: 861px) and (max-width: 1199.98px) {
     .task-command-row {
         min-height: 4.25rem;
@@ -855,6 +862,7 @@
     container: issue-tasks / inline-size;
 }
 
+/* Linked Tasks inside the Issue detail pane */
 .issue-linked-task-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 9rem) 27px;
@@ -994,6 +1002,7 @@
     }
 }
 
+/* Explain a selected record outside the active filters */
 .workspace-selection-notice {
     padding: 0.65rem 0.9rem;
     border-bottom: 1px solid var(--bs-border-color);

@@ -1,6 +1,7 @@
 {% load static %}
 <nav class="app-navbar navbar navbar-expand-lg" data-bs-theme="dark">
     <div class="container-fluid px-3 px-md-5">
+        {# Brand links to the appropriate signed-in or public landing page #}
         <a class="navbar-brand"
            href="{% if request.user.is_authenticated %}{% url 'pages:dashboard' %}{% else %}{% url 'pages:home' %}{% endif %}"
            aria-label="{% if request.user.is_authenticated %}My Property Desk dashboard{% else %}My Property Desk home{% endif %}">
@@ -10,6 +11,7 @@
                  width="382"
                  height="60">
         </a>
+        {# Compact navigation toggle; Bootstrap owns expansion and focus #}
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"

@@ -4,6 +4,7 @@
          role="tabpanel">
     <div class="event-detail-pane">
         {% if selected_event %}
+            {# Selected record heading and available actions #}
             <header class="event-detail-header p-3 p-md-4">
                 <a class="event-mobile-back btn btn-sm pom-quiet mb-2"
                    href="?{% if navigation_query %}{{ navigation_query }}{% endif %}">← Back to events</a>
@@ -72,8 +73,12 @@
                         <article class="card h-100">
                             <div class="card-body p-4">
                                 <h3 class="h5 mb-3">Details</h3>
+                                {# Record facts and related-record links #}
                                 <dl class="work-detail-list small mb-0">
-                                    <dt>Status</dt><dd>{% include "includes/work_state_badge.html" with item=selected_event only %}</dd>
+                                    <dt>Status</dt>
+                                    <dd>
+                                        {% include "includes/work_state_badge.html" with item=selected_event only %}
+                                    </dd>
                                     <dt>Created</dt>
                                     <dd>
                                         {{ selected_event.created_at|date:"j F Y" }}
@@ -82,11 +87,16 @@
                                     <dd>
                                         {{ selected_event.scheduled_date|date:"j F Y" }}
                                     </dd>
-                                    <dt>Time</dt><dd>{% if selected_event.all_day %}All day{% else %}{{ selected_event.start_time|time:"H:i" }}{% if selected_event.end_time %}–{{ selected_event.end_time|time:"H:i" }}{% endif %}{% endif %}</dd>
-                                    {% if selected_event.terminated_at %}<dt>Terminated</dt><dd>{{ selected_event.terminated_at|date:"j M Y" }}</dd>{% endif %}
-                                    <dt>Participation</dt><dd>{% if selected_event.user_participation_required %}Required{% else %}Not required{% endif %}</dd>
-                                    <dt>Presence</dt><dd>{% if selected_event.user_presence_required %}Required{% else %}Not required{% endif %}</dd>
-                                    {% if selected_event.property %}<dt>Related to</dt><dd>{% if selected_event.property.deleted_at %}<span class="task-related-deleted"
+                                    <dt>Time</dt>
+                                    <dd>{% if selected_event.all_day %}All day{% else %}{{ selected_event.start_time|time:"H:i" }}{% if selected_event.end_time %}–{{ selected_event.end_time|time:"H:i" }}{% endif %}{% endif %}</dd>
+                                    {% if selected_event.terminated_at %}<dt>Terminated</dt>
+                                        <dd>{{ selected_event.terminated_at|date:"j M Y" }}</dd>{% endif %}
+                                    <dt>Participation</dt>
+                                    <dd>{% if selected_event.user_participation_required %}Required{% else %}Not required{% endif %}</dd>
+                                    <dt>Presence</dt>
+                                    <dd>{% if selected_event.user_presence_required %}Required{% else %}Not required{% endif %}</dd>
+                                    {% if selected_event.property %}<dt>Related to</dt>
+                                        <dd>{% if selected_event.property.deleted_at %}<span class="task-related-deleted"
       title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span></span>{% else %}<a class="task-related-link"
    href="{% url 'property:property_detail' selected_event.property.pk %}"
    title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}

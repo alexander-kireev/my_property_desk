@@ -3,6 +3,7 @@
 <aside class="task-list-column col-lg-4 border-end"
        aria-label="Task results">
     <div class="task-pane">
+        {# Search and filter submission #}
         <form class="task-list-controls border-bottom p-3"
               id="taskFilterForm"
               method="get"
@@ -134,6 +135,7 @@
                  aria-label="Tasks"
                  data-workspace-scroll-list>
                 {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This task is outside the current filters. <a href="{% url 'task:tasks' %}?selected={{ selected_task.pk }}">Clear filters to find it in the list</a>.</div>{% endif %}
+                {# Result rows: identity, state and date or contact summary #}
                 {% for task in page_obj %}
                     {% work_status task today as task_status %}
                     <a class="task-command-row list-group-item list-group-item-action{% if task == selected_task %} is-selected{% endif %}{% if task.state != 'active' %} terminated{% endif %}"
@@ -173,6 +175,7 @@
     </div>
 
     <div class="task-pagination d-flex justify-content-center border-top px-3 py-2">
+        {# Pagination preserves the current search and filter query #}
         {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Task pagination" only %}
     </div>
 {% else %}

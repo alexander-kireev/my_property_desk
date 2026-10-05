@@ -46,6 +46,7 @@
             </div>
         </section>
 
+        {# Email, password and session controls #}
         <section class="card shadow-sm mb-4" aria-labelledby="account-heading">
             <div class="card-body profile-card-body">
                 <h2 class="h5 mb-3" id="account-heading">Account</h2>
@@ -82,6 +83,7 @@
             </div>
         </section>
 
+        {# Permanent account deletion #}
         <section class="card profile-danger-card mb-4"
                  aria-labelledby="danger-heading">
             <div class="card-body profile-card-body">
@@ -103,6 +105,7 @@
     </div>
 
     {# Email and password changes require fresh account verification #}
+    {# Change Email dialog #}
     <div class="modal fade"
          id="changeEmailModal"
          data-profile-account-modal
@@ -162,6 +165,7 @@
         </div>
     </div>
 
+    {# Change Password dialog #}
     <div class="modal fade"
          id="changePasswordModal"
          data-profile-account-modal
@@ -237,6 +241,7 @@
     </div>
 
     {# Two-step permanent account deletion #}
+    {# Delete Account dialog #}
     <div class="modal fade"
          id="deleteAccountModal"
          tabindex="-1"
@@ -268,6 +273,7 @@
         </div>
     </div>
 
+    {# Delete Account Confirm dialog #}
     <div class="modal fade"
          id="deleteAccountConfirmModal"
          tabindex="-1"

@@ -1,4 +1,5 @@
 {# Create and edit dialogs #}
+{# Add Issue dialog #}
 <div class="modal fade"
      id="addIssueModal"
      data-modal-clear-query="form_state"
@@ -45,6 +46,7 @@
 
 {% if selected_issue %}
     {% if edit_issue_form %}
+        {# Edit Issue dialog #}
         <div class="modal fade"
              id="editIssueModal"
              data-modal-clear-query="form_state open"
@@ -76,6 +78,7 @@
         </div>
     {% endif %}
     {% if add_task_form %}
+        {# Add Issue Task dialog #}
         <div class="modal fade"
              id="addIssueTaskModal"
              data-modal-clear-query="form_state"
@@ -109,6 +112,7 @@
         </div>
     {% endif %}
     {% if edit_task_form %}
+        {# Edit Issue Task dialog #}
         <div class="modal fade"
              id="editIssueTaskModal"
              data-modal-clear-query="form_state"
@@ -143,6 +147,7 @@
     {% endif %}
 
     {# Issue state and deletion confirmations #}
+    {# Resolve Issue dialog #}
     <div class="modal fade modal-resilient"
          id="resolveIssueModal"
          tabindex="-1"
@@ -183,6 +188,7 @@
             </div>
         </div>
     </div>
+    {# Dismiss Issue dialog #}
     <div class="modal fade modal-resilient"
          id="dismissIssueModal"
          tabindex="-1"
@@ -223,6 +229,7 @@
             </div>
         </div>
     </div>
+    {# Delete Issue dialog #}
     <div class="modal fade modal-resilient"
          id="deleteIssueModal"
          tabindex="-1"
@@ -263,6 +270,7 @@
             </div>
         </div>
     </div>
+    {# Reactivate Issue dialog #}
     <div class="modal fade modal-resilient"
          id="reactivateIssueModal"
          tabindex="-1"

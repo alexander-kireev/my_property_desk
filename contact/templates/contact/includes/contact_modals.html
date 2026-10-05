@@ -1,4 +1,5 @@
 {# Create and maintain contacts and their contact methods #}
+{# Add Contact dialog #}
 <div class="modal fade modal-resilient"
      id="addContactModal"
      data-modal-clear-query="form_state"
@@ -35,6 +36,7 @@
 
 {% if selected_contact %}
     {% if selected_contact.state == "active" %}
+        {# Edit Contact dialog #}
         <div class="modal fade modal-resilient"
              id="editContactModal"
              data-modal-clear-query="form_state"
@@ -64,6 +66,7 @@
             </div>
         </div>
 
+        {# Add Contact Method dialog #}
         <div class="modal fade modal-resilient contact-method-modal"
              id="addContactMethodModal"
              data-modal-clear-query="form_state"
@@ -97,6 +100,7 @@
         </div>
 
         {% if edit_contact_method and edit_contact_method_form %}
+            {# Edit Contact Method dialog #}
             <div class="modal fade modal-resilient contact-method-modal"
                  id="editContactMethodModal"
                  data-modal-clear-query="edit_method form_state"
@@ -127,6 +131,7 @@
             </div>
         {% endif %}
 
+        {# Deactivate Contact dialog #}
         <div class="modal fade modal-resilient"
              id="deactivateContactModal"
              tabindex="-1"
@@ -159,6 +164,7 @@
         </div>
 
         {% for method in contact_methods %}
+            {# Delete Contact Method dialog{{ method.pk }} #}
             <div class="modal fade modal-resilient"
                  id="deleteContactMethodModal{{ method.pk }}"
                  tabindex="-1"
@@ -193,6 +199,7 @@
         {% endfor %}
     {% endif %}
 
+    {# Delete Contact dialog #}
     <div class="modal fade modal-resilient"
          id="deleteContactModal"
          tabindex="-1"
