@@ -1,7 +1,17 @@
 <div class="property-history-record">
-    {% if entry.kind == "issue" %}<a class="property-record-link" href="{% url 'issue:issues' %}?selected={{ entry.item.pk }}&amp;open=detail" title="{{ entry.item.title }}">
-    {% elif entry.kind == "task" %}<a class="property-record-link" href="{% url 'task:tasks' %}?selected={{ entry.item.pk }}&amp;open=detail" title="{{ entry.item.title }}">
-    {% else %}<a class="property-record-link" href="{% url 'event:events' %}?selected={{ entry.item.pk }}&amp;tab=details" title="{{ entry.item.title }}">{% endif %}
+    {% if entry.kind == "issue" %}
+        <a class="property-record-link"
+           href="{% url 'issue:issues' %}?selected={{ entry.item.pk }}&amp;open=detail"
+           title="{{ entry.item.title }}">
+    {% elif entry.kind == "task" %}
+        <a class="property-record-link"
+           href="{% url 'task:tasks' %}?selected={{ entry.item.pk }}&amp;open=detail"
+           title="{{ entry.item.title }}">
+    {% else %}
+        <a class="property-record-link"
+           href="{% url 'event:events' %}?selected={{ entry.item.pk }}&amp;tab=details"
+           title="{{ entry.item.title }}">
+    {% endif %}
         <span class="property-record-main"><strong>{{ entry.item.title }}</strong><small>{{ entry.kind|title }}</small></span>
         <span class="property-record-aside">
             <span class="property-record-badges"><span class="property-outcome-badge property-outcome--{{ entry.item.state }}">{{ entry.label }}</span></span>

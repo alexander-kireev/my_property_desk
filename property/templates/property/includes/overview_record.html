@@ -1,22 +1,34 @@
 {% load work_status %}
-{% if kind != "event" %}{% work_status item as timing %}{% endif %}
-{% if kind == "issue" %}<a class="property-record property-record-link" href="{% url 'issue:issues' %}?selected={{ item.pk }}&amp;open=detail" title="{{ item.title }}">
-{% elif kind == "task" %}<a class="property-record property-record-link" href="{% url 'task:tasks' %}?selected={{ item.pk }}&amp;open=detail" title="{{ item.title }}">
-{% else %}<a class="property-record property-record-link" href="{% url 'event:events' %}?selected={{ item.pk }}&amp;tab=details" title="{{ item.title }}">{% endif %}
+{% if kind != "event" %}
+    {% work_status item as timing %}
+{% endif %}
+{% if kind == "issue" %}
+    <a class="property-record property-record-link"
+       href="{% url 'issue:issues' %}?selected={{ item.pk }}&amp;open=detail"
+       title="{{ item.title }}">
+{% elif kind == "task" %}
+    <a class="property-record property-record-link"
+       href="{% url 'task:tasks' %}?selected={{ item.pk }}&amp;open=detail"
+       title="{{ item.title }}">
+{% else %}
+    <a class="property-record property-record-link"
+       href="{% url 'event:events' %}?selected={{ item.pk }}&amp;tab=details"
+       title="{{ item.title }}">
+{% endif %}
     <span class="property-record-main">
         <strong>{{ item.title }}</strong>
         <small title="{{ kind|title }} · Related to: {% if kind == 'task' and item.issue %}Issue · {{ item.issue.title }}{% else %}Property · {{ selected_property.name }}{% endif %}">{{ kind|title }} · Related to: {% if kind == "task" and item.issue %}Issue · {{ item.issue.title }}{% else %}Property · {{ selected_property.name }}{% endif %}</small>
     </span>
     <span class="property-record-aside">
         <span class="property-record-badges">
-            {% if kind == "event" %}<span class="property-event-badge">{{ item.get_state_display }}</span>
-            {% else %}{% if kind == "task" %}{% include "task/includes/priority_badge.html" with task=item %}{% else %}{% include "includes/work_priority_badge.html" with item=item only %}{% endif %}{% if timing.list_label %}<span class="work-pill work-pill--{{ timing.kind }}">{{ timing.list_label }}</span>{% endif %}{% endif %}
-        </span>
-        <span class="property-record-date">
-            {% if kind == "issue" %}{% if item.resolution_deadline %}Resolve by {{ item.resolution_deadline|date:"j M Y" }}{% else %}No deadline{% endif %}
-            {% elif kind == "task" %}{% if item.completion_deadline %}Deadline {{ item.completion_deadline|date:"j M Y" }}{% elif item.scheduled_date %}Scheduled {{ item.scheduled_date|date:"j M Y" }}{% else %}No date{% endif %}
-            {% else %}{{ item.scheduled_date|date:"j M Y" }}{% endif %}
-        </span>
-    </span>
-    <span class="property-record-chevron" aria-hidden="true">›</span>
+        {% if kind == "event" %}<span class="property-event-badge">{{ item.get_state_display }}</span>
+    {% else %}{% if kind == "task" %}{% include "task/includes/priority_badge.html" with task=item %}{% else %}{% include "includes/work_priority_badge.html" with item=item only %}{% endif %}{% if timing.list_label %}<span class="work-pill work-pill--{{ timing.kind }}">{{ timing.list_label }}</span>{% endif %}{% endif %}
+</span>
+<span class="property-record-date">
+    {% if kind == "issue" %}{% if item.resolution_deadline %}Resolve by {{ item.resolution_deadline|date:"j M Y" }}{% else %}No deadline{% endif %}
+{% elif kind == "task" %}{% if item.completion_deadline %}Deadline {{ item.completion_deadline|date:"j M Y" }}{% elif item.scheduled_date %}Scheduled {{ item.scheduled_date|date:"j M Y" }}{% else %}No date{% endif %}
+{% else %}{{ item.scheduled_date|date:"j M Y" }}{% endif %}
+</span>
+</span>
+<span class="property-record-chevron" aria-hidden="true">›</span>
 </a>
