@@ -1,268 +1,126 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Profile | Property Operations Manager{% endblock %}
+{% block title %}Profile | My Property Desk{% endblock %}
 
 {% block content %}
-<div class="container profile-settings-content">
-    <header class="mb-4 text-center">
-        <h1 class="h2 mb-1">Profile</h1>
-        <p class="text-body-secondary mb-0">Manage your personal details and account.</p>
-    </header>
+    <div class="container profile-settings-content">
+        <header class="mb-4 text-center">
+            <h1 class="h2 mb-1">Profile</h1>
+            <p class="text-body-secondary mb-0">Manage your personal details and account.</p>
+        </header>
 
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }}" role="status">{{ message }}</div>
-    {% endfor %}
-
-    <section class="card shadow-sm mb-4" aria-labelledby="personal-heading">
-        <div class="card-body profile-card-body">
-            <h2 class="h5 mb-3" id="personal-heading">Personal details</h2>
-            <form action="{% url 'accounts:profile_page' %}" method="post" autocomplete="off">
-                {% csrf_token %}
-                {% for error in profile_form.non_field_errors %}
-                    <div class="alert alert-danger">{{ error }}</div>
-                {% endfor %}
-                <div class="profile-setting-row profile-setting-row-first">
-                    <label for="{{ profile_form.first_name.id_for_label }}">First name</label>
-                    <div class="profile-setting-value">
-                        {{ profile_form.first_name }}
-                        {% for error in profile_form.first_name.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+        {# Profile, account credentials, and destructive actions #}
+        <section class="card shadow-sm mb-4" aria-labelledby="personal-heading">
+            <div class="card-body profile-card-body">
+                <h2 class="h5 mb-3" id="personal-heading">Personal details</h2>
+                <form action="{% url 'accounts:profile_page' %}"
+                      method="post"
+                      autocomplete="off">
+                    {% csrf_token %}
+                    {% for error in profile_form.non_field_errors %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endfor %}
+                    <div class="profile-setting-row profile-setting-row-first">
+                        <label for="{{ profile_form.first_name.id_for_label }}">First name</label>
+                        <div class="profile-setting-value">
+                            {{ profile_form.first_name }}
+                            {% for error in profile_form.first_name.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
+                    <div class="profile-setting-row">
+                        <label for="{{ profile_form.last_name.id_for_label }}">Last name</label>
+                        <div class="profile-setting-value">
+                            {{ profile_form.last_name }}
+                            {% for error in profile_form.last_name.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="profile-setting-row profile-setting-row-last profile-setting-row--submit">
+                        <span></span><span></span>
+                        <button class="btn theme-action profile-setting-action" type="submit">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        {# Email, password and session controls #}
+        <section class="card shadow-sm mb-4" aria-labelledby="account-heading">
+            <div class="card-body profile-card-body">
+                <h2 class="h5 mb-3" id="account-heading">Account</h2>
+                <div class="profile-setting-row profile-setting-row-first">
+                    <span class="fw-medium">Email</span>
+                    <div class="profile-setting-value">
+                        <span class="profile-email-value">{{ request.user.email }}</span>
+                        {% if pending_email_change %}
+                            <div class="small text-body-secondary mt-1">Verification pending for {{ pending_email_change.new_email }}.</div>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-outline-secondary profile-setting-action"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#changeEmailModal">Change email</button>
                 </div>
                 <div class="profile-setting-row">
-                    <label for="{{ profile_form.last_name.id_for_label }}">Last name</label>
-                    <div class="profile-setting-value">
-                        {{ profile_form.last_name }}
-                        {% for error in profile_form.last_name.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
+                    <span class="fw-medium">Password</span>
+                    <span class="profile-setting-value text-body-secondary">Keep your account secure.</span>
+                    <button class="btn btn-outline-secondary profile-setting-action"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#changePasswordModal">Change password</button>
                 </div>
                 <div class="profile-setting-row profile-setting-row-last">
-                    <span></span><span></span>
-                    <button class="btn theme-action profile-setting-action" type="submit">Save changes</button>
+                    <span class="fw-medium">Session</span>
+                    <span class="profile-setting-value text-body-secondary">Signed in on this device.</span>
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-secondary profile-setting-action"
+                                type="submit">Log out</button>
+                    </form>
                 </div>
-            </form>
-        </div>
-    </section>
+            </div>
+        </section>
 
-    <section class="card shadow-sm mb-4" aria-labelledby="account-heading">
-        <div class="card-body profile-card-body">
-            <h2 class="h5 mb-3" id="account-heading">Account</h2>
-            <div class="profile-setting-row profile-setting-row-first">
-                <span class="fw-medium">Email</span>
-                <div class="profile-setting-value">
-                    <span class="profile-email-value">{{ request.user.email }}</span>
-                    {% if pending_email_change %}
-                        <div class="small text-body-secondary mt-1">
-                            Verification pending for {{ pending_email_change.new_email }}.
-                        </div>
-                    {% endif %}
+        {# Permanent account deletion #}
+        <section class="card profile-danger-card mb-4"
+                 aria-labelledby="danger-heading">
+            <div class="card-body profile-card-body">
+                <h2 class="h5 mb-3 text-danger" id="danger-heading">Danger zone</h2>
+                <div class="profile-setting-row profile-setting-row-first profile-setting-row-last">
+                    <span class="fw-medium">Delete account</span>
+                    <span class="profile-setting-value text-body-secondary">
+                        Permanently delete your account and its properties, contacts, work items and notes.
+                        This cannot be undone.
+                    </span>
+                    <button class="btn btn-outline-danger profile-setting-action"
+                            type="button"
+                            id="deleteAccountTrigger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteAccountModal">Delete account</button>
                 </div>
-                <button class="btn btn-outline-secondary profile-setting-action" type="button"
-                        data-bs-toggle="modal" data-bs-target="#changeEmailModal">Change email</button>
             </div>
-            <div class="profile-setting-row">
-                <span class="fw-medium">Password</span>
-                <span class="profile-setting-value text-body-secondary">Keep your account secure.</span>
-                <button class="btn btn-outline-secondary profile-setting-action" type="button"
-                        data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change password</button>
-            </div>
-            <div class="profile-setting-row profile-setting-row-last">
-                <span class="fw-medium">Session</span>
-                <span class="profile-setting-value text-body-secondary">Signed in on this device.</span>
-                <form method="post" action="{% url 'accounts:logout' %}">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-secondary profile-setting-action" type="submit">Log out</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <section class="card profile-danger-card mb-4" aria-labelledby="danger-heading">
-        <div class="card-body profile-card-body">
-            <h2 class="h5 mb-3 text-danger" id="danger-heading">Danger zone</h2>
-            <div class="profile-setting-row profile-setting-row-first profile-setting-row-last">
-                <span class="fw-medium">Delete account</span>
-                <span class="profile-setting-value text-body-secondary">
-                    Permanently delete your account and its properties, contacts, work items and notes.
-                    This cannot be undone.
-                </span>
-                <button class="btn btn-outline-danger profile-setting-action" type="button"
-                        data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete account</button>
-            </div>
-        </div>
-    </section>
-</div>
-
-<div class="modal fade" id="changeEmailModal" data-profile-account-modal
-     data-modal-clear-query="form_state modal" tabindex="-1" aria-labelledby="changeEmailTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="changeEmailTitle">Change email</h2>
-                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'accounts:change_email' %}" autocomplete="off"
-                  data-fresh-account-form{% if email_form.errors %} data-preserve-restored-email{% endif %}>
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p class="text-body-secondary">Verify a new address before it becomes your sign-in email.</p>
-                    {% for error in email_form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">{{ error }}</div>
-                    {% endfor %}
-                    <div class="mb-3">
-                        <span class="form-label d-block">Current email</span>
-                        <span class="profile-email-value">{{ request.user.email }}</span>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ email_form.new_email.id_for_label }}">New email</label>
-                        {{ email_form.new_email }}
-                        {% for error in email_form.new_email.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <label class="form-label" for="{{ email_form.current_password.id_for_label }}">Current password</label>
-                        {{ email_form.current_password }}
-                        {% for error in email_form.current_password.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <p class="form-text mb-0">
-                        Your current email stays active until you confirm the link sent to the new address.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn theme-action" type="submit">Send verification email</button>
-                </div>
-            </form>
-        </div>
+        </section>
     </div>
-</div>
 
-<div class="modal fade" id="changePasswordModal" data-profile-account-modal
-     data-modal-clear-query="form_state modal" tabindex="-1" aria-labelledby="changePasswordTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="changePasswordTitle">Change password</h2>
-                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'accounts:change_password' %}" autocomplete="off" data-fresh-account-form>
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p class="text-body-secondary">Choose a strong password you do not use elsewhere.</p>
-                    {% for error in password_form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">{{ error }}</div>
-                    {% endfor %}
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ password_form.old_password.id_for_label }}">Current password</label>
-                        {{ password_form.old_password }}
-                        {% for error in password_form.old_password.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ password_form.new_password1.id_for_label }}">New password</label>
-                        {{ password_form.new_password1 }}
-                        {% for error in password_form.new_password1.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                        <div class="form-text" data-validation-help{% if password_form.new_password1.errors or password_form.new_password2.errors %} hidden{% endif %}>Use at least eight characters and avoid common or entirely numeric passwords.</div>
-                    </div>
-                    <div>
-                        <label class="form-label" for="{{ password_form.new_password2.id_for_label }}">Confirm new password</label>
-                        {{ password_form.new_password2 }}
-                        {% for error in password_form.new_password2.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn theme-action" type="submit">Change password</button>
-                </div>
-            </form>
-            <div class="modal-body border-top pt-3">
-                <form method="post" action="{% url 'accounts:reset_password_protected' %}"
-                      class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    {% csrf_token %}
-                    <span class="small text-body-secondary">Forgot your current password?</span>
-                    <button class="btn btn-outline-secondary btn-sm" type="submit">Email me a reset link</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+    {# Email and password changes require fresh account verification #}
+    {# Change Email dialog #}
+    {% include "accounts/includes/modals/change_email_modal.html" %}
 
-<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="deleteAccountTitle">Delete your account?</h2>
-                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>This permanently deletes your account and all its properties, contacts, tasks, issues, events and notes.</p>
-                <p class="fw-medium mb-0">This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-outline-danger" type="button"
-                        data-bs-toggle="modal" data-bs-target="#deleteAccountConfirmModal">Continue</button>
-            </div>
-        </div>
-    </div>
-</div>
+    {# Change Password dialog #}
+    {% include "accounts/includes/modals/change_password_modal.html" %}
 
-<div class="modal fade" id="deleteAccountConfirmModal" tabindex="-1"
-     data-profile-account-modal data-modal-clear-query="form_state modal"
-     aria-labelledby="deleteAccountConfirmTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-5" id="deleteAccountConfirmTitle">Confirm permanent deletion</h2>
-                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="post" action="{% url 'accounts:delete_account' %}" autocomplete="off" data-fresh-account-form>
-                {% csrf_token %}
-                <div class="modal-body">
-                    <p class="text-body-secondary">
-                        Enter your password and type DELETE to confirm. If deletion fails, your account and data remain intact.
-                    </p>
-                    {% for error in delete_form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">{{ error }}</div>
-                    {% endfor %}
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ delete_form.current_password.id_for_label }}">Current password</label>
-                        {{ delete_form.current_password }}
-                        {% for error in delete_form.current_password.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <label class="form-label" for="{{ delete_form.confirmation.id_for_label }}">Type DELETE</label>
-                        {{ delete_form.confirmation }}
-                        {% for error in delete_form.confirmation.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn btn-danger" type="submit">Permanently delete account</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% if open_modal %}<span hidden data-modal-auto-open="{{ open_modal }}"></span>{% endif %}
+    {# Two-step permanent account deletion #}
+    {# Delete Account dialog #}
+    {% include "accounts/includes/modals/delete_account_modal.html" %}
+
+    {# Delete Account Confirm dialog #}
+    {% include "accounts/includes/modals/delete_account_confirm_modal.html" %}
+    {% if open_modal %}<span hidden data-modal-auto-open="{{ open_modal }}"></span>{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/fresh-account-form.js' %}"></script>
-<script src="{% static 'js/profile-modal-state.js' %}"></script>
+    <script src="{% static 'js/fresh-account-form.js' %}"></script>
+    <script src="{% static 'js/profile-modal-state.js' %}"></script>
 {% endblock %}

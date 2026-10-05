@@ -1,0 +1,25 @@
+{# Active Tasks show priority and deadline; terminal Tasks show state and termination date. #}
+<span class="issue-linked-task-meta">
+    {% if task.state == "active" %}
+        {% include "task/includes/priority_badge.html" with task=task only %}
+    {% else %}
+        {% include "includes/work_state_badge.html" with item=task only %}
+    {% endif %}
+    <small class="issue-linked-task-deadline{% if status.kind == 'overdue' %} task-command-deadline--overdue{% elif status.kind == 'soon' %} task-command-deadline--soon{% endif %}">
+        {% if task.state != "active" %}
+            {{ task.get_state_display }}
+            {% if task.terminated_at %}{{ task.terminated_at|date:"j M Y" }}{% endif %}
+        {% elif task.completion_deadline %}
+            {% if status.kind == "overdue" %}
+                Overdue
+            {% elif status.kind == "soon" %}
+                Due soon
+            {% else %}
+                Due
+            {% endif %}
+            {{ task.completion_deadline|date:"j M Y" }}
+        {% else %}
+            No deadline
+        {% endif %}
+    </small>
+</span>

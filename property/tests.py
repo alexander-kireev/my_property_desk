@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from unittest.mock import patch
 
 from django.db import IntegrityError, transaction
@@ -14,6 +14,93 @@ from task.models import Task
 
 from .forms import PropertyForm
 from .models import Property
+from .services import deactivate_property, delete_property, related_work_counts
+
+
+class PropertyCascadeDecisionTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="cascade@example.com", first_name="Cascade", last_name="Test")
+        self.property = Property.objects.create(user=self.user, name="Cascade House")
+        self.issue = Issue.objects.create(user=self.user, property=self.property, title="Leak")
+        self.direct_task = Task.objects.create(user=self.user, property=self.property, title="Direct")
+        self.issue_task = Task.objects.create(user=self.user, issue=self.issue, title="Via issue")
+        self.event = Event.objects.create(user=self.user, property=self.property, title="Visit", scheduled_date=timezone.localdate(), all_day=True)
+
+    def test_deactivate_choices_are_independent_and_default_to_parent_only(self):
+        self.assertEqual(related_work_counts(property_record=self.property)["tasks_active"], 2)
+        deactivate_property(property_record=self.property, dismiss_tasks=True)
+        self.issue.refresh_from_db()
+        self.event.refresh_from_db()
+        self.direct_task.refresh_from_db()
+        self.issue_task.refresh_from_db()
+        self.assertEqual(self.issue.state, Issue.State.ACTIVE)
+        self.assertEqual(self.event.state, Event.State.SCHEDULED)
+        self.assertEqual(self.direct_task.state, Task.State.DISMISSED)
+        self.assertEqual(self.issue_task.state, Task.State.DISMISSED)
+
+    def test_deactivate_can_cancel_event_and_dismiss_issue_without_touching_task(self):
+        deactivate_property(property_record=self.property, cancel_events=True, dismiss_issues=True)
+        self.issue.refresh_from_db()
+        self.event.refresh_from_db()
+        self.direct_task.refresh_from_db()
+        self.issue_task.refresh_from_db()
+        self.assertEqual(self.issue.state, Issue.State.DISMISSED)
+        self.assertEqual(self.event.state, Event.State.CANCELLED)
+        self.assertEqual(self.direct_task.state, Task.State.ACTIVE)
+        self.assertEqual(self.issue_task.state, Task.State.ACTIVE)
+        self.assertEqual(self.property.affected_work, {"events": 1, "issues": 1, "tasks": 0})
+
+    def test_deactivate_without_choices_keeps_all_child_states(self):
+        deactivate_property(property_record=self.property)
+        self.issue.refresh_from_db()
+        self.event.refresh_from_db()
+        self.direct_task.refresh_from_db()
+        self.assertEqual(self.issue.state, Issue.State.ACTIVE)
+        self.assertEqual(self.event.state, Event.State.SCHEDULED)
+        self.assertEqual(self.direct_task.state, Task.State.ACTIVE)
+
+    def test_delete_choices_include_terminal_tasks_through_issue_once(self):
+        self.issue_task.state = Task.State.COMPLETED
+        self.issue_task.save(update_fields=["state"])
+        delete_property(property_record=self.property, delete_tasks=True)
+        self.issue.refresh_from_db()
+        self.event.refresh_from_db()
+        self.direct_task.refresh_from_db()
+        self.issue_task.refresh_from_db()
+        self.assertIsNone(self.issue.deleted_at)
+        self.assertIsNone(self.event.deleted_at)
+        self.assertIsNotNone(self.direct_task.deleted_at)
+        self.assertIsNotNone(self.issue_task.deleted_at)
+        self.assertEqual(self.property.affected_work["tasks"], 2)
+
+    def test_delete_parent_alone_keeps_linked_work(self):
+        delete_property(property_record=self.property)
+        self.issue.refresh_from_db()
+        self.direct_task.refresh_from_db()
+        self.assertIsNone(self.issue.deleted_at)
+        self.assertIsNone(self.direct_task.deleted_at)
+
+    def test_delete_issue_and_event_choices_leave_tasks_with_parent_tombstone(self):
+        delete_property(property_record=self.property, delete_events=True, delete_issues=True)
+        self.issue.refresh_from_db()
+        self.event.refresh_from_db()
+        self.issue_task.refresh_from_db()
+        self.assertIsNotNone(self.issue.deleted_at)
+        self.assertIsNotNone(self.event.deleted_at)
+        self.assertIsNone(self.issue_task.deleted_at)
+        self.assertEqual(self.issue_task.issue.title, "Leak")
+        self.assertEqual(self.property.affected_work, {"events": 1, "issues": 1, "tasks": 0})
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("task:tasks"), {"selected": self.issue_task.pk})
+        self.assertContains(response, "Leak")
+        self.assertNotContains(response, "Deleted issue")
+
+    def test_cascade_uses_live_child_set_not_old_modal_count(self):
+        shown_count = related_work_counts(property_record=self.property)["tasks_active"]
+        Task.objects.create(user=self.user, property=self.property, title="Added after modal opened")
+        deactivate_property(property_record=self.property, dismiss_tasks=True)
+        self.assertEqual(shown_count, 2)
+        self.assertEqual(self.property.affected_work["tasks"], 3)
 
 
 class PropertyModelTests(TestCase):
@@ -197,7 +284,7 @@ class PropertyViewTests(TestCase):
         property_record = self.create_property(name="Oak House")
         self.client.force_login(self.user)
         query = "?return_to=list&search=Oak&state=all&sort=-name&page=2"
-        expected = f"{reverse('property:properties')}?search=Oak&state=all&sort=-name&page=2"
+        expected = f"{reverse('property:property_detail', args=[property_record.pk])}?search=Oak&state=all&sort=-name"
 
         response = self.client.post(reverse("property:edit_property", args=[property_record.pk]) + query, {
             "name": "Oak House", "description": "Updated", "address": "10 Oak Road",
@@ -288,7 +375,7 @@ class PropertyViewTests(TestCase):
             [active_property],
         )
 
-    def test_property_list_defaults_to_active_and_can_show_deactivated(self):
+    def test_property_list_defaults_to_all_and_can_filter_by_state(self):
         active = self.create_property(name="Active House")
         deactivated = self.create_property(
             name="Old House",
@@ -297,7 +384,8 @@ class PropertyViewTests(TestCase):
         self.client.force_login(self.user)
 
         for query, expected in (
-            ({}, [active]),
+            ({}, [active, deactivated]),
+            ({"state": Property.State.ACTIVE}, [active]),
             ({"state": Property.State.DEACTIVATED}, [deactivated]),
             ({"state": "all"}, [active, deactivated]),
         ):
@@ -305,14 +393,14 @@ class PropertyViewTests(TestCase):
                 response = self.client.get(reverse("property:properties"), query)
                 self.assertCountEqual(response.context["page_obj"].object_list, expected)
 
-    def test_deactivated_only_property_list_offers_all_states(self):
-        self.create_property(state=Property.State.DEACTIVATED)
+    def test_deactivated_only_property_is_visible_by_default(self):
+        deactivated = self.create_property(state=Property.State.DEACTIVATED)
         self.client.force_login(self.user)
 
         response = self.client.get(reverse("property:properties"))
 
-        self.assertContains(response, "No active properties")
-        self.assertContains(response, "Show all states")
+        self.assertEqual(list(response.context["page_obj"].object_list), [deactivated])
+        self.assertContains(response, 'value="all" selected')
 
     def test_all_supported_sort_options_return_expected_order(self):
         alpha = self.create_property(name="Alpha House")
@@ -357,6 +445,47 @@ class PropertyViewTests(TestCase):
         self.assertEqual(len(first_page.context["page_obj"]), 20)
         self.assertEqual(len(second_page.context["page_obj"]), 1)
 
+    def test_rename_keeps_property_selected_on_its_new_sorted_page(self):
+        target = self.create_property(name="A House")
+        for number in range(20):
+            self.create_property(name=f"M House {number:02}")
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("property:edit_property", args=[target.pk]) + "?return_to=list",
+            {"name": "Z House", "description": "Managed property.", "address": target.address},
+            follow=True,
+        )
+        self.assertEqual(response.context["selected_property"].pk, target.pk)
+        self.assertEqual(response.context["page_obj"].number, 2)
+        self.assertTrue(response.context["selected_in_page"])
+
+    def test_deactivation_retains_explicit_active_filter_and_selection(self):
+        target = self.create_property()
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("property:deactivate_property", args=[target.pk]) + "?return_to=list&state=active",
+            follow=True,
+        )
+        self.assertEqual(response.context["selected_property"].pk, target.pk)
+        self.assertTrue(response.context["selected_outside_filters"])
+        self.assertContains(response, "Selected property is outside these filters.")
+        self.assertNotContains(response, "Selected property</small>")
+
+    def test_outside_filter_detail_exposes_selected_property_recovery(self):
+        target = self.create_property(name="Archived House", state=Property.State.DEACTIVATED)
+        self.client.force_login(self.user)
+        url = reverse("property:property_detail", args=[target.pk])
+
+        outside = self.client.get(url, {"state": "active", "search": "__outside__"})
+        self.assertTrue(outside.context["selected_outside_filters"])
+        self.assertContains(outside, 'class="workspace-selection-notice property-detail-recovery"')
+        self.assertContains(outside, f'href="{url}">Show all</a>')
+        self.assertNotContains(outside, 'href="/properties/">Clear filters</a>')
+
+        clear = self.client.get(url)
+        self.assertFalse(clear.context["selected_outside_filters"])
+        self.assertNotContains(clear, 'class="workspace-selection-notice property-detail-recovery"')
+
     def test_pagination_preserves_search_filter_and_sort_parameters(self):
         self.client.force_login(self.user)
 
@@ -391,6 +520,18 @@ class PropertyViewTests(TestCase):
                 "property:property_detail",
                 kwargs={"property_id": property_record.pk},
             ),
+        )
+
+    def test_add_property_clears_stale_search_and_page(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            f"{reverse('property:add_property')}?search=unrelated&page=3",
+            data=self.VALID_DATA,
+        )
+        property_record = Property.objects.get(name=self.VALID_DATA["name"])
+        self.assertEqual(
+            response.url,
+            reverse("property:property_detail", kwargs={"property_id": property_record.pk}),
         )
 
     def test_invalid_creation_reopens_modal_and_preserves_list_state(self):
@@ -451,8 +592,8 @@ class PropertyViewTests(TestCase):
         self.client.force_login(self.user)
 
         response = self.client.get(reverse("property:property_detail", args=[property_record.pk]))
-        self.assertContains(response, f'href="{reverse("issue:issues")}?state=all&amp;selected={issue.pk}&amp;open=detail"')
-        self.assertContains(response, f'href="{reverse("task:tasks")}?state=all&amp;selected={task.pk}&amp;open=detail"')
+        self.assertContains(response, f'href="{reverse("issue:issues")}?selected={issue.pk}&amp;open=detail"')
+        self.assertContains(response, f'href="{reverse("task:tasks")}?selected={task.pk}&amp;open=detail"')
         self.assertContains(response, 'class="navbar-nav app-mobile-menu d-lg-none"')
         self.assertContains(response, 'class="app-mobile-logout" type="submit">Log out</button>')
 
@@ -494,11 +635,11 @@ class PropertyViewTests(TestCase):
         self.assertContains(response, 'name="records_type"')
         self.assertContains(response, 'name="records_scope"')
         self.assertContains(response, 'work-pill--priority-4')
-        self.assertContains(response, 'work-pill--overdue')
+        self.assertContains(response, 'property-related-date--overdue')
         self.assertContains(response, 'work-pill--priority-3')
-        self.assertContains(response, 'work-pill--soon')
-        self.assertContains(response, 'property-event-badge">Scheduled')
-        self.assertContains(response, 'property-presence-badge">Presence required')
+        self.assertContains(response, 'property-related-date--soon')
+        self.assertContains(response, 'work-pill--active">Scheduled')
+        self.assertNotContains(response, 'property-presence-badge">Presence required')
 
     def test_related_records_default_to_current_records(self):
         property_record = self.create_property()
@@ -537,7 +678,7 @@ class PropertyViewTests(TestCase):
 
         self.assertContains(response, 'class="property-related-record"', count=3)
         self.assertContains(response, 'class="property-related-summary"', count=3)
-        self.assertContains(response, 'Open record →', count=3)
+        self.assertContains(response, "Open record →", count=3)
         self.assertContains(response, 'Water is leaking.')
         self.assertContains(response, 'Call the contractor.')
         self.assertContains(response, 'Meet at the entrance.')
@@ -545,6 +686,36 @@ class PropertyViewTests(TestCase):
         self.assertContains(response, 'Repair tap')
         self.assertContains(response, 'Book plumber')
         self.assertContains(response, 'Inspection')
+        self.assertContains(response, 'Issue · Related to: Property · Hill House')
+        self.assertContains(response, 'Task · Related to: Property · Hill House')
+        self.assertContains(response, 'Event · Related to: Property · Hill House')
+
+    def test_related_record_keeps_long_title_badges_and_date_in_content_sized_summary(self):
+        property_record = self.create_property()
+        title = "Urgent repair " + "X" * 80
+        due = timezone.localdate() + timedelta(days=1)
+        Issue.objects.create(
+            user=self.user, property=property_record, title=title,
+            priority=Issue.Priority.URGENT, resolution_deadline=due,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:property_detail", args=[property_record.pk]))
+
+        self.assertContains(response, f'title="{title}"')
+        self.assertContains(response, 'class="property-related-record-badges"')
+        self.assertContains(response, f'Due soon {due.day} {due.strftime("%b %Y")}')
+
+    def test_issue_linked_task_summary_names_issue_not_property(self):
+        property_record = self.create_property()
+        issue = Issue.objects.create(user=self.user, property=property_record, title="Entry phone")
+        Task.objects.create(user=self.user, issue=issue, title="Call electrician")
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:property_detail", args=[property_record.pk]))
+
+        self.assertContains(response, 'Task · Related to: Issue · Entry phone')
+        self.assertNotContains(response, 'Direct property task')
 
     def test_heading_shows_description_above_related_records(self):
         property_record = self.create_property()
@@ -559,10 +730,22 @@ class PropertyViewTests(TestCase):
         self.assertContains(response, 'class="property-heading-description"')
         self.assertContains(response, 'Related records')
         self.assertContains(response, '2 records')
-        self.assertContains(response, 'data-property-description-preview')
-        self.assertContains(response, 'data-bs-target="#propertyDescriptionModal"')
-        self.assertContains(response, 'class="modal-body property-description-full"')
+        self.assertContains(response, 'id="property-detail-description" data-expandable-content')
+        self.assertContains(response, 'aria-controls="property-detail-description" aria-expanded="false" hidden data-expandable-toggle')
+        self.assertNotContains(response, 'id="propertyDescriptionModal"')
         self.assertNotContains(response, "At a glance")
+
+    def test_long_address_uses_single_line_list_preview_and_inline_header_disclosure(self):
+        address = "123 Very Long Avenue " + "West " * 24
+        property_record = self.create_property(address=address)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:property_detail", args=[property_record.pk]))
+
+        self.assertContains(response, 'class="property-command-address"')
+        self.assertContains(response, 'class="expandable-text expandable-text--single-line property-heading-address"')
+        self.assertContains(response, 'aria-controls="property-detail-address" aria-expanded="false" hidden data-expandable-toggle')
+        self.assertNotContains(response, 'data-bs-target="#property-detail-address"')
 
     def test_related_records_list_all_current_types_without_duplicates(self):
         property_record = self.create_property()
@@ -596,12 +779,36 @@ class PropertyViewTests(TestCase):
 
         response = self.client.get(reverse("property:property_detail", args=[property_record.pk]), {"records_scope": "past"})
 
-        self.assertEqual([entry["item"].title for entry in response.context["related_page"]], ["Fixed leak", "Finished job", "Completed visit"])
-        self.assertContains(response, 'property-outcome--resolved">Resolved')
-        self.assertContains(response, 'property-outcome--completed">Completed')
-        self.assertContains(response, 'property-outcome--occurred">Occurred')
+        self.assertEqual([entry["item"].title for entry in response.context["related_page"]], ["Completed visit", "Finished job", "Fixed leak"])
+        self.assertContains(response, 'class="property-related-record is-terminal"', count=3)
+        self.assertContains(response, 'Resolved · ')
+        self.assertContains(response, 'Completed · ')
+        self.assertContains(response, 'Occurred · ')
+        self.assertContains(response, 'work-pill--terminal">Occurred')
         self.assertNotContains(response, "Hidden issue")
         self.assertNotContains(response, "Other user issue")
+
+    def test_past_date_sort_uses_displayed_local_date_then_kind_and_pk(self):
+        property_record = self.create_property()
+        utc = datetime_timezone.utc
+        issue = Issue.objects.create(user=self.user, property=property_record, title="Zulu issue", state=Issue.State.RESOLVED, terminated_at=datetime(2026, 9, 26, 13, tzinfo=utc))
+        first_task = Task.objects.create(user=self.user, property=property_record, title="Bravo task", state=Task.State.COMPLETED, terminated_at=datetime(2026, 9, 26, 23, 30, tzinfo=utc))
+        second_task = Task.objects.create(user=self.user, property=property_record, title="Alpha task", state=Task.State.COMPLETED, terminated_at=datetime(2026, 9, 27, 10, tzinfo=utc))
+        event = Event.objects.create(user=self.user, property=property_record, title="Charlie event", scheduled_date=timezone.localdate(), all_day=True, state=Event.State.OCCURRED, terminated_at=datetime(2026, 9, 27, 13, tzinfo=utc))
+        self.client.force_login(self.user)
+        url = reverse("property:property_detail", args=[property_record.pk])
+
+        with timezone.override("Pacific/Auckland"):
+            date_response = self.client.get(url, {"records_scope": "past", "records_sort": "date"})
+            recent_response = self.client.get(url, {"records_scope": "past", "records_sort": "recent"})
+            title_response = self.client.get(url, {"records_scope": "past", "records_sort": "title"})
+
+        self.assertEqual([entry["item"].pk for entry in date_response.context["related_page"]], [issue.pk, first_task.pk, second_task.pk, event.pk])
+        self.assertEqual([entry["kind"] for entry in date_response.context["related_page"]], ["issue", "task", "task", "event"])
+        self.assertContains(date_response, "27 Sep 2026")
+        self.assertContains(date_response, "28 Sep 2026")
+        self.assertEqual([entry["item"].title for entry in recent_response.context["related_page"]], ["Charlie event", "Alpha task", "Bravo task", "Zulu issue"])
+        self.assertEqual([entry["item"].title for entry in title_response.context["related_page"]], ["Alpha task", "Bravo task", "Charlie event", "Zulu issue"])
 
     def test_related_records_filter_by_type_scope_and_search(self):
         property_record = self.create_property()
@@ -635,6 +842,31 @@ class PropertyViewTests(TestCase):
                 self.assertContains(response, f'data-bs-target="#{modal}"')
                 self.assertContains(response, reverse("property:add_property_record", args=[property_record.pk, kind]))
                 self.assertEqual(response.context[f"property_add_{kind}_form"].initial["property"], property_record.pk)
+
+    def test_property_add_modals_show_readonly_related_property_without_locked_badge(self):
+        property_name = "A very long property name " + "W" * 45
+        property_record = self.create_property(name=property_name)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:property_detail", args=[property_record.pk]))
+
+        html = response.content.decode()
+        for kind in ("Task", "Issue", "Event"):
+            with self.subTest(kind=kind):
+                self.assertContains(
+                    response,
+                    f'<h2 class="modal-title fs-5" id="propertyAdd{kind}Title">Add {kind.lower()}</h2>',
+                )
+                modal_markup = html.split(f'id="propertyAdd{kind}Modal"', 1)[1].split('<div class="modal fade"', 1)[0]
+                self.assertIn(
+                    f'id="propertyAdd{kind}RelatedProperty" role="note" tabindex="0" aria-labelledby="propertyAdd{kind}RelatedPropertyLabel">{property_name}</div>',
+                    modal_markup,
+                )
+                self.assertIn(f'<input type="hidden" name="property" value="{property_record.pk}">', modal_markup)
+        self.assertContains(response, 'id="propertyAddTaskRelatedProperty"', count=1)
+        self.assertContains(response, 'id="propertyAddIssueRelatedProperty"', count=1)
+        self.assertContains(response, 'id="propertyAddEventRelatedProperty"', count=1)
+        self.assertNotContains(response, '>Locked</span>')
 
     def test_property_add_creates_each_record_without_leaving_property(self):
         property_record = self.create_property()

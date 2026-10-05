@@ -1,0 +1,29 @@
+{# Create and maintain contacts and their contact methods #}
+{# Add Contact dialog #}
+{% include "contact/includes/modals/add_contact_modal.html" %}
+
+{% if selected_contact %}
+    {% if selected_contact.state == "active" %}
+        {# Edit Contact dialog #}
+        {% include "contact/includes/modals/edit_contact_modal.html" %}
+
+        {# Add Contact Method dialog #}
+        {% include "contact/includes/modals/add_contact_method_modal.html" %}
+
+        {% if edit_contact_method and edit_contact_method_form %}
+            {# Edit Contact Method dialog #}
+            {% include "contact/includes/modals/edit_contact_method_modal.html" %}
+        {% endif %}
+
+        {# Deactivate Contact dialog #}
+        {% include "contact/includes/modals/deactivate_contact_modal.html" %}
+
+        {% for method in contact_methods %}
+            {# Delete Contact Method dialog{{ method.pk }} #}
+            {% include "contact/includes/modals/delete_contact_method_modal.html" %}
+        {% endfor %}
+    {% endif %}
+
+    {# Delete Contact dialog #}
+    {% include "contact/includes/modals/delete_contact_modal.html" %}
+{% endif %}

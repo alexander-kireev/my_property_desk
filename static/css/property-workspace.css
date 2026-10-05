@@ -1,3 +1,6 @@
+/* Property workspace and related records. Loaded after shared workspace styles. */
+
+/* Property workspace frame and column layout */
 .property-command-main,
 .property-command-main > .container-xl {
     min-height: 0;
@@ -15,6 +18,7 @@
     height: 100%;
 }
 
+/* Property list, compact rows, and pagination */
 .property-list-column {
     display: flex;
     flex-direction: column;
@@ -32,17 +36,33 @@
     overscroll-behavior: contain;
 }
 
+.property-command-list .workspace-selection-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    background: var(--bs-tertiary-bg);
+    border-left: 0.2rem solid var(--pom-brand-blue);
+}
+
+.property-command-list .workspace-selection-notice .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .property-command-row {
     position: relative;
     display: block;
-    padding: 0.95rem 1rem;
     color: var(--bs-body-color) !important;
     background: var(--bs-body-bg) !important;
     border: 0;
     border-bottom: 1px solid var(--bs-border-color);
 }
 
-.property-command-row:hover,
+.property-command-row:hover {
+    background: var(--pom-hover) !important;
+}
+
 .property-command-row.is-selected {
     background: var(--bs-tertiary-bg) !important;
 }
@@ -51,7 +71,7 @@
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--bs-emphasis-color);
+    background: var(--pom-brand-blue);
     content: "";
 }
 
@@ -61,9 +81,64 @@
     overflow-wrap: anywhere;
 }
 
+.property-command-row strong {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .property-command-row small {
     margin-top: 0.25rem;
     color: var(--bs-secondary-color);
+}
+
+.property-command-row .property-command-address {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.property-command-bottom {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.property-command-bottom small {
+    min-width: 0;
+    margin-top: 0;
+}
+
+.property-command-counts {
+    flex: 0 0 auto;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.property-heading-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin-top: 0.35rem;
+    max-width: 100%;
+}
+
+.property-heading-address .expandable-text-content {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.property-heading-address .expandable-text-toggle {
+    flex: 0 0 auto;
+    margin-top: 0;
+    white-space: nowrap;
 }
 
 .property-list-column .command-pagination {
@@ -73,6 +148,7 @@
     gap: 0.5rem;
 }
 
+/* Selected property heading and overview */
 .property-detail-column {
     display: flex;
     flex-direction: column;
@@ -98,39 +174,21 @@
 }
 
 .property-heading-copy h2,
-.property-heading-copy p,
-.property-panel-card {
+.property-heading-copy p {
     overflow-wrap: anywhere;
 }
+
 .property-menu-button {
     min-width: 2.7rem;
+    min-height: 2.75rem;
 }
 
-.property-tabs {
-    display: flex;
-    padding: 0 1rem;
-    border-top: 1px solid var(--bs-border-color);
-    border-bottom: 1px solid var(--bs-border-color);
+.property-menu-button::after {
+    display: none;
 }
 
-.property-tab {
-    padding: 0.8rem 1rem;
-    color: var(--bs-secondary-color);
-    background: transparent;
-    border: 0;
-    border-bottom: 0.2rem solid transparent;
-}
-
-.property-tab:hover,
-.property-tab:focus-visible {
-    color: var(--bs-emphasis-color);
-    background: var(--bs-tertiary-bg);
-}
-
-.property-tab.is-active {
-    color: var(--bs-emphasis-color);
-    border-bottom-color: var(--bs-emphasis-color);
-    font-weight: 600;
+.property-detail-recovery {
+    display: none;
 }
 
 .property-panel-area {
@@ -141,6 +199,7 @@
     padding: 1.25rem 1.5rem 1.5rem;
 }
 
+/* Related-record toolbar, filters, and results panel */
 .property-related-heading {
     display: flex;
     align-items: center;
@@ -158,7 +217,10 @@
 
 .property-related-filters label,
 .property-related-filters select,
-.property-related-filters input { min-width: 0; width: 100%; }
+.property-related-filters input {
+    min-width: 0;
+    width: 100%;
+}
 
 .property-related-results {
     display: flex;
@@ -178,7 +240,83 @@
     scrollbar-width: thin;
 }
 
-/* The property add forms stay above this workspace and scroll inside the modal. */
+/* Contextual Add-record dialogs and locked property fields */
+
+/* Keep long property names inside their locked Add-record fields; forms scroll in the modal. */
+.property-form-dialog .modal-header,
+.property-form-dialog .modal-body,
+.property-form-dialog .modal-footer {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.property-form-dialog .modal-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 576px) {
+    .property-form-dialog {
+        max-width: 35rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .property-form-dialog .modal-header,
+    .property-form-dialog .modal-body,
+    .property-form-dialog .modal-footer {
+        padding-right: 1.25rem;
+        padding-left: 1.25rem;
+    }
+}
+
+.property-command-page
+    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    :is(.modal-header, .modal-footer) {
+    padding: 10px 14px !important;
+}
+
+.property-command-page
+    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    .modal-body {
+    padding: 14px !important;
+}
+
+@media (max-width: 575.98px) {
+    .property-command-page
+        :is(#propertyAddTaskModal, #propertyAddIssueModal)
+        :is(.modal-header, .modal-body, .modal-footer) {
+        padding-right: 16px !important;
+        padding-left: 16px !important;
+    }
+}
+
+/* Add Property keeps wider side padding while sharing the compact vertical rhythm. */
+.property-command-page #addPropertyModal :is(.modal-header, .modal-footer) {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+.property-command-page #addPropertyModal .modal-body {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
+
+.property-context-readonly {
+    min-width: 0;
+    height: auto;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+    cursor: text;
+}
+
+.property-context-readonly:focus {
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+}
+
 .property-command-page [id^="propertyAdd"] .modal-content {
     max-height: calc(100dvh - var(--bs-modal-margin) - var(--bs-modal-margin));
 }
@@ -209,6 +347,7 @@
     resize: vertical;
 }
 
+/* Expandable related-record rows */
 .property-related-result-heading {
     padding: 0.55rem 0.85rem;
     background: var(--bs-tertiary-bg);
@@ -218,40 +357,214 @@
 }
 
 .property-related-record {
-    border-bottom: 1px solid var(--bs-border-color);
+    position: relative;
     color: var(--bs-emphasis-color);
 }
+
+.property-related-record.is-terminal {
+    color: var(--bs-secondary-color);
+}
+
+.property-related-record + .property-related-record {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.property-related-record[open]::before {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--pom-brand-blue);
+    content: "";
+    pointer-events: none;
+}
+
 .property-related-summary {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(8rem, 11rem) 0.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(8rem, 11rem) 1.6875rem;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 0.85rem;
+    padding: 0.625rem 1.25rem;
     cursor: pointer;
+    height: auto;
+    min-height: 4.25rem;
 }
-.property-related-summary::-webkit-details-marker { display: none; }
-.property-related-summary::marker { content: ""; }
 
-.property-related-record:last-child { border-bottom: 0; }
+.property-related-summary::-webkit-details-marker {
+    display: none;
+}
+
+.property-related-summary::marker {
+    content: "";
+}
+
+.property-related-record[open] .property-related-summary {
+    background: var(--bs-tertiary-bg);
+    padding-left: calc(1.25rem + 4px);
+}
+
 .property-related-summary:hover,
-.property-related-summary:focus-visible { background: var(--bs-tertiary-bg); }
+.property-related-summary:focus-visible {
+    background: var(--pom-hover);
+}
+
+.property-related-record[open] .property-related-summary:hover,
+.property-related-record[open] .property-related-summary:focus-visible {
+    background: var(--bs-tertiary-bg);
+}
+
+.property-related-summary:focus-visible {
+    outline: 3px solid var(--pom-brand-blue);
+    outline-offset: -3px;
+}
+
 .property-related-record-main,
-.property-related-record-aside { min-width: 0; }
+.property-related-record-aside {
+    min-width: 0;
+}
+
 .property-related-record-main strong,
-.property-related-record-main small { display: block; overflow-wrap: anywhere; }
-.property-related-record-main strong { font-weight: 600; }
+.property-related-record-main small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.property-related-record-main strong {
+    font-weight: 600;
+}
+
+.property-related-record.is-terminal .property-related-record-main strong {
+    font-weight: 500;
+}
+
 .property-related-record-main small,
-.property-related-record-aside small { color: var(--bs-secondary-color); }
-.property-related-record-aside { display: grid; justify-items: end; gap: 0.3rem; text-align: right; }
-.property-related-record-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem; }
-.property-related-chevron { display: grid; place-items: center; color: var(--bs-secondary-color); }
-.property-related-chevron svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s ease; }
-.property-related-record[open] .property-related-chevron svg { transform: rotate(180deg); }
-.property-related-details { padding: 0.1rem 0.85rem 0.85rem; overflow-wrap: anywhere; }
-.property-related-details p { margin: 0 0 0.65rem; }
-.property-related-facts { display: flex; flex-wrap: wrap; gap: 0.35rem 0.85rem; margin-bottom: 0.75rem; color: var(--bs-secondary-color); font-size: 0.83rem; }
-.property-related-empty { padding: 1.25rem; margin: 0; }
-.property-related-pagination { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.75rem; font-size: 0.85rem; }
+.property-related-record-aside small {
+    color: var(--bs-secondary-color);
+}
+
+.property-related-record-aside {
+    display: grid;
+    justify-items: end;
+    gap: 0.25rem;
+    text-align: right;
+}
+
+.property-related-record-aside > small {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.property-related-record[data-kind="event"] .property-related-record-aside > small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+@media (max-width: 860px) {
+    .property-related-record[data-kind="event"] .property-related-record-aside > small {
+        font-size: 0.75rem;
+    }
+}
+
+.property-related-record-aside > small.property-related-date--overdue {
+    color: #a23229;
+}
+
+.property-related-record-aside > small.property-related-date--soon {
+    color: #805600;
+}
+
+.property-related-record-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.25rem;
+}
+
+.property-related-record[data-kind="event"] .property-related-record-badges .work-pill {
+    min-height: 1.375rem;
+}
+
+@media (max-width: 1199.98px) {
+    .property-related-record[data-kind="task"] .property-related-record-badges .work-pill {
+        min-height: 1.375rem;
+    }
+}
+
+.property-related-chevron {
+    display: grid;
+    place-self: center;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 1px solid #c2cbd2;
+    border-radius: 50%;
+    background: var(--bs-body-bg);
+    color: #394750;
+}
+
+.property-related-chevron svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.15s ease;
+}
+
+.property-related-record[open] .property-related-chevron svg {
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .property-related-chevron svg {
+        transition: none;
+    }
+}
+
+.property-related-details {
+    margin-left: 4px;
+    border-top: 1px solid var(--bs-border-color);
+    padding: 0.9rem 1rem;
+    overflow-wrap: anywhere;
+}
+
+.property-related-details p {
+    margin: 0;
+}
+
+.property-related-details h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0 0 0.3rem;
+}
+
+.property-related-detail-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.property-related-empty {
+    padding: 1.25rem;
+    margin: 0;
+}
+
+.property-related-pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+}
 
 .property-panel-area [hidden] {
     display: none !important;
@@ -270,150 +583,12 @@
     color: var(--bs-secondary-color);
 }
 
-.property-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas: "issues tasks" "schedule history";
-    gap: 0.8rem;
-}
-
-.property-overview-issues { grid-area: issues; }
-.property-overview-tasks { grid-area: tasks; }
-.property-overview-schedule { grid-area: schedule; }
-.property-overview-history { grid-area: history; }
-
-.property-overview-grid .property-panel-card {
-    display: flex;
-    flex-direction: column;
-    height: 17.5rem;
-}
-
-.property-overview-grid .property-card-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-}
-
-.property-panel-stack {
-    display: grid;
-    align-content: start;
-    gap: 1rem;
-    max-width: 48rem;
-}
-
-.property-list-card,
+/* Legacy overview, work, and history panels */
 #propertyPanelHistory > p {
     max-width: 48rem;
 }
 
-.property-work-filters {
-    display: flex;
-    gap: 0.35rem;
-    max-width: 48rem;
-    margin-bottom: 0.8rem;
-}
-
-.property-work-filters button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.65rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    color: var(--bs-secondary-color);
-    background: var(--bs-body-bg);
-}
-
-.property-work-filters button.is-active {
-    color: var(--bs-emphasis-color);
-    border-color: var(--bs-emphasis-color);
-    font-weight: 600;
-}
-
-.property-work-filters button:hover,
-.property-work-filters button:focus-visible {
-    background: var(--bs-tertiary-bg);
-}
-
-.property-work-filters span {
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color);
-}
-
-.property-panel-card {
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-}
-
-.property-card-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    min-height: 3rem;
-    padding: 0.45rem 0.85rem;
-    background: var(--bs-tertiary-bg);
-    border-bottom: 1px solid var(--bs-border-color);
-}
-
-.property-card-heading h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-width: 0;
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.property-card-body {
-    padding: 0.55rem 0.85rem 0.8rem;
-}
-
-.property-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.65rem;
-    min-height: 1.5rem;
-    padding: 0.1rem 0.4rem;
-    border: 1px solid var(--bs-emphasis-color);
-    border-radius: 0.3rem;
-    color: var(--bs-body-bg);
-    background: var(--bs-emphasis-color);
-    font-size: 0.82rem;
-    font-weight: 600;
-}
-
-.property-count.is-zero {
-    color: var(--bs-secondary-color);
-    background: transparent;
-    border-color: var(--bs-border-color);
-}
-
-.property-description-preview.is-clamped {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-}
-
-.property-description-open {
-    margin-top: 0.45rem;
-    padding: 0;
-    color: var(--bs-link-color);
-    background: transparent;
-    border: 0;
-    text-decoration: underline;
-    text-underline-offset: 0.15rem;
-}
-
-.property-description-full {
-    overflow-wrap: anywhere;
-}
-
+/* Work and history record rows */
 .property-record,
 .property-history-record {
     border-top: 1px solid var(--bs-border-color);
@@ -489,7 +664,6 @@ summary.property-record-link::-webkit-details-marker {
 }
 
 .property-event-badge,
-.property-presence-badge,
 .property-outcome-badge {
     display: inline-flex;
     align-items: center;
@@ -505,14 +679,6 @@ summary.property-record-link::-webkit-details-marker {
     white-space: nowrap;
 }
 
-.property-outcome--resolved,
-.property-outcome--completed,
-.property-outcome--occurred {
-    color: #176949;
-    background: #eaf7ef;
-    border-color: #badcc8;
-}
-
 .property-event-badge {
     color: #0757b5;
     background: #f3f8ff;
@@ -521,7 +687,7 @@ summary.property-record-link::-webkit-details-marker {
 
 .property-record-link:hover,
 .property-record-link:focus-visible {
-    background: var(--bs-tertiary-bg);
+    background: var(--pom-hover);
 }
 
 .property-record-chevron {
@@ -561,19 +727,7 @@ summary.property-record-link::-webkit-details-marker {
     margin-top: 0.75rem;
 }
 
-.property-section-link {
-    padding: 0;
-    color: var(--bs-link-color);
-    background: transparent;
-    border: 0;
-    text-align: left;
-    white-space: nowrap;
-}
-
-.property-section-link:hover {
-    text-decoration: underline;
-}
-
+/* Desktop sizing and stacked layouts for narrower viewports */
 @media (min-width: 992px) {
     .property-command-page,
     .property-command-page .page-shell {
@@ -589,22 +743,77 @@ summary.property-record-link::-webkit-details-marker {
 }
 
 @media (min-width: 992px) and (max-width: 1199.98px) {
-    .property-overview-grid { grid-template-columns: 1fr; grid-template-areas: "issues" "tasks" "schedule" "history"; }
-    .property-related-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .property-related-search { grid-column: span 2; }
+    .property-related-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .property-related-search {
+        grid-column: span 2;
+    }
+
+    /* Keep both columns, but let a long detail page grow instead of squeezing
+       its related records into a tiny second scrollport. */
+    .property-command-page,
+    .property-command-page .page-shell {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .property-command-main > .container-xl,
+    .property-command-centre {
+        height: auto !important;
+        overflow: visible;
+    }
+
+    .property-workspace {
+        height: auto;
+        min-height: calc(100dvh - 9rem);
+    }
+
+    .property-list-column,
+    .property-detail-column,
+    .property-command-list,
+    .property-related-results,
+    .property-related-scroll {
+        overflow: visible;
+    }
+
+    .property-related-results,
+    .property-related-scroll {
+        flex: 0 0 auto;
+    }
+
+    .property-command-header {
+        position: sticky;
+        top: 4.9rem;
+        z-index: 2;
+        background: var(--bs-body-bg);
+    }
 }
 
 /* A short desktop viewport (including high browser zoom) must not squeeze the
    results list between its header and the card's bottom edge. */
-@media (min-width: 992px) and (max-height: 700px) {
+@media (min-width: 1300px) and (max-height: 700px) {
     .property-command-page,
-    .property-command-page .page-shell { height: auto; min-height: 100dvh; overflow: visible; }
+    .property-command-page .page-shell {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
     .property-command-main > .container-xl,
-    .property-command-centre { height: auto !important; }
-    .property-workspace { height: 40rem; min-height: 40rem; }
+    .property-command-centre {
+        height: auto !important;
+    }
+
+    .property-workspace {
+        height: 40rem;
+        min-height: 40rem;
+    }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 991.98px), (max-width: 1299.98px) and (max-height: 750px) {
     .property-command-page,
     .property-command-page .page-shell,
     .property-command-main,
@@ -614,34 +823,200 @@ summary.property-record-link::-webkit-details-marker {
         overflow: visible;
     }
 
-    .property-workspace { display: block; }
-    .property-list-column { border-right: 0; }
-    .property-command-list { overflow: visible; }
-    .property-detail-column { display: none; overflow: visible; }
-    .property-workspace.show-detail .property-list-column { display: none; }
-    .property-workspace.show-detail .property-detail-column { display: block; }
-    .property-tabs { justify-content: space-between; padding: 0 0.25rem; }
-    .property-tab { padding: 0.75rem 0.55rem; font-size: 0.88rem; }
-    .property-panel-area { display: block; padding: 1rem; overflow: visible; }
-    .property-related-results { display: block; overflow: visible; }
-    .property-related-scroll { overflow: visible; }
-    .property-related-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .property-workspace {
+        display: block;
+    }
+
+    .property-list-column {
+        border-right: 0;
+    }
+
+    .property-command-list {
+        overflow: visible;
+    }
+
+    .property-detail-column {
+        display: none;
+        overflow: visible;
+    }
+
+    .property-workspace.show-detail .property-list-column {
+        display: none;
+    }
+
+    .property-workspace.show-detail .property-detail-column {
+        display: block;
+    }
+
+    .property-workspace.show-detail .property-detail-recovery {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        background: var(--bs-tertiary-bg);
+        border-left: 0.2rem solid var(--pom-brand-blue);
+    }
+
+    .property-detail-recovery .btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .property-panel-area {
+        display: block;
+        padding: 1rem;
+        overflow: visible;
+    }
+
+    .property-related-results {
+        display: block;
+        overflow: visible;
+    }
+
+    .property-related-scroll {
+        overflow: visible;
+    }
+
+    .property-related-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .property-related-filters label:nth-child(3),
-    .property-related-search { grid-column: span 2; }
-    .property-related-filters > button { grid-column: span 2; }
-    .property-related-summary { grid-template-columns: minmax(0, 1fr) minmax(6rem, 7.5rem) 0.5rem; gap: 0.4rem; padding: 0.7rem; }
-    .property-overview-grid { grid-template-columns: 1fr; grid-template-areas: "issues" "tasks" "schedule" "history"; }
-    .property-record-link { grid-template-columns: minmax(0, 1fr) 7.5rem 0.7rem; gap: 0.4rem; padding: 0.7rem 0.25rem; }
+    .property-related-search {
+        grid-column: span 2;
+    }
+
+    .property-related-filters > button {
+        grid-column: span 2;
+    }
+
+    .property-related-summary {
+        grid-template-columns: minmax(0, 1fr) minmax(6rem, 7.5rem) 27px;
+        gap: 0.75rem;
+        padding: 0.625rem 1.25rem;
+    }
+
+    .property-record-link {
+        grid-template-columns: minmax(0, 1fr) 7.5rem 0.7rem;
+        gap: 0.4rem;
+        padding: 0.7rem 0.25rem;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1299.98px) and (max-height: 750px) {
+    .property-command-main > .container-xl,
+    .property-command-centre {
+        height: auto !important;
+    }
+
+    .property-command-page .workspace-mobile-back {
+        display: inline-flex;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .property-command-centre {
+        max-width: 720px;
+        margin-inline: auto;
+    }
+
+    .property-command-centre:has(.property-workspace.show-detail) {
+        max-width: 800px;
+    }
+
+    .property-heading-row.workspace-detail-header-layout {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+    .property-heading-copy {
+        min-width: 0;
+    }
+
+    .property-heading-actions.workspace-detail-actions {
+        justify-content: flex-end;
+    }
+
+    .property-command-header .workspace-mobile-back {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .property-related-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .property-related-filters label:nth-child(3),
+    .property-related-filters > button {
+        grid-column: auto;
+    }
+
+    .property-related-search {
+        grid-column: span 2;
+    }
 }
 
 @media (max-width: 767.98px) {
-    .property-heading-actions { align-items: stretch; }
+    .property-related-summary {
+        height: auto;
+        grid-template-columns: minmax(0, 1fr) 27px;
+        gap: 0.25rem 1.25rem;
+    }
+
+    .property-related-record-aside {
+        grid-column: 1;
+        grid-row: 2;
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 0.3rem 0.65rem;
+        text-align: left;
+    }
+
+    .property-related-chevron {
+        grid-column: 2;
+        grid-row: 1 / 3;
+    }
+
+    .property-related-detail-footer {
+        justify-content: flex-start;
+    }
+
+    .property-heading-actions {
+        align-items: stretch;
+    }
+
     .property-heading-actions > .btn,
-    .property-heading-actions > form { flex: 1 1 auto; }
-    .property-heading-actions > form .btn { width: 100%; }
+    .property-heading-actions > form {
+        flex: 1 1 auto;
+    }
+
+    .property-heading-actions > form .btn {
+        width: 100%;
+    }
+
     .property-heading-actions > .btn,
     .property-heading-actions > form .btn,
-    .property-menu-button { min-height: 2.75rem; }
-    .property-heading-actions .dropdown { flex: 0 0 2.75rem; }
-    .property-menu-button { width: 2.75rem; }
+    .property-menu-button {
+        min-height: 2.75rem;
+    }
+
+    .property-heading-actions .dropdown {
+        flex: 0 0 2.75rem;
+    }
+
+    .property-menu-button {
+        width: 2.75rem;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .property-related-record-aside > small {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 599.98px) {
+    .property-related-summary {
+        min-height: 6rem;
+    }
 }

@@ -1,0 +1,41 @@
+{# resolve Issue Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="resolveIssueModal"
+     tabindex="-1"
+     aria-labelledby="resolveIssueModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="resolveIssueModalLabel">Resolve issue?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form action="{% url 'issue:resolve_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>The issue will be marked as resolved and retained in your history.</p>
+                    {% if active_task_count %}
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   id="resolveLinkedTasks"
+                                   name="affect_linked_tasks"
+                                   value="yes"
+                                   type="checkbox">
+                            <label class="form-check-label" for="resolveLinkedTasks">Also dismiss {{ active_task_count }} active linked task{{ active_task_count|pluralize }}</label>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Keep issue</button>
+                    <button class="btn theme-action" type="submit">Resolve issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

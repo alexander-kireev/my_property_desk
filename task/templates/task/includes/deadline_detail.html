@@ -1,0 +1,12 @@
+{% load work_status %}
+{# Reuse the caller's urgency result; relative_day handles non-overdue dates. #}
+<span {% if status.kind == 'overdue' %}class="task-detail-overdue-date"{% endif %}>{{ task.completion_deadline|date:"j M Y"|default:"No deadline" }}</span>
+{% if task.completion_deadline %}
+    <span class="work-date-relative{% if status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">
+        {% if status.kind == "overdue" %}
+            {{ status.headline }}
+        {% else %}
+            {{ task.completion_deadline|relative_day:today }}
+        {% endif %}
+    </span>
+{% endif %}

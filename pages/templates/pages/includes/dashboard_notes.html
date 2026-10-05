@@ -1,0 +1,19 @@
+{# Personal notes #}
+<section class="dashboard-notes"
+         id="notesView"
+         role="tabpanel"
+         aria-labelledby="notesViewToggle"
+         hidden>
+    <div id="notesList" class="dashboard-notes-list"></div>
+    <form id="noteForm" class="dashboard-note-composer" autocomplete="off">
+        <label class="visually-hidden" for="noteContent">New note</label>
+        <input class="form-control form-control-sm"
+               id="noteContent"
+               name="content"
+               maxlength="250"
+               placeholder="Write a note…"
+               autocomplete="off"
+               required>
+        <button class="btn theme-action btn-sm" type="submit">Add note</button>
+    </form>
+</section>

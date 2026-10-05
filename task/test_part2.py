@@ -140,7 +140,8 @@ class TaskRelationshipAndDateTests(TestCase):
         response = self.client.get(reverse("task:tasks"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'data-relationship-panel="standalone"')
-        self.assertContains(response, "No linked property or issue")
+        self.assertContains(response, 'value="standalone"')
+        self.assertContains(response, ">Not linked</label>")
+        self.assertNotContains(response, "No linked property or issue")
         self.assertContains(response, 'data-searchable-select', count=4)
         self.assertContains(response, "js/searchable-select.js")

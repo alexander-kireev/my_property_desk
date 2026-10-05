@@ -9,25 +9,53 @@ const source = readFileSync(path.join(__dirname, "../static/js/workspace-list-sc
 function openWorkspace(storage, {
     workspace = "contacts", search = "", hash = "", query = "", mobile = false,
     listVisible = true, navigationType = "navigate", initialPageY = 0, detailId = null,
+    viewportWidth = null, viewportHeight = 800, selectedRow = false, expandedRow = false,
+    historyEntry = {state: null},
 } = {}) {
     const frames = [];
     const handlers = {};
+    const reveals = [];
     const pathname = `/${workspace}/${detailId ? `${detailId}/` : ""}`;
     const origin = "http://localhost";
+    const expanded = {classList: {contains: (name) => expandedRow && name === "work-mobile-expanded"}};
+    const selected = selectedRow ? {nextElementSibling: expanded} : null;
     const list = {
         scrollTop: 0,
         addEventListener: (name, callback) => { handlers[`list:${name}`] = callback; },
+        querySelector: () => selected,
         getClientRects: () => listVisible ? [{}] : [],
     };
     const root = {
         dataset: { workspaceScrollRoot: workspace, navigationQuery: query, workspaceScrollPath: workspace === "properties" ? "/properties/" : undefined },
         querySelector: () => list,
+        querySelectorAll: () => [],
         addEventListener: (name, callback) => { handlers[`root:${name}`] = callback; },
     };
     const browser = {
         location: { origin, pathname, search, hash, href: `${origin}${pathname}${search}${hash}` },
         scrollY: initialPageY,
-        matchMedia: () => ({ matches: mobile }),
+        matchMedia: (mediaQuery) => ({
+            matches: viewportWidth === null ? mobile : mediaQuery.split(",").some((branch) => {
+                const clauses = [...branch.matchAll(/\((min|max)-(width|height):\s*([\d.]+)px\)/g)];
+                return clauses.every(([, limit, dimension, threshold]) => {
+                    const actual = dimension === "width" ? viewportWidth : viewportHeight;
+                    return limit === "min" ? actual >= Number(threshold) : actual <= Number(threshold);
+                });
+            }),
+        }),
+        history: {
+            get state() { return historyEntry.state; },
+            replaceState: (state) => { historyEntry.state = state; },
+        },
+        WorkspaceReveal: {
+            reveal: (row) => reveals.push({kind: "row", row}),
+            revealRange: (row, panel) => reveals.push({kind: "range", row, panel}),
+            queueRange: (row, panel, prepare) => frames.push(() => {
+                prepare?.();
+                reveals.push({kind: "range", row, panel});
+            }),
+            afterLayout: (callback) => frames.push(callback),
+        },
         performance: { getEntriesByType: () => [{ type: navigationType }] },
         scrollTo: (_x, y) => { browser.scrollY = y; },
         addEventListener: (name, callback) => { handlers[`window:${name}`] = callback; },
@@ -47,9 +75,10 @@ function openWorkspace(storage, {
         requestAnimationFrame: (callback) => { frames.push(callback); return frames.length; },
     });
     return {
-        browser, list,
+        browser, list, reveals,
         flush: () => { while (frames.length) frames.shift()(); },
         pageShow: (persisted = false) => handlers["window:pageshow"]({ persisted }),
+        pageHide: () => handlers["window:pagehide"](),
         clickLink: (href, { prevented = false } = {}) => {
             const link = { href: new URL(href, `${origin}${pathname}`).href, target: "" };
             handlers["root:click"]({
@@ -78,6 +107,48 @@ test("row selection and refresh retain desktop list scroll", () => {
     const refreshed = openWorkspace(storage, { search: "?selected=7", navigationType: "reload" });
     refreshed.flush();
     assert.equal(refreshed.list.scrollTop, 430);
+});
+
+test("Task selection at 820px restores page scroll and reveals its expanded panel", () => {
+    const storage = new Map();
+    const first = openWorkspace(storage, {workspace: "tasks", viewportWidth: 820});
+    first.flush();
+    first.scrollPage(420); first.flush();
+    assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:tasks")).pageScrollY, 420);
+    first.clickLink("?selected=7");
+
+    const selected = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        initialPageY: 420, selectedRow: true, expandedRow: true,
+    });
+    selected.flush();
+    assert.equal(selected.browser.scrollY, 420);
+    assert.deepEqual(selected.reveals.map(({kind}) => kind), ["range"]);
+});
+
+test("Task reload re-reveals the selection, while Back preserves scroll", () => {
+    const storage = new Map();
+    const first = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        selectedRow: true, expandedRow: true,
+    });
+    first.flush();
+    first.scrollPage(610); first.flush();
+
+    const reload = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        navigationType: "reload", initialPageY: 610, selectedRow: true, expandedRow: true,
+    });
+    reload.flush();
+    assert.deepEqual(reload.reveals.map(({kind}) => kind), ["range"]);
+
+    const back = openWorkspace(storage, {
+        workspace: "tasks", search: "?selected=7", viewportWidth: 820,
+        navigationType: "back_forward", initialPageY: 610, selectedRow: true, expandedRow: true,
+    });
+    back.flush();
+    assert.deepEqual(back.reveals, []);
+    assert.equal(back.browser.scrollY, 610);
 });
 
 test("fresh navbar entry with unchanged filters starts at the top on mobile and desktop", () => {
@@ -147,17 +218,30 @@ test("a bfcache return keeps the browser-restored position", () => {
     assert.equal(page.browser.scrollY, 475);
 });
 
-test("expanded mobile Events keeps tracking its visible list and respects its row anchor", () => {
+test("contact and property selections reveal once on reload", () => {
+    for (const workspace of ["contacts", "properties"]) {
+        const page = openWorkspace(new Map(), {
+            workspace, search: "?selected=7", selectedRow: true, navigationType: "reload",
+        });
+        page.flush();
+        page.pageShow();
+        page.flush();
+        assert.equal(page.reveals.length, 1, workspace);
+    }
+});
+
+test("a legacy Events row anchor yields to the selected-record reveal", () => {
     const storage = new Map();
     const first = openWorkspace(storage, { workspace: "events", mobile: true });
     first.flush();
     first.scrollPage(300); first.flush(); first.clickLink("?selected=7&tab=details");
     const selected = openWorkspace(storage, {
         workspace: "events", search: "?selected=7&tab=details", hash: "#eventRow7",
-        mobile: true, initialPageY: 720,
+        mobile: true, initialPageY: 720, selectedRow: true, expandedRow: true,
     });
     selected.flush();
-    assert.equal(selected.browser.scrollY, 720);
+    assert.equal(selected.browser.scrollY, 300);
+    assert.deepEqual(selected.reveals.map(({kind}) => kind), ["range"]);
     selected.scrollPage(820); selected.flush();
     assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:events")).pageScrollY, 820);
 });
@@ -205,4 +289,102 @@ test("property quick action keeps list position through another workspace POST",
     const returned = openWorkspace(storage, { workspace: "properties", detailId: 7, search: "?tab=work" });
     returned.flush();
     assert.equal(returned.list.scrollTop, 310);
+});
+
+test("selected record to full detail and Back restores its own page or list entry", () => {
+    for (const [workspace, width, height, pageOwner] of [
+        ["tasks", 820, 800, true], ["issues", 1100, 699, true],
+        ["events", 1440, 900, false],
+    ]) {
+        const storage = new Map();
+        const selectedEntry = {state: null};
+        const detailEntry = {state: null};
+        const selected = openWorkspace(storage, {
+            workspace, search: "?selected=7", viewportWidth: width, viewportHeight: height,
+            historyEntry: selectedEntry, selectedRow: true,
+        });
+        selected.flush();
+        if (pageOwner) selected.scrollPage(610); else selected.scrollList(430);
+        selected.flush();
+        selected.clickLink(`/${workspace}/?selected=7&open=detail`);
+        selected.pageHide();
+        const detail = openWorkspace(storage, {
+            workspace, search: "?selected=7&open=detail", viewportWidth: width,
+            viewportHeight: height, historyEntry: detailEntry,
+        });
+        detail.flush();
+        if (pageOwner) detail.scrollPage(20); else detail.scrollList(10);
+        detail.flush(); detail.pageHide();
+        const back = openWorkspace(storage, {
+            workspace, search: "?selected=7", viewportWidth: width,
+            viewportHeight: height, historyEntry: selectedEntry,
+            navigationType: "back_forward", selectedRow: true,
+        });
+        back.flush();
+        assert.equal(pageOwner ? back.browser.scrollY : back.list.scrollTop,
+            pageOwner ? 610 : 430, `${workspace} ${width}x${height}`);
+    }
+});
+
+test("Property 749/750 list to detail and Back restores document row position", () => {
+    for (const height of [749, 750]) {
+        const storage = new Map();
+        const listEntry = {state: null};
+        const detailEntry = {state: null};
+        const list = openWorkspace(storage, {
+            workspace: "properties", viewportWidth: 1100, viewportHeight: height,
+            historyEntry: listEntry,
+        });
+        list.flush(); list.scrollPage(520); list.flush();
+        list.clickLink("/properties/24/"); list.pageHide();
+        const detail = openWorkspace(storage, {
+            workspace: "properties", detailId: 24, viewportWidth: 1100,
+            viewportHeight: height, listVisible: false, historyEntry: detailEntry,
+        });
+        detail.flush(); detail.scrollPage(0); detail.pageHide();
+        const back = openWorkspace(storage, {
+            workspace: "properties", viewportWidth: 1100, viewportHeight: height,
+            historyEntry: listEntry, navigationType: "back_forward",
+        });
+        back.flush();
+        assert.equal(back.browser.scrollY, 520, `1100x${height}`);
+    }
+});
+
+test("Property 1100x800 uses document scroll matching its authored CSS", () => {
+    const storage = new Map();
+    const page = openWorkspace(storage, {
+        workspace: "properties", viewportWidth: 1100, viewportHeight: 800,
+    });
+    page.flush(); page.scrollPage(480); page.flush();
+    assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:properties")).pageScrollY, 480);
+});
+
+test("Property related-record Back restores hidden-detail page; ordinary detail and Contacts still reset", () => {
+    const entry = {state: {
+        pomWorkspaceScroll: {properties: {
+            key: "/properties/?", selection: "/properties/13/?selected=", listScrollTop: 0, pageScrollY: 556,
+        }},
+        pomPropertyRelatedReturn: {url: "/properties/13/?tab=work", key: "/issues/:13"},
+    }};
+    const returned = openWorkspace(new Map(), {
+        workspace: "properties", detailId: 13, search: "?tab=work", mobile: true,
+        listVisible: false, navigationType: "back_forward", historyEntry: entry,
+    });
+    returned.flush();
+    assert.equal(returned.browser.scrollY, 556);
+
+    const direct = openWorkspace(new Map(), {
+        workspace: "properties", detailId: 13, search: "?tab=work", mobile: true,
+        listVisible: false, navigationType: "navigate", initialPageY: 556, historyEntry: entry,
+    });
+    direct.flush();
+    assert.equal(direct.browser.scrollY, 0);
+
+    const contacts = openWorkspace(new Map(), {
+        workspace: "contacts", search: "?selected=13", mobile: true,
+        listVisible: false, navigationType: "back_forward", initialPageY: 556,
+    });
+    contacts.flush();
+    assert.equal(contacts.browser.scrollY, 0);
 });

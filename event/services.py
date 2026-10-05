@@ -161,6 +161,32 @@ def add_contacts_to_event(*, event, contacts):
     return event
 
 
+@transaction.atomic
+def set_event_contacts(*, event, contacts):
+    if event.deleted_at is not None or event.state != Event.State.SCHEDULED:
+        return event
+
+    desired = _validated_contacts(user=event.user, contacts=contacts)
+    desired_ids = {contact.pk for contact in desired}
+    editable_links = EventContact.objects.filter(
+        event=event,
+        contact__user=event.user,
+        contact__state=Contact.State.ACTIVE,
+        contact__deleted_at__isnull=True,
+    )
+    editable_links.exclude(contact_id__in=desired_ids).delete()
+    existing_ids = set(EventContact.objects.filter(
+        event=event,
+        contact_id__in=desired_ids,
+    ).values_list("contact_id", flat=True))
+    EventContact.objects.bulk_create(
+        [EventContact(event=event, contact=contact)
+         for contact in desired if contact.pk not in existing_ids],
+        ignore_conflicts=True,
+    )
+    return event
+
+
 def remove_contact_from_event(*, event_contact):
     event = event_contact.event
     if event.deleted_at is not None or event.state != Event.State.SCHEDULED:

@@ -1,0 +1,82 @@
+{# add Event Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade"
+     id="addEventModal"
+     data-modal-clear-query="form_state"
+     tabindex="-1"
+     aria-labelledby="addEventModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable dashboard-add-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addEventModalLabel">Add event</h2>
+                {% if return_property_id %}
+                    <a class="btn-close"
+                       href="{% url 'property:property_detail' return_property_id %}"
+                       aria-label="Close and return to property"></a>
+                {% else %}
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                {% endif %}
+            </div>
+            <form class="event-tabbed-form"
+                  action="{% url 'event:add_event' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post"
+                  autocomplete="off"
+                  data-event-form
+                  data-event-tabs>
+                {% csrf_token %}
+                {% if return_property_id %}
+                    <input type="hidden" name="return_property" value="{{ return_property_id }}">
+                {% endif %}
+                <div class="event-form-tabs"
+                     role="tablist"
+                     aria-label="Add event sections">
+                    <button class="event-form-tab{% if not initial_contacts_form.errors or add_event_form.errors %} is-active{% endif %}"
+                            id="addEventDetailsTab"
+                            type="button"
+                            role="tab"
+                            aria-controls="addEventDetailsPanel"
+                            aria-selected="{% if initial_contacts_form.errors and not add_event_form.errors %}false{% else %}true{% endif %}"
+                            data-event-tab="details">Details</button>
+                    <button class="event-form-tab{% if initial_contacts_form.errors and not add_event_form.errors %} is-active{% endif %}"
+                            id="addEventParticipantsTab"
+                            type="button"
+                            role="tab"
+                            aria-controls="addEventParticipantsPanel"
+                            aria-selected="{% if initial_contacts_form.errors and not add_event_form.errors %}true{% else %}false{% endif %}"
+                            data-event-tab="participants">Participants <span class="event-form-tab-count" data-contact-tab-count>{{ initial_contacts_form.contacts.value|length }}</span></button>
+                </div>
+                <div class="modal-body event-form-body">
+                    <div id="addEventDetailsPanel"
+                         role="tabpanel"
+                         aria-labelledby="addEventDetailsTab"
+                         data-event-panel="details"
+                         {% if initial_contacts_form.errors and not add_event_form.errors %} hidden{% endif %}>
+                        {% include "event/includes/event_form_fields.html" with event_form=add_event_form %}
+                    </div>
+                    <div id="addEventParticipantsPanel"
+                         role="tabpanel"
+                         aria-labelledby="addEventParticipantsTab"
+                         data-event-panel="participants"
+                         {% if not initial_contacts_form.errors or add_event_form.errors %} hidden{% endif %}>
+                        {% if initial_contacts_form.non_field_errors %}<div class="alert alert-danger py-2">{{ initial_contacts_form.non_field_errors }}</div>{% endif %}
+                        {% include "event/includes/contact_picker.html" with picker_field=initial_contacts_form.contacts picker_id="initialEventContacts" %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    {% if return_property_id %}
+                        <a class="btn btn-outline-secondary"
+                           href="{% url 'property:property_detail' return_property_id %}">Cancel</a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Cancel</button>
+                    {% endif %}
+                    <button class="btn theme-action px-4" type="submit">Save event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

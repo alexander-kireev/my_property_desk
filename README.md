@@ -41,6 +41,35 @@ This is a personal portfolio and learning project intended to strengthen practic
 
 Development follows a structured but lightweight software-development lifecycle: requirements analysis, domain modelling, technical design, incremental implementation, continuous testing and iteration. The process emphasises useful engineering discipline without unnecessary ceremony.
 
+## Development formatting
+
+Read the [maintainer guide](docs/MAINTAINER_GUIDE.md) for HTML/CSS ownership, shared templates, commenting conventions, and the refactoring checks.
+
+Install the optional formatting tools after installing the application requirements:
+
+```powershell
+pip install -r requirements-dev.txt
+npm install
+```
+
+Check the authored CSS and Django templates without changing them:
+
+```powershell
+npm run lint:css
+npm run format:css:check
+python -m djlint accounts contact event issue note pages property task templates --lint
+python -m djlint accounts contact event issue note pages property task templates --check
+```
+
+Format CSS or a bounded group of templates, then review the diff before committing:
+
+```powershell
+npm run format:css
+python -m djlint path\to\templates --reformat
+```
+
+CSS rules that could alter the cascade or impose a new naming scheme are deliberately excluded from the initial lint baseline. Those changes belong in reviewed refactoring work rather than automatic formatting.
+
 ## Project status
 
 Requirements and domain analysis are substantially complete. Technical design and application setup are now underway.

@@ -10,7 +10,6 @@ from .models import Task
 TASK_SCHEDULE_PERIOD_OPTIONS = {
     "today": "Today",
     "next_7_days": "Next 7 days",
-    "upcoming": "Upcoming",
     "past": "Past",
     "unscheduled": "Unscheduled",
 }
@@ -19,7 +18,6 @@ TASK_DEADLINE_PERIOD_OPTIONS = {
     "overdue": "Overdue",
     "today": "Today",
     "next_7_days": "Next 7 days",
-    "upcoming": "Upcoming",
     "no_deadline": "No deadline",
 }
 
@@ -96,8 +94,6 @@ def filtered_tasks_for_user(
         tasks = tasks.filter(scheduled_date=today)
     elif scheduled_period == "next_7_days":
         tasks = tasks.filter(scheduled_date__range=(today, period_end))
-    elif scheduled_period == "upcoming":
-        tasks = tasks.filter(scheduled_date__gte=today)
     elif scheduled_period == "past":
         tasks = tasks.filter(scheduled_date__lt=today)
     elif scheduled_period == "unscheduled":
@@ -112,8 +108,6 @@ def filtered_tasks_for_user(
         tasks = tasks.filter(completion_deadline=today)
     elif deadline_period == "next_7_days":
         tasks = tasks.filter(completion_deadline__range=(today, period_end))
-    elif deadline_period == "upcoming":
-        tasks = tasks.filter(completion_deadline__gte=today)
     elif deadline_period == "no_deadline":
         tasks = tasks.filter(completion_deadline__isnull=True)
 

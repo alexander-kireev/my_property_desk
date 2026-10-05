@@ -1,0 +1,32 @@
+{# add Contact Method Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient contact-method-modal"
+     id="addContactMethodModal"
+     data-modal-clear-query="form_state"
+     tabindex="-1"
+     aria-labelledby="addContactMethodModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addContactMethodModalLabel">Add contact detail</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form action="{% url 'contact:add_contact_method' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post"
+                  autocomplete="off">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {% include "contact/includes/contact_method_form_fields.html" with method_form=add_contact_method_form %}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Cancel</button><button class="btn theme-action" type="submit">Add detail</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

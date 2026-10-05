@@ -1,0 +1,148 @@
+{# Selected property summary and related records #}
+<div class="property-detail-column">
+    {% if selected_property %}
+        <div class="property-command-header workspace-detail-header"
+             data-detail-header>
+            <a class="workspace-mobile-back btn btn-sm pom-quiet mb-3"
+               href="{% url 'property:properties' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}">← Back to properties</a>
+            <div class="property-heading-row workspace-detail-header-layout">
+                <div class="property-heading-copy workspace-detail-heading-copy">
+                    <h2 class="property-heading-title workspace-detail-title h3">{{ selected_property.name }}</h2>
+                    <div class="property-heading-meta workspace-detail-meta">
+                        <span class="work-pill {% if selected_property.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_property.get_state_display }}</span>
+                        <span class="small text-body-secondary">Added {{ selected_property.created_at|date:"j M Y" }}</span>
+                    </div>
+                    <div class="expandable-text expandable-text--single-line property-heading-address"
+                         data-expandable-text>
+                        <span class="expandable-text-content text-body-secondary"
+                              id="property-detail-address"
+                              data-expandable-content>{{ selected_property.address|default:"No address provided" }}</span>
+                        {% if selected_property.address %}<button class="expandable-text-toggle"
+        type="button"
+        aria-controls="property-detail-address"
+        aria-expanded="false"
+        hidden
+        data-expandable-toggle>See more</button>{% endif %}
+                    </div>
+                </div>
+                <div class="property-heading-actions workspace-detail-actions">
+                    {% if selected_property.state == "active" %}
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#{% if is_detail_route %}editPropertyModal{% else %}listEditPropertyModal{% endif %}">Edit property</button>
+                    {% else %}
+                        <form action="{% url 'property:reactivate_property' selected_property.pk %}{% if not is_detail_route %}?{{ list_return_query }}{% endif %}"
+                              method="post">{% csrf_token %}<button class="btn theme-action" type="submit">Reactivate</button></form>
+                    {% endif %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary property-menu-button"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Property actions">⋮</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% if selected_property.state == "active" %}<li><button class="dropdown-item"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#deactivatePropertyModal">Deactivate property</button></li>{% endif %}
+                            <li>
+                                <button class="dropdown-item text-danger"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deletePropertyModal">Delete property</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% if selected_property.state == "deactivated" %}<div class="property-attention"><strong>Read-only</strong><span>This property is deactivated; its records remain available.</span></div>{% endif %}
+        </div>
+        {% if selected_outside_filters %}<div class="workspace-selection-notice property-detail-recovery"
+     role="status">Selected property is outside these filters. <a class="btn btn-sm btn-outline-secondary"
+    href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
+        <div class="property-panel-area">
+            <section class="property-heading-description"
+                     aria-label="Property description">
+                <h3>Description</h3>
+                {% if selected_property.description %}
+                    {% include "includes/expandable_text.html" with text=selected_property.description text_id="property-detail-description" %}
+    {% else %}<p class="text-body-secondary mb-0">No description provided.</p>{% endif %}
+        </section>
+        {# Related-record controls and result list #}
+        <div class="property-related-heading">
+            <div>
+                <h3 class="h5 mb-1">Related records</h3>
+                <p class="small text-body-secondary mb-0">Issues, tasks and events for this property.</p>
+            </div>
+            {% if selected_property.state == "active" %}
+                <div class="dropdown">
+                    <button class="btn btn-sm theme-action dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">+ Add</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button class="dropdown-item"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#propertyAddIssueModal">Issue</button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#propertyAddTaskModal">Task</button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#propertyAddEventModal">Event</button>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+        <form class="property-related-filters"
+              method="get"
+              action="{% url 'property:property_detail' selected_property.pk %}">
+            <label><span class="visually-hidden">Record type</span><select class="form-select form-select-sm" name="records_type"><option value="all"{% if related_type == 'all' %} selected{% endif %}>All types</option><option value="issue"{% if related_type == 'issue' %} selected{% endif %}>Issues</option><option value="task"{% if related_type == 'task' %} selected{% endif %}>Tasks</option><option value="event"{% if related_type == 'event' %} selected{% endif %}>Events</option></select></label>
+            <label><span class="visually-hidden">Record status</span><select class="form-select form-select-sm" name="records_scope"><option value="current"
+        {% if related_scope == 'current' %} selected{% endif %}>Current</option><option value="past"{% if related_scope == 'past' %} selected{% endif %}>Past</option><option value="all"{% if related_scope == 'all' %} selected{% endif %}>All statuses</option></select></label>
+            <label><span class="visually-hidden">Sort records</span><select class="form-select form-select-sm" name="records_sort"><option value="date"{% if related_sort == 'date' %} selected{% endif %}>Date: soonest</option><option value="recent"{% if related_sort == 'recent' %} selected{% endif %}>Latest activity</option><option value="title"{% if related_sort == 'title' %} selected{% endif %}>Title: A–Z</option></select></label>
+            <label class="property-related-search">
+                <span class="visually-hidden">Search related records</span><input class="form-control form-control-sm"
+       type="search"
+       name="records_search"
+       value="{{ related_search }}"
+       placeholder="Search titles or descriptions">
+            </label>
+            <button class="btn btn-sm theme-action" type="submit">Apply</button>
+        </form>
+        <div class="property-related-results" aria-live="polite">
+            <div class="property-related-result-heading">{{ related_page.paginator.count }} record{{ related_page.paginator.count|pluralize }}</div>
+            <div class="property-related-scroll"
+                 tabindex="0"
+                 aria-label="Related records list">
+                {% for entry in related_page %}
+                    {% include "property/includes/related_record.html" with entry=entry %}
+    {% empty %}<div class="property-related-empty text-center text-body-secondary p-3">{% if related_has_filters %}<strong class="d-block text-body mb-1">No matching records</strong><span class="d-block small mb-2">Try changing the related-record filters.</span><a class="btn btn-sm btn-outline-secondary"
+   href="{% url 'property:property_detail' selected_property.pk %}">Clear filters</a>{% else %}No current related records.{% endif %}</div>{% endfor %}
+        </div>
+        </div>
+        {% if related_page.paginator.num_pages > 1 %}
+            <nav class="property-related-pagination" aria-label="Related record pages">
+                {% if related_page.has_previous %}<a href="{% url 'property:property_detail' selected_property.pk %}?{{ related_query }}&amp;records_page={{ related_page.previous_page_number }}">← Previous</a>{% endif %}
+                <span>Page {{ related_page.number }} of {{ related_page.paginator.num_pages }}</span>
+                {% if related_page.has_next %}<a href="{% url 'property:property_detail' selected_property.pk %}?{{ related_query }}&amp;records_page={{ related_page.next_page_number }}">Next →</a>{% endif %}
+            </nav>
+        {% endif %}
+        </div>
+    {% else %}
+        <div class="property-detail-empty p-5 text-center">
+            <h2 class="h5">Select a property</h2>
+            <p class="text-body-secondary mb-0">Choose a property from the list to see its related records.</p>
+        </div>
+    {% endif %}
+</div>

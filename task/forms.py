@@ -11,6 +11,9 @@ class TaskForm(forms.ModelForm):
         self.user = user
         self.parent_issue = parent_issue
 
+        self.fields["title"].max_length = 75
+        self.fields["title"].widget.attrs["maxlength"] = "75"
+
         active_properties = Property.objects.filter(
             user=user,
             state=Property.State.ACTIVE,

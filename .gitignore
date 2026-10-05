@@ -20,6 +20,10 @@ staticfiles/
 .coverage
 htmlcov/
 
+# Front-end development tooling
+node_modules/
+.stylelintcache
+
 # Notes folder
 notes/
 
@@ -28,4 +32,7 @@ wireframes/
 
 # For internal build docs
 build_docs/
-docs/
+docs/*
+!docs/MAINTAINER_GUIDE.md
+.github/*.md
+.github/audits/

@@ -1,7 +1,9 @@
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
+from django.http import JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
@@ -41,7 +43,11 @@ from note.services import (
     create_note,
     update_note,
     delete_note,
+    remember_deleted_note,
+    undo_deleted_note,
 )
+from config.feedback import snapshot_form_values, form_values_changed
+from pages.workspace_selection import resolve_selection
 
 
 
@@ -199,6 +205,57 @@ def _normalised_list_values(request):
     return {"search": search, "state": state, "sort": sort}
 
 
+def _canonical_contacts_url(request):
+    """Make invalid list choices agree with the state rendered by the workspace."""
+    invalid_choice = any(
+        name in request.GET and request.GET.get(name) not in accepted
+        for name, accepted in (
+            ("state", (*Contact.State.values, "all", "")),
+            ("sort", CONTACT_SORT_OPTIONS),
+            ("tab", CONTACT_WORKSPACE_TABS),
+        )
+    )
+    if not invalid_choice and "page" not in request.GET:
+        return None
+
+    parameters = request.GET.copy()
+    values = _normalised_list_values(request)
+    contacts = filtered_contacts_for_user(
+        user=request.user,
+        **{**values, "state": values["state"] or "all"},
+    )
+    _, _, _, selection_redirect = resolve_selection(
+        request,
+        filtered=contacts,
+        owned=contacts_for_user(user=request.user),
+        page_size=CONTACTS_PER_PAGE,
+    )
+    if selection_redirect:
+        parameters = QueryDict(urlsplit(selection_redirect).query, mutable=True)
+
+    for name, accepted in (
+        ("state", (*Contact.State.values, "all", "")),
+        ("sort", CONTACT_SORT_OPTIONS),
+        ("tab", CONTACT_WORKSPACE_TABS),
+    ):
+        if name in parameters and parameters.get(name) not in accepted:
+            parameters.pop(name)
+
+    if "page" in parameters:
+        actual_page = Paginator(contacts, CONTACTS_PER_PAGE).get_page(parameters.get("page")).number
+        if parameters.get("page") != str(actual_page):
+            if actual_page == 1:
+                parameters.pop("page")
+            else:
+                parameters["page"] = str(actual_page)
+
+    if parameters == request.GET:
+        return None
+    query = parameters.urlencode()
+    url = reverse("contact:contacts")
+    return f"{url}?{query}" if query else url
+
+
 def _list_query_parameters(values):
     parameters = {}
     for name in ("search", "state"):
@@ -215,10 +272,13 @@ def _contact_workspace_url(
     contact_id=None,
     tab="details",
     form_state=None,
+    clear_filters=False,
 ):
     parameters = _list_query_parameters(_normalised_list_values(request))
+    if clear_filters:
+        parameters = {key: value for key, value in parameters.items() if key == "sort"}
     page = request.GET.get("page", "")
-    if page.isdigit() and int(page) > 1:
+    if not clear_filters and page.isdigit() and int(page) > 1:
         parameters["page"] = page
     if contact_id is not None:
         parameters["selected"] = contact_id
@@ -274,20 +334,17 @@ def _contact_list_context(
     values = _normalised_list_values(request)
     contacts = filtered_contacts_for_user(
         user=request.user,
-        **{**values, "state": values["state"] or Contact.State.ACTIVE},
+        **{**values, "state": values["state"] or "all"},
+    )
+    requested_contact, selected_page, outside_filters, selection_redirect = resolve_selection(
+        request, filtered=contacts, owned=contacts_for_user(user=request.user),
+        page_size=CONTACTS_PER_PAGE,
     )
     paginator = Paginator(contacts, CONTACTS_PER_PAGE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(selected_page or request.GET.get("page"))
 
     if selected_contact is None:
-        try:
-            selected_id = int(request.GET.get("selected", ""))
-        except (TypeError, ValueError):
-            selected_id = None
-        selected_contact = next(
-            (contact for contact in page_obj if contact.pk == selected_id),
-            None,
-        )
+        selected_contact = requested_contact
 
     if selected_contact is None and page_obj.object_list:
         selected_contact = page_obj.object_list[0]
@@ -369,6 +426,8 @@ def _contact_list_context(
     return {
         "page_obj": page_obj,
         "selected_contact": selected_contact,
+        "selected_outside_filters": outside_filters,
+        "selection_redirect": selection_redirect,
         "contact_methods": contact_methods,
         "email_methods": email_methods,
         "telephone_methods": telephone_methods,
@@ -388,7 +447,7 @@ def _contact_list_context(
         "sort": values["sort"],
         "list_query": urlencode(list_parameters),
         "navigation_query": urlencode(navigation_parameters),
-        "has_filters": bool(values["search"] or values["state"]),
+        "has_filters": bool(values["search"] or values["state"] not in ("", "all")),
         "contact_count": contacts_for_user(user=request.user).count(),
         "show_mobile_detail": bool(request.GET.get("selected"))
         or open_modal in (
@@ -402,11 +461,21 @@ def _contact_list_context(
 @login_required
 @require_GET
 def contacts_view(request):
+    canonical_url = _canonical_contacts_url(request)
+    if canonical_url:
+        return redirect(canonical_url)
     context_overrides = _restore_contact_form_context(request)
+    context = _contact_list_context(request, **context_overrides)
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
+    token = request.session.pop("note_undo_display", None)
+    original = request.session.get("note_undo")
+    if token and original and token == original.get("token") and context["selected_contact"] and original.get("contact_id") == context["selected_contact"].pk:
+        context["note_undo_token"] = token
     return render(
         request,
         "contact/contacts.html",
-        _contact_list_context(request, **context_overrides),
+        context,
     )
 
 
@@ -416,7 +485,8 @@ def add_contact_view(request):
     form = ContactCreateForm(request.POST, auto_id="add_contact_%s")
     if form.is_valid():
         contact = create_contact(user=request.user, **form.cleaned_data)
-        return redirect(_contact_workspace_url(request, contact_id=contact.pk))
+        messages.success(request, "Contact added.")
+        return redirect(_contact_workspace_url(request, contact_id=contact.pk, clear_filters=True))
 
     return _redirect_with_contact_form_state(
         request,
@@ -437,8 +507,11 @@ def edit_contact_view(request, contact_id):
         instance=contact,
         auto_id="edit_contact_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_contact(contact=contact, **form.cleaned_data)
+        if form_values_changed(before, form):
+            update_contact(contact=contact, **form.cleaned_data)
+            messages.success(request, "Contact updated.")
         return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
     return _redirect_with_contact_form_state(
@@ -457,6 +530,7 @@ def deactivate_contact_view(request, contact_id):
         state=Contact.State.ACTIVE,
     )
     deactivate_contact(contact=contact)
+    messages.success(request, "Contact deactivated.")
     return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
 
@@ -469,6 +543,7 @@ def reactivate_contact_view(request, contact_id):
         state=Contact.State.DEACTIVATED,
     )
     reactivate_contact(contact=contact)
+    messages.success(request, "Contact reactivated.")
     return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
 
@@ -480,6 +555,7 @@ def delete_contact_view(request, contact_id):
         pk=contact_id,
     )
     delete_contact(contact=contact)
+    messages.success(request, "Contact deleted.")
     return redirect(_contact_workspace_url(request))
 
 
@@ -498,6 +574,7 @@ def add_contact_method_view(request, contact_id):
     )
     if form.is_valid():
         create_contact_method(contact=contact, **form.cleaned_data)
+        messages.success(request, f"{form.cleaned_data['type'].title()} {'number' if form.cleaned_data['type'] == 'telephone' else 'address'} added.")
         return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
     return _redirect_with_contact_form_state(
@@ -525,11 +602,11 @@ def edit_contact_method_view(request, contact_id, method_id):
         contact=contact,
         auto_id="edit_contact_method_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_contact_method(
-            contact_method=contact_method,
-            **form.cleaned_data,
-        )
+        if form_values_changed(before, form):
+            update_contact_method(contact_method=contact_method, **form.cleaned_data)
+            messages.success(request, "Contact detail updated.")
         return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
     return _redirect_with_contact_form_state(
@@ -553,6 +630,7 @@ def delete_contact_method_view(request, contact_id, method_id):
         pk=method_id,
     )
     delete_contact_method(contact_method=contact_method)
+    messages.success(request, "Contact detail deleted.")
     return redirect(_contact_workspace_url(request, contact_id=contact.pk))
 
 
@@ -571,6 +649,7 @@ def add_contact_note_view(request, contact_id):
     )
     if form.is_valid():
         create_note(user=request.user, contact=contact, **form.cleaned_data)
+        messages.success(request, "Note added.")
         return redirect(_contact_workspace_url(request, contact_id=contact.pk, tab="notes"))
 
     return _redirect_with_contact_form_state(
@@ -598,11 +677,11 @@ def edit_contact_note_view(request, contact_id, note_id):
         instance=note,
         auto_id="edit_contact_note_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_note(
-            note=note,
-            **form.cleaned_data,
-        )
+        if form_values_changed(before, form):
+            update_note(note=note, **form.cleaned_data)
+            messages.success(request, "Note updated.")
         return redirect(_contact_workspace_url(request, contact_id=contact.pk, tab="notes"))
 
     return _redirect_with_contact_form_state(
@@ -626,5 +705,17 @@ def delete_contact_note_view(request, contact_id, note_id):
         notes_for_contact(user=request.user, contact=contact),
         pk=note_id,
     )
+    token = remember_deleted_note(request=request, note=note)
+    request.session["note_undo_display"] = token
     delete_note(note=note)
     return redirect(_contact_workspace_url(request, contact_id=contact.pk, tab="notes"))
+
+
+@login_required
+@require_POST
+def undo_contact_note_view(request, contact_id):
+    contact = get_object_or_404(contacts_for_user(user=request.user), pk=contact_id)
+    note = undo_deleted_note(request=request, token=request.POST.get("token", ""), contact_id=contact.pk)
+    if note is None:
+        return JsonResponse({"error": "This note can no longer be undone."}, status=409)
+    return JsonResponse({"ok": True, "id": note.pk})

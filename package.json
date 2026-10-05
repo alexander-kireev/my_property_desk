@@ -1,0 +1,14 @@
+{
+  "name": "my-property-desk-dev-tools",
+  "private": true,
+  "scripts": {
+    "lint:css": "stylelint \"static/css/*.css\"",
+    "format:css": "prettier --write \"static/css/*.css\"",
+    "format:css:check": "prettier --check \"static/css/*.css\""
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9",
+    "stylelint": "^17.16.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}

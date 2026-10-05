@@ -1,0 +1,89 @@
+{# Event calendar and mobile agenda #}
+<section class="tab-pane fade h-100{% if active_tab != 'details' %} show active{% endif %}"
+         id="eventCalendarPanel"
+         role="tabpanel">
+    <div class="event-calendar-pane p-3 p-xl-4">
+        <div class="event-calendar-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <a class="btn btn-sm btn-outline-secondary" href="?{{ today_query }}">Today</a>
+            <div class="d-flex align-items-center gap-1">
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="?{{ previous_year_query }}"
+                   aria-label="Previous year">«</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="?{{ previous_month_query }}"
+                   aria-label="Previous month">‹</a>
+                <h2 class="event-calendar-title h5 mb-0">{{ calendar_month_label|default:"Calendar" }}</h2>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="?{{ next_month_query }}"
+                   aria-label="Next month">›</a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="?{{ next_year_query }}"
+                   aria-label="Next year">»</a>
+            </div>
+            <span class="small text-body-secondary">{% if calendar_event_count is not None %}{{ calendar_event_count }} event{{ calendar_event_count|pluralize }}{% endif %}</span>
+        </div>
+        {% if calendar_weeks %}
+            <div class="event-calendar-grid"
+                 aria-label="{{ calendar_month_label }} event calendar">
+                {% for weekday in calendar_weekdays %}<div class="event-calendar-weekday">{{ weekday }}</div>{% endfor %}
+                {% for week in calendar_weeks %}
+                    {% for day in week %}
+                        <div class="event-calendar-day{% if not day.in_month %} outside{% endif %}{% if day.is_today %} today{% endif %}{% if mobile_agenda_day == day.date %} agenda-selected{% endif %}"
+                             data-calendar-day-href="?{{ day_query_base }}&amp;day={{ day.date|date:'Y-m-d' }}#eventResults"
+                             data-calendar-agenda-href="?{{ day_query_base }}&amp;agenda_day={{ day.date|date:'Y-m-d' }}&amp;view=calendar#eventAgenda">
+                            <a class="event-calendar-day-number{% if selected_day == day.date %} is-selected{% endif %}"
+                               href="?{{ day_query_base }}&amp;day={{ day.date|date:'Y-m-d' }}#eventResults"
+                               aria-label="Show events on {{ day.date|date:'j F Y' }}">{{ day.date|date:"j" }}</a>
+                            {% if day.events %}<span class="event-calendar-count" aria-hidden="true">{{ day.events|length }}<span class="event-calendar-count-label"> event{{ day.events|length|pluralize }}</span></span>{% endif %}
+                            {% if day.first_event %}<a class="event-calendar-item {{ day.first_event.state }}"
+   href="?{{ day_query_base }}&amp;day={{ day.date|date:'Y-m-d' }}&amp;selected={{ day.first_event.pk }}&amp;tab=details"
+   title="{{ day.first_event.title }}">{% if not day.first_event.all_day %}{{ day.first_event.start_time|time:"H:i" }} {% endif %}{{ day.first_event.title }}</a>{% endif %}
+                            {% if day.more_count %}<a class="event-calendar-more"
+   href="?{{ day_query_base }}&amp;day={{ day.date|date:'Y-m-d' }}#eventResults"
+   aria-label="Show all {{ day.events|length }} events on {{ day.date|date:'j F Y' }}">+{{ day.more_count }} more</a>{% endif %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <section class="event-mobile-agenda"
+                     id="eventAgenda"
+                     aria-labelledby="eventAgendaTitle">
+                <div class="event-mobile-agenda-heading">
+                    <h3 id="eventAgendaTitle">{{ mobile_agenda_day|date:"l j F" }}</h3>
+                    <span>{{ mobile_agenda_events|length }} event{{ mobile_agenda_events|length|pluralize }}</span>
+                </div>
+                <div class="event-mobile-agenda-list">
+                    {% for event in mobile_agenda_events %}
+                        <div class="event-mobile-agenda-entry{% if mobile_calendar_view and mobile_expanded_event_id == event.pk %} is-selected is-expanded{% endif %}"
+                             id="eventAgendaRow{{ event.pk }}">
+                            <a class="event-mobile-agenda-row event-command-row list-group-item list-group-item-action{% if mobile_calendar_view and mobile_expanded_event_id == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}"
+                               href="?{{ day_query_base }}&amp;agenda_day={{ mobile_agenda_day|date:'Y-m-d' }}&amp;view=calendar&amp;selected={{ event.pk }}&amp;tab=calendar"
+                               {% if mobile_calendar_view and mobile_expanded_event_id == event.pk %} aria-expanded="true" aria-controls="eventAgendaInlineDetails{{ event.pk }}"{% endif %}>
+                                <span class="event-command-row-grid">
+                                    <span class="event-command-copy"><strong class="event-mobile-agenda-title event-command-title"
+        title="{{ event.title }}">{{ event.title }}</strong><span class="event-mobile-agenda-context event-command-context"
+      {% if event.property %} title="{{ event.property.name }}"{% endif %}>{% if event.property %}{{ event.property.name }}{% endif %}</span></span>
+                                    <span class="event-command-meta">{% include "includes/work_state_badge.html" with item=event only %}<span class="event-mobile-agenda-time event-command-when">{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span>
+                                    <span class="work-mobile-chevron event-mobile-row-arrow" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" focusable="false">
+                                            <path d="m5 9 7 7 7-7" />
+                                        </svg>
+                                    </span>
+                                </span>
+                            </a>
+                            {% if mobile_calendar_view and mobile_expanded_event_id == event.pk %}
+                                {% include "event/includes/mobile_event_details.html" with agenda_inline=True %}
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="event-mobile-agenda-empty">No events planned for this day.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% else %}
+            <div class="event-calendar-empty d-flex align-items-center justify-content-center text-center text-body-secondary border rounded p-5">
+                <p class="mb-0">Calendar data will appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>

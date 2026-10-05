@@ -1,6 +1,7 @@
 from urllib.parse import parse_qs, urlencode, urlsplit
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -14,10 +15,12 @@ from config.form_state import (
     serialise_form_data,
     store_form_state,
 )
+from config.feedback import snapshot_form_values, form_values_changed
 
 from issue.selectors import issues_for_user
 from event.selectors import events_for_user
 from property.navigation import active_property_for_user, created_record_property_url
+from pages.workspace_selection import amended_query_url, resolve_selection
 
 from .forms import TaskForm
 from .models import Task
@@ -43,14 +46,14 @@ TASKS_PER_PAGE = 20
 
 def _normalised_list_values(request):
     search = request.GET.get("search", "").strip()
-    state = request.GET.get("state", "")
+    state = request.GET.get("state", "all")
     sort = request.GET.get("sort", "completion_deadline")
     priority_value = request.GET.get("priority", "")
     scheduled_period = request.GET.get("scheduled_period", "")
     deadline_period = request.GET.get("deadline_period", "")
 
     if state not in (*Task.State.values, "all"):
-        state = ""
+        state = "all"
     if sort not in TASK_SORT_OPTIONS:
         sort = "completion_deadline"
     if scheduled_period not in TASK_SCHEDULE_PERIOD_OPTIONS:
@@ -84,17 +87,19 @@ def _list_query_parameters(values):
         "scheduled_period",
         "deadline_period",
     ):
-        if values[name]:
+        if values[name] and not (name == "state" and values[name] == "all"):
             parameters[name] = values[name]
     if values["sort"] != "completion_deadline":
         parameters["sort"] = values["sort"]
     return parameters
 
 
-def _task_workspace_url(request, *, task_id=None, form_state=None):
+def _task_workspace_url(request, *, task_id=None, form_state=None, clear_filters=False):
     parameters = _list_query_parameters(_normalised_list_values(request))
+    if clear_filters:
+        parameters = {key: value for key, value in parameters.items() if key == "sort"}
     page = request.GET.get("page", "")
-    if page.isdigit() and int(page) > 1:
+    if not clear_filters and page.isdigit() and int(page) > 1:
         parameters["page"] = page
     if task_id is not None:
         parameters["selected"] = task_id
@@ -207,22 +212,16 @@ def _task_list_context(
     values = _normalised_list_values(request)
     tasks = filtered_tasks_for_user(
         user=request.user,
-        **{**values, "state": values["state"] or Task.State.ACTIVE},
+        **values,
+    )
+    requested_task, selected_page, outside_filters, selection_redirect = resolve_selection(
+        request, filtered=tasks, owned=tasks_for_user(user=request.user), page_size=TASKS_PER_PAGE,
     )
     paginator = Paginator(tasks, TASKS_PER_PAGE)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(selected_page or request.GET.get("page"))
 
     if selected_task is None:
-        try:
-            selected_id = int(request.GET.get("selected", ""))
-        except (TypeError, ValueError):
-            selected_id = None
-        selected_task = next(
-            (task for task in page_obj if task.pk == selected_id),
-            None,
-        )
-        if selected_task is None and selected_id is not None and request.GET.get("open") in ("detail", "edit"):
-            selected_task = tasks_for_user(user=request.user).filter(pk=selected_id).first()
+        selected_task = requested_task
 
     if selected_task is None and page_obj.object_list:
         selected_task = page_obj.object_list[0]
@@ -235,6 +234,8 @@ def _task_list_context(
     return {
         "page_obj": page_obj,
         "selected_task": selected_task,
+        "selected_outside_filters": outside_filters,
+        "selection_redirect": selection_redirect,
         "add_task_form": (
             add_task_form
             if add_task_form is not None
@@ -275,7 +276,7 @@ def _task_list_context(
         "has_filters": any(
             (
                 values["search"],
-                values["state"],
+                values["state"] != "all",
                 values["priority"],
                 values["scheduled_period"],
                 values["deadline_period"],
@@ -284,7 +285,7 @@ def _task_list_context(
         "filter_count": sum(
             bool(value)
             for value in (
-                values["state"],
+                values["state"] != "all",
                 values["priority"],
                 values["scheduled_period"],
                 values["deadline_period"],
@@ -300,6 +301,10 @@ def _task_list_context(
         ),
         "task_list_url": _task_workspace_url(request),
         "show_mobile_detail": request.GET.get("open") in ("detail", "edit") or open_modal == "editTaskModal",
+        "show_compact_detail": (
+            selected_task is not None
+            and request.GET.get("selected") == str(selected_task.pk)
+        ),
         "mobile_expanded_task_id": (
             selected_task.pk if selected_task is not None
             and request.GET.get("selected") == str(selected_task.pk)
@@ -316,7 +321,13 @@ def _task_list_context(
 @login_required
 @require_GET
 def tasks_view(request):
+    stale = tuple(name for name in ("scheduled_period", "deadline_period")
+                  if request.GET.get(name) == "upcoming")
+    if stale:
+        return redirect(amended_query_url(request, remove=stale))
     context = _task_list_context(request, **_restore_task_form_context(request))
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
     origin = None
     if request.GET.get("open") == "add" and not context["open_modal"]:
         origin = active_property_for_user(request.user, request.GET.get("property"))
@@ -346,10 +357,11 @@ def add_task_view(request):
     )
     if form.is_valid():
         task = create_task(user=request.user, **form.cleaned_data)
+        messages.success(request, "Task added.")
         property_url = created_record_property_url(task, request.POST.get("return_property"), "task")
         if property_url:
             return redirect(property_url)
-        return redirect(_task_workspace_url(request, task_id=task.pk))
+        return redirect(_task_workspace_url(request, task_id=task.pk, clear_filters=True))
     return _redirect_with_task_form_state(
         request,
         action="add_task",
@@ -370,8 +382,11 @@ def edit_task_view(request, task_id):
         instance=task,
         auto_id="edit_task_%s",
     )
+    before = snapshot_form_values(form)
     if form.is_valid():
-        update_task(task=task, **form.cleaned_data)
+        if form_values_changed(before, form):
+            update_task(task=task, **form.cleaned_data)
+            messages.success(request, "Task updated.")
         return redirect(_task_workspace_url(request, task_id=task.pk))
     return _redirect_with_task_form_state(
         request,
@@ -389,6 +404,7 @@ def dismiss_task_view(request, task_id):
         state=Task.State.ACTIVE,
     )
     dismiss_task(task=task)
+    messages.success(request, "Task dismissed.")
     return _task_action_redirect(request, task=task)
 
 
@@ -401,6 +417,7 @@ def complete_task_view(request, task_id):
         state=Task.State.ACTIVE,
     )
     complete_task(task=task)
+    messages.success(request, "Task completed.")
     return _task_action_redirect(request, task=task)
 
 
@@ -413,6 +430,7 @@ def reactivate_task_view(request, task_id):
         state__in=[Task.State.DISMISSED, Task.State.COMPLETED],
     )
     reactivate_task(task=task)
+    messages.success(request, "Task reactivated.")
     return _task_action_redirect(request, task=task)
 
 
@@ -421,4 +439,5 @@ def reactivate_task_view(request, task_id):
 def delete_task_view(request, task_id):
     task = get_object_or_404(tasks_for_user(user=request.user), pk=task_id)
     delete_task(task=task)
+    messages.success(request, "Task deleted.")
     return _task_action_redirect(request, task=task, deleted=True)

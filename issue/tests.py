@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.contrib.messages import get_messages
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -90,7 +91,18 @@ class IssueFormTests(IssueTestMixin, TestCase):
         )
         self.assertEqual(form.fields["resolution_deadline"].label, "Resolve by")
 
-    def test_issue_forms_use_searchable_property_picker_and_target_date_copy(self):
+    def test_title_accepts_75_characters_and_rejects_76(self):
+        data = self.valid_data()
+        data["title"] = "I" * 75
+        self.assertTrue(IssueForm(data=data, user=self.user).is_valid())
+
+        data["title"] = "I" * 76
+        form = IssueForm(data=data, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertEqual(form.fields["title"].widget.attrs["maxlength"], "75")
+
+    def test_issue_forms_use_searchable_property_picker_without_target_date_copy(self):
         self.client.force_login(self.user)
         self.create_issue(self.user, property=self.property)
 
@@ -99,7 +111,7 @@ class IssueFormTests(IssueTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'data-searchable-select', count=4)
         self.assertContains(response, "Resolve by")
-        self.assertContains(response, "the issue will not resolve automatically", count=2)
+        self.assertNotContains(response, "the issue will not resolve automatically")
 
     def test_another_users_property_is_rejected(self):
         other_property = self.create_property(
@@ -311,24 +323,67 @@ class IssueViewTests(IssueTestMixin, TestCase):
             self.user, property=self.property, priority=Issue.Priority.URGENT
         )
 
-    def test_confirmation_keeps_issue_title_and_linked_task_choice_in_body(self):
-        self.issue.title = "Roof " + "X" * 90
+    def test_explicit_selection_enables_short_screen_detail_mode(self):
+        list_response = self.client.get(reverse("issue:issues"))
+        detail_response = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk})
+
+        self.assertNotContains(list_response, "show-compact-detail")
+        self.assertContains(detail_response, "show-compact-detail")
+        self.assertContains(detail_response, "← Back to issues")
+
+    def test_confirmation_omits_redundant_issue_box_and_keeps_linked_task_choice(self):
+        self.issue.title = "Roof " + "X" * 70
         self.issue.save(update_fields=["title"])
         self.create_task(self.user, self.issue)
 
         response = self.client.get(reverse("issue:issues"))
 
         self.assertContains(response, 'id="resolveIssueModalLabel">Resolve issue?</h2>')
-        self.assertContains(response, 'class="modal-context-value">' + self.issue.title)
+        self.assertNotContains(response, 'class="modal-context')
         self.assertContains(response, 'id="resolveLinkedTasks"')
         self.assertContains(response, 'class="btn btn-danger" type="submit">Delete issue')
 
-    def test_issue_list_defaults_to_active_and_can_show_terminal_states(self):
+    def test_issue_forms_use_top_labels_and_readonly_parent_issue(self):
+        self.issue.title = "Long issue " + "X" * 64
+        self.issue.save(update_fields=["title"])
+
+        response = self.client.get(reverse("issue:issues"))
+
+        self.assertRegex(response.content.decode(), r'class="form-label" for="[^"]+">Title</label>')
+        self.assertNotContains(response, 'class="col-md-4 col-form-label"')
+        self.assertContains(response, 'id="issueAddTaskRelatedIssueLabel">Related issue</span>')
+        self.assertContains(
+            response,
+            f'id="issueAddTaskRelatedIssue" role="note" tabindex="0" aria-labelledby="issueAddTaskRelatedIssueLabel">{self.issue.title}</div>',
+        )
+        self.assertNotContains(response, '>Locked</span>')
+        self.assertContains(response, '<p>The issue will be marked as resolved and retained in your history.</p>')
+
+    def test_issue_relationship_is_qualified_in_list_and_detail(self):
+        response = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk})
+
+        self.assertContains(response, 'title="Hill House"')
+        self.assertContains(response, '<dt>Related to</dt>')
+        self.assertContains(response, '<span class="task-related-copy">Hill House</span>')
+        self.assertContains(response, '<a class="task-related-link"')
+        self.assertContains(response, '<h3 class="h5 mb-3">Details</h3>')
+        self.assertNotContains(response, 'Related to: Property ·')
+        self.assertContains(response, 'class="expandable-text expandable-text--fit-card expandable-text--inline-end"')
+
+    def test_resolve_by_date_has_a_non_wrapping_value_wrapper(self):
+        self.issue.resolution_deadline = timezone.localdate() - timedelta(days=1)
+        self.issue.save(update_fields=["resolution_deadline"])
+
+        response = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk})
+
+        self.assertContains(response, 'class="issue-detail-date issue-detail-overdue-date"')
+
+    def test_issue_list_defaults_to_all_states_and_can_filter_terminal_states(self):
         resolved = self.create_issue(self.user, "Resolved issue", state=Issue.State.RESOLVED)
         dismissed = self.create_issue(self.user, "Dismissed issue", state=Issue.State.DISMISSED)
 
         for query, expected in (
-            ({}, [self.issue]),
+            ({}, [self.issue, resolved, dismissed]),
             ({"state": Issue.State.RESOLVED}, [resolved]),
             ({"state": Issue.State.DISMISSED}, [dismissed]),
             ({"state": "all"}, [self.issue, resolved, dismissed]),
@@ -337,14 +392,27 @@ class IssueViewTests(IssueTestMixin, TestCase):
                 response = self.client.get(reverse("issue:issues"), query)
                 self.assertCountEqual(response.context["page_obj"].object_list, expected)
 
-    def test_terminal_only_issue_list_offers_all_states(self):
+    def test_terminal_only_issue_list_is_visible_by_default(self):
         self.issue.state = Issue.State.RESOLVED
         self.issue.save(update_fields=["state"])
 
         response = self.client.get(reverse("issue:issues"))
 
-        self.assertContains(response, "No active issues")
-        self.assertContains(response, "Show all states")
+        self.assertEqual(len(response.context["page_obj"].object_list), 1)
+        self.assertEqual(response.context["selected_issue"].state, Issue.State.RESOLVED)
+
+    def test_issue_details_count_only_active_linked_tasks(self):
+        active = self.create_task(self.user, self.issue)
+        completed = self.create_task(self.user, self.issue)
+        completed.state = Task.State.COMPLETED
+        completed.save(update_fields=["state"])
+        deleted = self.create_task(self.user, self.issue)
+        deleted.deleted_at = timezone.now()
+        deleted.save(update_fields=["deleted_at"])
+        response = self.client.get(reverse("issue:issues"))
+        listed = response.context["page_obj"].object_list[0]
+        self.assertEqual(listed.active_task_count, 1)
+        self.assertContains(response, "<dt>Active tasks</dt><dd>1</dd>")
 
     def issue_data(self, **overrides):
         data = {
@@ -382,12 +450,48 @@ class IssueViewTests(IssueTestMixin, TestCase):
         self.assertEqual(response.context["selected_issue"], self.issue)
         self.assertEqual(list(response.context["selected_tasks"]), [task])
         self.assertEqual(response.context["active_tab"], "tasks")
+        self.assertContains(response, 'class="issue-task-scroll"')
+        self.assertContains(response, 'class="issue-linked-tasks-card"')
+        self.assertContains(response, 'class="issue-task-summary issue-linked-task-grid')
+
+    def test_linked_task_actions_are_in_expanded_details_without_row_menu(self):
+        active_task = self.create_task(self.user, self.issue)
+        completed_task = self.create_task(
+            self.user, self.issue, title="Completed linked task", state=Task.State.COMPLETED
+        )
+
+        response = self.client.get(
+            reverse("issue:issues"), {"selected": self.issue.pk, "tab": "tasks"}
+        )
+
+        self.assertContains(response, 'class="issue-task-details-actions"', count=2)
+        self.assertContains(response, 'issue-edit-task"', count=1)
+        active_actions, completed_actions = [
+            section.split('</div>', 1)[0]
+            for section in response.content.decode().split('class="issue-task-details-actions"')[1:]
+        ]
+        self.assertIn('type="submit">Complete</button>', active_actions)
+        self.assertIn('type="submit">Dismiss</button>', active_actions)
+        self.assertIn('type="submit">Reactivate</button>', completed_actions)
+        self.assertIn('type="submit">Delete</button>', active_actions)
+        self.assertIn('type="submit">Delete</button>', completed_actions)
+        self.assertLess(active_actions.index('>Complete</button>'), active_actions.index('>Edit</button>'))
+        self.assertLess(active_actions.index('>Edit</button>'), active_actions.index('>Dismiss</button>'))
+        self.assertLess(active_actions.index('>Dismiss</button>'), active_actions.index('>Delete</button>'))
+        self.assertContains(response, 'issue-task-open-record"', count=2)
+        self.assertContains(response, 'class="dropdown issue-task-more"', count=2)
+        self.assertContains(response, 'Open record →')
+        self.assertContains(response, 'aria-label="More task actions"', count=2)
+        self.assertContains(response, reverse("task:complete_task", args=[active_task.pk]))
+        self.assertContains(response, reverse("task:reactivate_task", args=[completed_task.pk]))
 
     def test_selected_issue_expands_inline_until_full_record_is_requested(self):
         preview = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk})
         self.assertEqual(preview.context["mobile_expanded_issue_id"], self.issue.pk)
         self.assertContains(preview, f'id="issueInlineDetails{self.issue.pk}"')
         self.assertContains(preview, "Open record →")
+        self.assertContains(preview, 'class="dropdown issue-inline-more"')
+        self.assertContains(preview, 'aria-label="More issue actions"')
 
         full_record = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk, "open": "detail"})
         self.assertIsNone(full_record.context["mobile_expanded_issue_id"])
@@ -442,7 +546,7 @@ class IssueViewTests(IssueTestMixin, TestCase):
         )
 
         self.assertEqual(response.context["search"], "roof")
-        self.assertEqual(response.context["state"], "")
+        self.assertEqual(response.context["state"], "all")
         self.assertEqual(response.context["sort"], "resolution_deadline")
         self.assertEqual(response.context["list_query"], "search=roof")
 
@@ -464,6 +568,14 @@ class IssueViewTests(IssueTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["add_issue_form"].is_bound)
         self.assertEqual(response.context["open_modal"], "addIssueModal")
+
+    def test_add_issue_clears_stale_search_and_page(self):
+        response = self.client.post(
+            f"{reverse('issue:add_issue')}?search=unrelated&page=3",
+            self.issue_data(),
+        )
+        created = Issue.objects.get(title="Boiler losing pressure")
+        self.assertEqual(response.url, f"{reverse('issue:issues')}?selected={created.pk}")
 
     def test_edit_issue_updates_active_issue(self):
         response = self.client.post(
@@ -509,6 +621,10 @@ class IssueViewTests(IssueTestMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.issue.state, Issue.State.RESOLVED)
         self.assertEqual(task.state, Task.State.DISMISSED)
+        self.assertEqual(
+            [str(message) for message in get_messages(response.wsgi_request)],
+            ["Issue resolved. 1 linked task dismissed."],
+        )
 
     def test_delete_issue_can_delete_linked_tasks(self):
         task = self.create_task(self.user, self.issue)
@@ -629,7 +745,9 @@ class IssueViewTests(IssueTestMixin, TestCase):
             reverse("issue:delete_issue", args=[self.issue.pk])
         )
 
-        self.assertIsNone(response.context["selected_issue"])
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("issue:issues"))
+        self.assertIsNone(self.client.get(response.url).context["selected_issue"])
         self.assertEqual(mutation.status_code, 404)
 
     def test_invalid_issue_task_edit_returns_bound_form(self):

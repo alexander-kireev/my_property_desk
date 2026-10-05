@@ -1,0 +1,160 @@
+{# Selected event details and participants #}
+<section class="tab-pane fade h-100{% if active_tab == 'details' %} show active{% endif %}"
+         id="eventDetailsPanel"
+         role="tabpanel">
+    <div class="event-detail-pane">
+        {% if selected_event %}
+            {# Selected record heading and available actions #}
+            <header class="event-detail-header p-3 p-md-4">
+                <a class="event-mobile-back btn btn-sm pom-quiet mb-2"
+                   href="?{% if navigation_query %}{{ navigation_query }}{% endif %}">← Back to events</a>
+                <div class="event-detail-header-layout">
+                    <div class="event-detail-heading-copy">
+                        <h2 class="event-detail-title h3"
+                            title="{{ selected_event.title }}">{{ selected_event.title }}</h2>
+                    </div>
+                    <div class="event-detail-actions">
+                        {% if selected_event.state == "scheduled" %}
+                            <button class="btn theme-action"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#occurEventModal">Mark occurred</button>
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editEventModal"
+                                    {% if not edit_event_form %} disabled{% endif %}>Edit event</button>
+                        {% else %}
+                            <button class="btn theme-action"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reactivateEventModal">Reactivate</button>
+                        {% endif %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle event-menu-button"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-label="Event actions">⋮</button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if selected_event.state == "scheduled" %}<li><button class="dropdown-item"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#cancelEventModal">Cancel event</button></li>{% endif %}
+                                {% if selected_event.state == "scheduled" %}
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <button class="dropdown-item text-danger"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteEventModal">Delete event</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="event-detail-scroll p-3 p-md-4">
+                {% if selected_event.state != "scheduled" %}
+                    <div class="alert alert-secondary" role="status">This event {% if selected_event.state == "occurred" %}occurred{% else %}was cancelled{% endif %}{% if selected_event.terminated_at %} on {{ selected_event.terminated_at|date:"j F Y" }}{% endif %}. It is retained as history.</div>
+                {% endif %}
+                <div class="row g-3 align-items-stretch">
+                    <div class="event-detail-description-column">
+                        <article class="card h-100">
+                            <div class="card-body p-4">
+                                <h3 class="h5 mb-3">Description</h3>
+                                {% include "includes/expandable_text.html" with text=selected_event.description text_id="event-detail-description" fit_card=True inline_end_toggle=True %}
+                            </div>
+                        </article>
+                    </div>
+                    <div class="event-detail-facts-column">
+                        <article class="card h-100">
+                            <div class="card-body p-4">
+                                <h3 class="h5 mb-3">Details</h3>
+                                {# Record facts and related-record links #}
+                                <dl class="work-detail-list small mb-0">
+                                    <dt>Status</dt>
+                                    <dd>
+                                        {% include "includes/work_state_badge.html" with item=selected_event only %}
+                                    </dd>
+                                    <dt>Created</dt>
+                                    <dd>
+                                        {{ selected_event.created_at|date:"j F Y" }}
+                                    </dd>
+                                    <dt>Date</dt>
+                                    <dd>
+                                        {{ selected_event.scheduled_date|date:"j F Y" }}
+                                    </dd>
+                                    <dt>Time</dt>
+                                    <dd>{% if selected_event.all_day %}All day{% else %}{{ selected_event.start_time|time:"H:i" }}{% if selected_event.end_time %}–{{ selected_event.end_time|time:"H:i" }}{% endif %}{% endif %}</dd>
+                                    {% if selected_event.terminated_at %}<dt>Terminated</dt>
+                                        <dd>{{ selected_event.terminated_at|date:"j M Y" }}</dd>{% endif %}
+                                    <dt>Participation</dt>
+                                    <dd>{% if selected_event.user_participation_required %}Required{% else %}Not required{% endif %}</dd>
+                                    <dt>Presence</dt>
+                                    <dd>{% if selected_event.user_presence_required %}Required{% else %}Not required{% endif %}</dd>
+                                    {% if selected_event.property %}<dt>Related to</dt>
+                                        <dd>{% if selected_event.property.deleted_at %}<span class="task-related-deleted"
+      title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span></span>{% else %}<a class="task-related-link"
+   href="{% url 'property:property_detail' selected_event.property.pk %}"
+   title="{{ selected_event.property.name }}"><span class="task-related-copy">{{ selected_event.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}
+                                </dl>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                <article class="event-participants-card card mt-3">
+                    <div class="event-participants-header card-header bg-body p-3 p-md-4">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <h3 class="h5 mb-1">Participants</h3>
+                                <p class="small text-body-secondary mb-0">{{ participants|length }} contact{{ participants|length|pluralize }} linked to this event.</p>
+                            </div>
+                            {% if selected_event.state == "scheduled" and add_contacts_form %}
+                                <button class="btn btn-sm theme-action"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#addEventContactsModal">Add participants</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="event-participant-list">
+                        {% for event_contact in participants %}
+                            <div class="event-participant-row{% if selected_event.state == 'scheduled' %} is-removable{% endif %}">
+                                <div class="event-participant-copy">{% include "event/includes/participant_identity.html" %}</div>
+                                {% if selected_event.state == "scheduled" %}
+                                    <form class="event-participant-action"
+                                          action="{% url 'event:delete_event_contact_from_event' selected_event.pk event_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                                          method="post">
+                                        {% csrf_token %}<button class="event-participant-remove"
+        type="submit"
+        aria-label="Remove {{ event_contact.contact }} from this event"
+        title="Remove participant">×</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div class="event-participant-empty text-body-secondary">No participants have been added.</div>
+                        {% endfor %}
+                    </div>
+                </article>
+            </div>
+        {% else %}
+            <div class="event-no-selection d-flex align-items-center justify-content-center p-5 text-center">
+                <div>
+                    {% if selected_day or has_filters %}
+                        <h2 class="h4">No matching events</h2>
+                        <p class="text-body-secondary">Try changing the date or filters.</p>
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'event:events' %}">Clear filters</a>
+                    {% else %}
+                        <h2 class="h4">No event selected</h2>
+                        <p class="text-body-secondary mb-0">Select an event from the list or calendar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>

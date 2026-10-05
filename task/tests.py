@@ -1,4 +1,5 @@
 from django.db import IntegrityError, transaction
+from django.contrib.messages import get_messages
 from django.test import TestCase
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
@@ -192,6 +193,31 @@ class TaskFormTests(TestCase):
         
         self.assertIsNone(task.property)
         self.assertIsNone(task.issue)
+
+    def test_not_linked_edit_clears_existing_issue_without_posting_disabled_picker(self):
+        issue = self.create_issue(data=self.ISSUE_DATA, user=self.user)
+        task = self.create_task(data={**self.TASK_DATA, "issue": issue.pk}, user=self.user)
+
+        form = TaskForm(
+            data={**self.TASK_DATA, "relationship_type": "standalone"},
+            user=self.user,
+            instance=task,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        task.refresh_from_db()
+        self.assertIsNone(task.issue_id)
+
+    def test_title_accepts_75_characters_and_rejects_76(self):
+        data = {**self.TASK_DATA, "title": "T" * 75}
+        self.assertTrue(TaskForm(data=data, user=self.user).is_valid())
+
+        data["title"] = "T" * 76
+        form = TaskForm(data=data, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertEqual(form.fields["title"].widget.attrs["maxlength"], "75")
     
     def test_duplicate_name_for_tasks_is_allowed(self):
         self.create_task(data=self.TASK_DATA, user=self.user)
@@ -630,7 +656,6 @@ class TaskSelectorTests(TestCase):
         expected_tasks = {
             "today": [today_task],
             "next_7_days": [today_task, next_week_task],
-            "upcoming": [today_task, next_week_task, later_task],
             "past": [past_task],
             "unscheduled": [unscheduled_task],
         }
@@ -685,7 +710,6 @@ class TaskSelectorTests(TestCase):
             "overdue": [overdue_task],
             "today": [today_task],
             "next_7_days": [today_task, next_week_task],
-            "upcoming": [today_task, next_week_task, later_task],
             "no_deadline": [no_deadline_task],
         }
 
@@ -1057,6 +1081,34 @@ class TaskViewTests(TestCase):
             password=self.TEST_PASSWORD,
         )
 
+    def test_task_modal_form_uses_top_labels_and_named_confirmation_actions(self):
+        self.client.force_login(self.user)
+        self.create_task()
+
+        response = self.client.get(reverse("task:tasks"))
+
+        html = response.content.decode()
+        self.assertRegex(html, r'class="form-label" for="[^"]+">Title</label>')
+        self.assertRegex(html, r'class="form-label" for="[^"]+">Description</label>')
+        self.assertRegex(html, r'class="task-relationship-label" id="[^"]+">Related to</span>')
+        self.assertNotContains(response, 'class="col-md-4 col-form-label"')
+        self.assertContains(response, 'type="button" data-bs-dismiss="modal">Keep task</button>')
+        self.assertContains(response, 'class="btn theme-action" type="submit">Dismiss task</button>')
+
+    def test_linked_task_relationship_is_qualified_in_list_and_detail(self):
+        issue = Issue.objects.create(user=self.user, title="Water ingress")
+        task = self.create_task(issue=issue)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("task:tasks"), {"selected": task.pk})
+
+        self.assertContains(response, 'title="Water ingress"')
+        self.assertContains(response, '<dt class="fw-normal text-body-secondary">Related to</dt>')
+        self.assertContains(response, '<span class="task-related-copy">Water ingress</span>')
+        self.assertContains(response, '<h3 class="h5 mb-3">Details</h3>')
+        self.assertNotContains(response, 'Related to: Issue ·')
+        self.assertContains(response, 'class="expandable-text expandable-text--fit-card expandable-text--inline-end"')
+
     def create_task(
         self,
         *,
@@ -1080,14 +1132,14 @@ class TaskViewTests(TestCase):
             issue=issue,
         )
 
-    def test_task_list_defaults_to_active_and_can_show_terminal_states(self):
+    def test_task_list_defaults_to_all_states_and_can_filter_terminal_states(self):
         active = self.create_task(title="Active task")
         completed = self.create_task(title="Completed task", state=Task.State.COMPLETED)
         dismissed = self.create_task(title="Dismissed task", state=Task.State.DISMISSED)
         self.client.force_login(self.user)
 
         for query, expected in (
-            ({}, [active]),
+            ({}, [active, completed, dismissed]),
             ({"state": Task.State.COMPLETED}, [completed]),
             ({"state": Task.State.DISMISSED}, [dismissed]),
             ({"state": "all"}, [active, completed, dismissed]),
@@ -1107,14 +1159,52 @@ class TaskViewTests(TestCase):
         self.assertContains(response, 'data-workspace-scroll-row')
         self.assertContains(response, 'js/workspace-list-scroll.js')
 
-    def test_terminal_only_task_list_offers_all_states(self):
+    def test_explicit_selection_enables_short_screen_detail_mode(self):
+        task = self.create_task()
+        self.client.force_login(self.user)
+
+        list_response = self.client.get(reverse("task:tasks"))
+        detail_response = self.client.get(reverse("task:tasks"), {"selected": task.pk})
+
+        self.assertNotContains(list_response, "show-compact-detail")
+        self.assertContains(detail_response, "show-compact-detail")
+        self.assertContains(detail_response, "← Back to tasks")
+
+    def test_deleted_parent_names_keep_boxed_non_linked_markup(self):
+        self.client.force_login(self.user)
+        property_record = Property.objects.create(
+            user=self.user, name="Former property " + "W" * 55,
+            deleted_at=timezone.now(),
+        )
+        issue = Issue.objects.create(
+            user=self.user, title="Former issue " + "I" * 55,
+            deleted_at=timezone.now(),
+        )
+        for task in (
+            self.create_task(property_record=property_record),
+            self.create_task(issue=issue),
+        ):
+            with self.subTest(task=task.pk):
+                response = self.client.get(
+                    reverse("task:tasks"), {"selected": task.pk, "open": "detail"},
+                )
+                self.assertContains(response, 'class="task-related-deleted"')
+                self.assertContains(response, 'class="task-related-copy"')
+                self.assertNotContains(response, "Deleted property")
+                self.assertNotContains(response, "Deleted issue")
+                mobile_response = self.client.get(
+                    reverse("task:tasks"), {"selected": task.pk},
+                )
+                self.assertContains(mobile_response, 'class="task-related-copy"')
+
+    def test_terminal_only_task_list_is_visible_by_default(self):
         self.create_task(state=Task.State.COMPLETED)
         self.client.force_login(self.user)
 
         response = self.client.get(reverse("task:tasks"))
 
-        self.assertContains(response, "No active tasks")
-        self.assertContains(response, "Show all states")
+        self.assertEqual(len(response.context["page_obj"].object_list), 1)
+        self.assertEqual(response.context["selected_task"].state, Task.State.COMPLETED)
 
     def task_url(self, name, task):
         return reverse(f"task:{name}", kwargs={"task_id": task.pk})
@@ -1270,7 +1360,7 @@ class TaskViewTests(TestCase):
                 "state": Task.State.ACTIVE,
                 "priority": Task.Priority.HIGH,
                 "scheduled_period": "next_7_days",
-                "deadline_period": "upcoming",
+                "deadline_period": "overdue",
                 "sort": "-created_at",
                 "page": 2,
             },
@@ -1279,8 +1369,32 @@ class TaskViewTests(TestCase):
         self.assertEqual(
             response.context["list_query"],
             "search=roof&state=active&priority=3&scheduled_period="
-            "next_7_days&deadline_period=upcoming&sort=-created_at",
+            "next_7_days&deadline_period=overdue&sort=-created_at",
         )
+
+    def test_unchanged_edit_does_not_write_or_claim_success(self):
+        task = self.create_task()
+        self.client.force_login(self.user)
+        data = {
+            **self.VALID_DATA,
+            "title": f"  {task.title}  ",
+            "priority": task.priority,
+        }
+        with patch("task.views.update_task") as update:
+            response = self.client.post(reverse("task:edit_task", args=[task.pk]), data)
+        self.assertEqual(response.status_code, 302)
+        update.assert_not_called()
+        self.assertEqual(list(get_messages(response.wsgi_request)), [])
+
+    def test_upcoming_url_is_canonicalised_without_losing_other_context(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("task:tasks"), {
+            "search": "roof", "scheduled_period": "upcoming", "sort": "-created_at",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("search=roof", response.url)
+        self.assertIn("sort=-created_at", response.url)
+        self.assertNotIn("upcoming", response.url)
 
     def test_tasks_view_normalises_invalid_and_default_list_parameters(self):
         self.client.force_login(self.user)
@@ -1299,7 +1413,7 @@ class TaskViewTests(TestCase):
         )
 
         self.assertEqual(response.context["search"], "roof")
-        self.assertEqual(response.context["state"], "")
+        self.assertEqual(response.context["state"], "all")
         self.assertEqual(response.context["priority"], "")
         self.assertEqual(response.context["scheduled_period"], "")
         self.assertEqual(response.context["deadline_period"], "")
@@ -1339,12 +1453,22 @@ class TaskViewTests(TestCase):
 
     def test_selected_task_expands_inline_until_full_record_is_requested(self):
         task = self.create_task(title="Mobile preview")
+        task.scheduled_date = timezone.localdate() - timedelta(days=60)
+        task.completion_deadline = task.scheduled_date
+        task.save(update_fields=["scheduled_date", "completion_deadline"])
         self.client.force_login(self.user)
 
         preview = self.client.get(reverse("task:tasks"), {"selected": task.pk})
         self.assertEqual(preview.context["mobile_expanded_task_id"], task.pk)
         self.assertFalse(preview.context["show_mobile_detail"])
         self.assertContains(preview, f'id="taskInlineDetails{task.pk}"')
+        self.assertContains(preview, '<h3 class="task-inline-section-title">Description</h3>')
+        self.assertContains(preview, '<h3 class="task-inline-section-title">Details</h3>')
+        self.assertContains(preview, '<dt>Status</dt>')
+        self.assertContains(preview, '<dt>Priority</dt>')
+        self.assertContains(preview, '<dt>Created</dt>')
+        self.assertContains(preview, "60 days ago")
+        self.assertContains(preview, "Overdue by 60 days")
         self.assertContains(preview, "Open record →")
 
         full_record = self.client.get(reverse("task:tasks"), {"selected": task.pk, "open": "detail"})
@@ -1366,11 +1490,14 @@ class TaskViewTests(TestCase):
                     reverse("task:tasks"),
                     {"selected": selected_id},
                 )
-                self.assertEqual(response.context["selected_task"], visible_task)
-                self.assertNotContains(response, other_task.title)
-                self.assertNotContains(response, deleted_task.title)
+                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.url, reverse("task:tasks"))
+                fallback = self.client.get(response.url)
+                self.assertEqual(fallback.context["selected_task"], visible_task)
+                self.assertNotContains(fallback, other_task.title)
+                self.assertNotContains(fallback, deleted_task.title)
 
-    def test_tasks_view_does_not_select_task_outside_current_page(self):
+    def test_tasks_view_corrects_page_to_selected_task(self):
         tasks = [self.create_task(title=f"Task {number:02}") for number in range(21)]
         self.client.force_login(self.user)
 
@@ -1379,13 +1506,17 @@ class TaskViewTests(TestCase):
             {"page": 1, "selected": tasks[-1].pk},
         )
 
-        self.assertEqual(response.context["selected_task"], tasks[0])
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("page=2", response.url)
+        corrected = self.client.get(response.url)
+        self.assertEqual(corrected.context["selected_task"], tasks[-1])
 
         linked_response = self.client.get(
             reverse("task:tasks"),
             {"page": 1, "selected": tasks[-1].pk, "open": "detail"},
         )
-        self.assertEqual(linked_response.context["selected_task"], tasks[-1])
+        self.assertEqual(linked_response.status_code, 302)
+        self.assertEqual(self.client.get(linked_response.url).context["selected_task"], tasks[-1])
 
     def test_task_detail_route_has_been_removed(self):
         with self.assertRaises(NoReverseMatch):
@@ -1701,6 +1832,15 @@ class TaskViewTests(TestCase):
             response,
             f"{reverse('task:tasks')}?selected={task.pk}",
         )
+
+    def test_add_task_clears_stale_search_and_page(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            f"{reverse('task:add_task')}?search=unrelated&page=3",
+            data=self.VALID_DATA,
+        )
+        task = Task.objects.get(title=self.VALID_DATA["title"])
+        self.assertEqual(response.url, f"{reverse('task:tasks')}?selected={task.pk}")
 
     def test_add_task_view_with_invalid_data_returns_bound_form_with_error_and_does_not_create_task(self):
         data = self.VALID_DATA.copy()

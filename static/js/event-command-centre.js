@@ -2,55 +2,107 @@ document.addEventListener("DOMContentLoaded", () => {
     const workspace = document.getElementById("eventWorkspace");
     const parameters = new URLSearchParams(window.location.search);
 
+    document.querySelectorAll("[data-event-mobile-view]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const calendar = button.dataset.eventMobileView === "calendar";
+            workspace?.classList.toggle("show-mobile-calendar", calendar);
+            document.querySelectorAll("[data-event-mobile-view]").forEach((choice) => {
+                const active = choice === button;
+                choice.classList.toggle("active", active);
+                choice.setAttribute("aria-pressed", String(active));
+            });
+            const url = new URL(window.location.href);
+            if (calendar) url.searchParams.set("view", "calendar");
+            else url.searchParams.delete("view");
+            window.history.replaceState(window.history.state, "", url);
+        });
+    });
+
     if (workspace && parameters.get("open") === "detail" && parameters.has("selected")) {
         workspace.classList.add("show-detail");
     }
 
+    const listTab = document.querySelector("[data-event-list-tab]");
+    document.querySelectorAll('[data-bs-target="#eventCalendarPanel"], [data-bs-target="#eventDetailsPanel"]').forEach((tab) => {
+        tab.addEventListener("shown.bs.tab", () => {
+            if (listTab) listTab.value = tab.dataset.bsTarget === "#eventCalendarPanel" ? "calendar" : "details";
+        });
+    });
+
     document.querySelectorAll("[data-calendar-day-href]").forEach((day) => {
-        const mobileDayHref = (href) => window.matchMedia("(max-width: 767.98px)").matches
-            ? href.replace("#eventResults", "#eventAgenda") : href;
         day.addEventListener("click", (event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const dateLink = event.target.closest(".event-calendar-day-number");
-            if (dateLink && window.matchMedia("(max-width: 767.98px)").matches) {
+            if (window.matchMedia("(max-width: 860px)").matches) {
+                if (event.target.closest("a, button") && !dateLink) return;
                 event.preventDefault();
-                window.location.assign(mobileDayHref(dateLink.href));
+                window.location.assign(day.dataset.calendarAgendaHref);
                 return;
             }
             if (event.target.closest("a, button")) return;
-            window.location.assign(mobileDayHref(day.dataset.calendarDayHref));
+            window.location.assign(day.dataset.calendarDayHref);
         });
     });
 
     document.querySelectorAll(".event-command-entry > [data-workspace-scroll-row]").forEach((row) => {
         row.addEventListener("click", (event) => {
-            if (!window.matchMedia("(max-width: 767.98px)").matches
+            if (!window.matchMedia("(max-width: 860px)").matches
                 || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             const expanded = row.nextElementSibling;
             if (expanded?.classList.contains("event-mobile-expanded")) {
                 event.preventDefault();
                 expanded.hidden = !expanded.hidden;
                 row.setAttribute("aria-expanded", String(!expanded.hidden));
+                if (!expanded.hidden) window.WorkspaceReveal?.queueRange(
+                    row, expanded, () => window.ExpandableText?.refresh(expanded),
+                );
             } else {
                 event.preventDefault();
-                window.location.assign(`${row.href}#${row.parentElement.id}`);
+                window.location.assign(row.href);
             }
         });
     });
 
-    document.querySelectorAll(".event-mobile-agenda-row").forEach((row) => {
+    document.querySelectorAll(".event-mobile-agenda-entry > .event-mobile-agenda-row").forEach((row) => {
         row.addEventListener("click", (event) => {
-            if (!window.matchMedia("(max-width: 767.98px)").matches
+            if (!window.matchMedia("(max-width: 860px)").matches
                 || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            const selected = new URL(row.href).searchParams.get("selected");
-            if (!selected) return;
             event.preventDefault();
-            window.location.assign(`${row.href}#eventRow${selected}`);
+            const expanded = row.nextElementSibling;
+            if (expanded?.classList.contains("event-mobile-expanded")) {
+                expanded.hidden = !expanded.hidden;
+                row.setAttribute("aria-expanded", String(!expanded.hidden));
+                row.parentElement.classList.toggle("is-expanded", !expanded.hidden);
+                if (!expanded.hidden) window.WorkspaceReveal?.queueRange(
+                    row, expanded, () => window.ExpandableText?.refresh(expanded),
+                );
+            } else {
+                window.location.assign(row.href);
+            }
         });
     });
+
+    if (workspace?.classList.contains("show-mobile-calendar")
+        && window.matchMedia("(max-width: 860px)").matches
+        && window.performance?.getEntriesByType?.("navigation")?.[0]?.type !== "back_forward") {
+        const selectedAgendaRow = document.querySelector(".event-mobile-agenda-entry.is-expanded > .event-mobile-agenda-row");
+        if (selectedAgendaRow) {
+            const expanded = selectedAgendaRow.nextElementSibling;
+            window.WorkspaceReveal?.queueRange(
+                selectedAgendaRow, expanded, () => window.ExpandableText?.refresh(expanded),
+            );
+        }
+    }
 
     const participationFilter = document.getElementById("eventParticipation");
     const presenceFilter = document.getElementById("eventPresence");
     const compatibilityNote = document.getElementById("eventFilterCompatibility");
+    const filterForm = document.getElementById("eventFilterForm");
+    filterForm?.querySelectorAll("[data-clear-event-filter]").forEach((button) => {
+        button.addEventListener("click", () => {
+            window.WorkspaceFilterUrl.clear(button.dataset.clearEventFilter);
+        });
+    });
 
     function updateFilterCompatibility() {
         if (!participationFilter || !presenceFilter) return;
@@ -84,15 +136,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         function updateTimeFields({clear = false} = {}) {
             if (!allDay || !startTime || !endTime) return;
+            if (clear && allDay.checked) {
+                startTime.value = "";
+                endTime.value = "";
+            }
             startTime.disabled = allDay.checked;
             endTime.disabled = allDay.checked;
             durationChoices.forEach((choice) => {
                 choice.checked = (choice.value === "all_day") === allDay.checked;
             });
-            if (clear && allDay.checked) {
-                startTime.value = "";
-                endTime.value = "";
-            }
         }
 
         function updatePresenceField() {
@@ -102,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (allDay) {
-            allDay.addEventListener("change", () => updateTimeFields({clear: true}));
+            allDay.addEventListener("change", () => updateTimeFields({clear: allDay.checked}));
             durationChoices.forEach((choice) => {
                 choice.addEventListener("change", () => {
                     allDay.checked = choice.value === "all_day";
@@ -114,6 +166,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (participation) {
             participation.addEventListener("change", updatePresenceField);
             updatePresenceField();
+        }
+        if (presence) {
+            presence.addEventListener("change", () => {
+                if (presence.checked && participation) {
+                    participation.checked = true;
+                    updatePresenceField();
+                }
+            });
         }
     });
 

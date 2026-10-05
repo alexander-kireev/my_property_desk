@@ -1,50 +1,85 @@
 {% load static %}
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
     <head>
+        {# Document metadata and shared styles #}
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>
-            {% block title %}Property Operations Manager{% endblock %}
-        </title>
+        <title>{% block title %}My Property Desk{% endblock %}</title>
 
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-            crossorigin="anonymous"
-        >
+        <link rel="icon"
+              type="image/svg+xml"
+              href="{% static 'brand/mpd-favicon-light.svg' %}"
+              media="(prefers-color-scheme: light)">
+        <link rel="icon"
+              type="image/svg+xml"
+              href="{% static 'brand/mpd-favicon-dark.svg' %}"
+              media="(prefers-color-scheme: dark)">
 
-        <link rel="stylesheet" href="{% static 'css/site.css' %}">
+        <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}"
+              rel="stylesheet">
+
+        <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
+        <link rel="stylesheet" href="{% static 'css/components.css' %}">
+        {# Page geometry loads before shared workspace overrides; extra_css supplies final feature styles. #}
+        {% block page_css %}{% endblock %}
+        <link rel="stylesheet" href="{% static 'css/workspace.css' %}">
 
         {% block extra_css %}{% endblock %}
     </head>
 
     <body class="{% block body_class %}bg-body-tertiary{% endblock %}">
         <div class="page-shell">
-        {% include "includes/navbar.html" %}
+            {% include "includes/navbar.html" %}
 
-        <main class="{% block main_class %}flex-grow-1 {% if request.user.is_authenticated %}app-main{% else %}py-5{% endif %}{% endblock %}">
-            {% block content %}{% endblock %}
-        </main>
+            <main class="{% block main_class %}flex-grow-1 {% if request.user.is_authenticated %}app-main{% else %}py-5{% endif %}{% endblock %}">
+                {% block content %}{% endblock %}
+            </main>
 
-        {% block footer %}
-            {% if not request.user.is_authenticated %}
-                {% include "includes/footer.html" %}
+            {# Show only the latest Django message as an application toast #}
+            {% if request.user.is_authenticated and messages %}
+                <div class="app-toast-stack toast-container position-fixed top-0 end-0 p-3"
+                     aria-live="polite">
+                    {% for message in messages %}
+                        {% if forloop.last %}
+                            <div class="toast app-feedback-toast app-feedback-toast--{{ message.tags }} shadow"
+                                 role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}"
+                                 aria-live="{% if message.level_tag == 'error' %}assertive{% else %}polite{% endif %}"
+                                 data-bs-delay="4200">
+                                <div class="toast-body app-feedback-body">
+                                    <span class="app-feedback-icon"
+                                          aria-hidden="true">{% if message.level_tag == "error" %}!{% else %}✓{% endif %}</span>
+                                    <div class="app-feedback-copy"><strong>{{ message }}</strong></div>
+                                    <button type="button"
+                                            class="btn-close"
+                                            data-bs-dismiss="toast"
+                                            aria-label="Dismiss notification"></button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endif %}
-        {% endblock %}
 
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"
-        ></script>
-        <script src="{% static 'js/modal-state.js' %}"></script>
-        <script src="{% static 'js/searchable-select.js' %}"></script>
+            {% block footer %}
+                {% if not request.user.is_authenticated %}
+                    {% include "includes/footer.html" %}
+                {% endif %}
+            {% endblock %}
 
-        {% block extra_js %}{% endblock %}
+            {# Shared interaction scripts; pages add their own scripts through extra_js #}
+            <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+            <script src="{% static 'js/modal-state.js' %}"></script>
+            <script src="{% static 'js/workspace-filter-url.js' %}"></script>
+            <script src="{% static 'js/searchable-select.js' %}"></script>
+            <script src="{% static 'js/app-feedback.js' %}"></script>
+            <script src="{% static 'js/mobile-navbar.js' %}"></script>
+            <script src="{% static 'js/reveal-on-expand.js' %}"></script>
+            <script src="{% static 'js/expandable-text.js' %}"></script>
+
+            {% block extra_js %}{% endblock %}
 
         </div>
     </body>

@@ -20,6 +20,53 @@ document.addEventListener("click", (event) => {
     if (isEditing) {
         editor.querySelector("textarea")?.focus();
     } else {
+        const field = editor.querySelector("textarea");
+        if (field) field.value = note.dataset.savedContent;
         toggle.focus();
     }
 });
+
+const noteUndoToast = document.querySelector("[data-note-undo-toast]");
+if (noteUndoToast) {
+    let remaining = 10000;
+    let started = 0;
+    let timer;
+    const stop = () => {
+        if (!timer) return;
+        clearTimeout(timer);
+        timer = null;
+        remaining -= Date.now() - started;
+    };
+    const start = () => {
+        if (timer || remaining <= 0) return;
+        started = Date.now();
+        timer = setTimeout(() => { noteUndoToast.remove(); timer = null; }, remaining);
+    };
+    noteUndoToast.addEventListener("mouseenter", stop);
+    noteUndoToast.addEventListener("mouseleave", start);
+    noteUndoToast.addEventListener("focusin", stop);
+    noteUndoToast.addEventListener("focusout", () => queueMicrotask(() => {
+        if (!noteUndoToast.contains(document.activeElement)) start();
+    }));
+    noteUndoToast.querySelector("[data-note-undo-close]").addEventListener("click", () => { stop(); noteUndoToast.remove(); });
+    noteUndoToast.querySelector("[data-note-undo]").addEventListener("click", async (event) => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        stop();
+        try {
+            const body = new FormData();
+            body.set("token", noteUndoToast.dataset.token);
+            const csrf = document.querySelector("[name=csrfmiddlewaretoken]")?.value;
+            const response = await fetch(noteUndoToast.dataset.url, {
+                method: "POST", body, headers: {"X-CSRFToken": csrf},
+            });
+            if (!response.ok) throw new Error("This note can no longer be undone.");
+            window.location.reload();
+        } catch (error) {
+            noteUndoToast.querySelector("[data-note-undo-message]").textContent = error.message;
+            button.hidden = true;
+            start();
+        }
+    });
+    start();
+}

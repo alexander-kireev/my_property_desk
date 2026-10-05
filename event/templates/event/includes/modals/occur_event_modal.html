@@ -1,0 +1,31 @@
+{# occur Event Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade modal-resilient"
+     id="occurEventModal"
+     tabindex="-1"
+     aria-labelledby="occurEventModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="occurEventModalLabel">Mark event as occurred?</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>The event will be marked as occurred and retained in your history.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary"
+                        type="button"
+                        data-bs-dismiss="modal">Keep scheduled</button>
+                <form action="{% url 'event:mark_event_occurred' selected_event.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <button class="btn theme-action" type="submit">Mark occurred</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

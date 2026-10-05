@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 from django.utils import timezone
-from .models import Event
+from .models import Event, EventContact
 
 from property.models import Property
 from contact.models import Contact
@@ -10,7 +10,9 @@ from contact.selectors import contacts_for_user
 class EventForm(forms.ModelForm):
     def __init__(self, *args, user, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.fields["title"].widget.attrs["maxlength"] = "75"
+        if not self.is_bound and not self.instance.pk:
+            self.initial.setdefault("scheduled_date", timezone.localdate())
         properties = Property.objects.filter(
             user=user,
             state=Property.State.ACTIVE,
@@ -62,7 +64,6 @@ class EventForm(forms.ModelForm):
             elif field_name in form_input_fields:
                 field.widget.attrs["class"] = "form-check-input"
 
-
     class Meta:
         model = Event
         fields = (
@@ -104,27 +105,23 @@ class EventForm(forms.ModelForm):
         end_time = cleaned_data.get("end_time")
         user_participation_required = cleaned_data.get("user_participation_required")
         user_presence_required = cleaned_data.get("user_presence_required")
+        times_parsed = "start_time" not in self.errors and "end_time" not in self.errors
+        end_before_start = (
+            not all_day and times_parsed and start_time is not None
+            and end_time is not None and end_time <= start_time
+        )
 
         if scheduled_date is not None:
             today = timezone.localdate()
-            date_unchanged = (
-                self.instance.pk is not None
-                and scheduled_date == self.instance.scheduled_date
-            )
-            if scheduled_date < today and not date_unchanged:
+            if scheduled_date < today and self.instance.pk is None:
                 self.add_error(
                     "scheduled_date",
-                    "Choose today or a future date for a scheduled event.",
+                    "Choose today or a future date for a new event.",
                 )
-            elif scheduled_date == today and not all_day:
+            elif scheduled_date == today and self.instance.pk is None and not all_day and times_parsed and not end_before_start:
                 event_end = end_time or start_time
-                time_unchanged = (
-                    date_unchanged
-                    and start_time == self.instance.start_time
-                    and end_time == self.instance.end_time
-                )
                 current_time = timezone.localtime().time().replace(tzinfo=None)
-                if event_end is not None and event_end <= current_time and not time_unchanged:
+                if event_end is not None and event_end <= current_time:
                     self.add_error(
                         "end_time" if end_time is not None else "start_time",
                         "Choose a time that has not passed for a scheduled event.",
@@ -138,10 +135,10 @@ class EventForm(forms.ModelForm):
                 self.add_error("end_time", "An all-day event cannot have an end time.")
 
         else:
-            if start_time is None:
+            if start_time is None and "start_time" not in self.errors:
                 self.add_error("start_time", "Enter a start time.")
 
-            if end_time is not None and start_time is not None and end_time <= start_time:
+            if end_before_start:
                 self.add_error(
                     "end_time",
                     "End time must be later than start time."
@@ -157,14 +154,24 @@ class EventForm(forms.ModelForm):
 
 
 class EventContactForm(forms.Form):
-    def __init__(self, *args, user, event=None, **kwargs):
+    def __init__(self, *args, user, event=None, include_existing=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         contacts = contacts_for_user(user=user).filter(
             state=Contact.State.ACTIVE,
         )
 
-        if event is not None and event.pk:
+        if event is not None and event.pk and include_existing:
+            if not self.is_bound:
+                self.initial.setdefault(
+                    "contacts",
+                    list(EventContact.objects.filter(
+                        event=event,
+                        contact__state=Contact.State.ACTIVE,
+                        contact__deleted_at__isnull=True,
+                    ).values_list("contact_id", flat=True)),
+                )
+        elif event is not None and event.pk:
             contacts = contacts.exclude(
                 event_participations__event=event
             )
@@ -178,6 +185,6 @@ class EventContactForm(forms.Form):
     contacts = forms.ModelMultipleChoiceField(
         queryset=Contact.objects.none(),
         required=False,
-        widget=forms.CheckboxSelectMultiple(),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
     )
 

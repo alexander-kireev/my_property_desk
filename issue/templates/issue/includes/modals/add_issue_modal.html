@@ -1,0 +1,44 @@
+{# add Issue Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade"
+     id="addIssueModal"
+     data-modal-clear-query="form_state"
+     tabindex="-1"
+     aria-labelledby="addIssueModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered dashboard-add-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addIssueModalLabel">Add issue</h2>
+                {% if return_property_id %}
+                    <a class="btn-close"
+                       href="{% url 'property:property_detail' return_property_id %}"
+                       aria-label="Close and return to property"></a>
+                {% else %}
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                {% endif %}
+            </div>
+            <form action="{% url 'issue:add_issue' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post">
+                {% csrf_token %}
+                {% if return_property_id %}
+                    <input type="hidden" name="return_property" value="{{ return_property_id }}">
+                {% endif %}
+                <div class="modal-body p-4">{% include "issue/includes/issue_form_fields.html" with issue_form=add_issue_form %}</div>
+                <div class="modal-footer">
+                    {% if return_property_id %}
+                        <a class="btn btn-outline-secondary"
+                           href="{% url 'property:property_detail' return_property_id %}">Cancel</a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Cancel</button>
+                    {% endif %}
+                    <button class="btn theme-action" type="submit">Add issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

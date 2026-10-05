@@ -1,0 +1,59 @@
+{# change Email Modal; visibility is controlled by the parent dialog collection. #}
+<div class="modal fade"
+     id="changeEmailModal"
+     data-profile-account-modal
+     data-modal-clear-query="form_state modal"
+     tabindex="-1"
+     aria-labelledby="changeEmailTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="changeEmailTitle">Change email</h2>
+                <button class="btn-close"
+                        type="button"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <form method="post"
+                  action="{% url 'accounts:change_email' %}"
+                  autocomplete="off"
+                  data-fresh-account-form{% if email_form.errors %}
+                  data-preserve-restored-email{% endif %}>
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="text-body-secondary">Verify a new address before it becomes your sign-in email.</p>
+                    {% for error in email_form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">{{ error }}</div>
+                    {% endfor %}
+                    <div class="mb-3">
+                        <span class="form-label d-block">Current email</span>
+                        <span class="profile-email-value">{{ request.user.email }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ email_form.new_email.id_for_label }}">New email</label>
+                        {{ email_form.new_email }}
+                        {% for error in email_form.new_email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <label class="form-label"
+                               for="{{ email_form.current_password.id_for_label }}">Current password</label>
+                        {{ email_form.current_password }}
+                        {% for error in email_form.current_password.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <p class="form-text mb-0">Your current email stays active until you confirm the link sent to the new address.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary"
+                            type="button"
+                            data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn theme-action" type="submit">Send verification email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

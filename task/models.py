@@ -1,3 +1,4 @@
+from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
@@ -61,7 +62,7 @@ class Task(models.Model):
         choices=Priority.choices,
         default=Priority.LOW
     )
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, validators=[MaxLengthValidator(75)])
     description = models.CharField(max_length=1000, blank=True)
     scheduled_date = models.DateField(null=True, blank=True)
     completion_deadline = models.DateField(null=True, blank=True)

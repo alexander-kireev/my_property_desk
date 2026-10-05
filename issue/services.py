@@ -44,16 +44,20 @@ def update_issue(
 
 @transaction.atomic
 def resolve_issue(*, issue, dismiss_linked_tasks=False):
-    if issue.state != Issue.State.ACTIVE:
+    locked = Issue.objects.select_for_update().get(pk=issue.pk, user=issue.user)
+    issue.affected_linked_tasks = 0
+    issue.action_changed = False
+    if locked.deleted_at is not None or locked.state != Issue.State.ACTIVE:
         return issue
 
     terminated_at = timezone.now()
     issue.state = Issue.State.RESOLVED
     issue.terminated_at = terminated_at
     issue.save(update_fields=["state", "terminated_at"])
+    issue.action_changed = True
 
     if dismiss_linked_tasks:
-        dismiss_active_tasks_for_issue(
+        issue.affected_linked_tasks = dismiss_active_tasks_for_issue(
             issue=issue,
             terminated_at=terminated_at,
         )
@@ -63,16 +67,20 @@ def resolve_issue(*, issue, dismiss_linked_tasks=False):
 
 @transaction.atomic
 def dismiss_issue(*, issue, dismiss_linked_tasks=False):
-    if issue.state != Issue.State.ACTIVE:
+    locked = Issue.objects.select_for_update().get(pk=issue.pk, user=issue.user)
+    issue.affected_linked_tasks = 0
+    issue.action_changed = False
+    if locked.deleted_at is not None or locked.state != Issue.State.ACTIVE:
         return issue
 
     terminated_at = timezone.now()
     issue.state = Issue.State.DISMISSED
     issue.terminated_at = terminated_at
     issue.save(update_fields=["state", "terminated_at"])
+    issue.action_changed = True
 
     if dismiss_linked_tasks:
-        dismiss_active_tasks_for_issue(
+        issue.affected_linked_tasks = dismiss_active_tasks_for_issue(
             issue=issue,
             terminated_at=terminated_at,
         )
@@ -92,14 +100,20 @@ def reactivate_issue(*, issue):
 
 @transaction.atomic
 def delete_issue(*, issue, delete_linked_tasks=False):
-    if issue.deleted_at is not None:
+    locked = Issue.objects.select_for_update().get(pk=issue.pk, user=issue.user)
+    issue.affected_linked_tasks = 0
+    issue.action_changed = False
+    if locked.deleted_at is not None:
         return issue
 
     deleted_at = timezone.now()
     issue.deleted_at = deleted_at
     issue.save(update_fields=["deleted_at"])
+    issue.action_changed = True
 
     if delete_linked_tasks:
-        delete_tasks_for_issue(issue=issue, deleted_at=deleted_at)
+        issue.affected_linked_tasks = delete_tasks_for_issue(
+            issue=issue, deleted_at=deleted_at
+        )
 
     return issue
