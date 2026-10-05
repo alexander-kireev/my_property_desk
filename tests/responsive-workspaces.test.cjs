@@ -11,7 +11,9 @@ const dashboardJs = read("static/js/dashboard.js");
 const siteCss = [
     "static/css/foundation.css",
     "static/css/components.css",
-    "static/css/site.css",
+    "static/css/issue-page.css",
+    "static/css/task-page.css",
+    "static/css/contact-page.css",
     "static/css/workspace.css",
 ].map(readCss).join(" ");
 const eventComponentsCss = readCss("static/css/event-components.css");

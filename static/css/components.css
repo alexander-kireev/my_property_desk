@@ -444,3 +444,1269 @@
     background-color: var(--pom-text);
     border-color: var(--pom-text);
 }
+
+/* One compact modal language. Editable fields use the approved left-label grid;
+   confirmation copy, checkboxes and participant pickers retain their own layouts. */
+.modal .modal-header {
+    display: grid;
+    grid-template-columns: minmax(2rem, 1fr) minmax(0, auto) minmax(2rem, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding-block: 0.625rem;
+}
+
+.modal .modal-header::before {
+    content: "";
+    grid-column: 1;
+}
+
+.modal .modal-header .modal-title {
+    grid-column: 2;
+    justify-self: center;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    font-size: 1.25rem !important;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.modal .modal-header > .btn-close {
+    grid-column: 3;
+    justify-self: end;
+    flex: none;
+    margin: 0;
+}
+
+.modal .modal-body {
+    font-size: 1rem;
+}
+
+.modal .modal-footer .btn {
+    min-height: 2.5rem;
+    font-size: 1rem;
+}
+
+.modal :is(.form-control, .form-select) {
+    font-size: 1rem;
+    min-height: 2.5rem;
+}
+
+.modal .form-label {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+/* This selector finds only actual label/field pairs, not confirmation prose. */
+.modal .modal-body div:has(> label.form-label),
+.modal .modal-body div:has(> span.form-label) {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    column-gap: 0.875rem;
+    align-items: start;
+}
+
+.modal .modal-body div:has(> label.form-label) > :is(label.form-label, span.form-label),
+.modal .modal-body div:has(> span.form-label) > span.form-label {
+    grid-column: 1;
+    margin: 0.5rem 0 0;
+    min-width: 0;
+}
+
+.modal .modal-body div:has(> label.form-label) > :not(label.form-label),
+.modal .modal-body div:has(> span.form-label) > :not(span.form-label) {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.modal .modal-body div:has(> label.form-label) > .invalid-feedback,
+.modal .modal-body div:has(> label.form-label) > .form-text {
+    margin-top: 0.25rem;
+}
+
+.modal .modal-body div:has(> label.form-label) > .form-control,
+.modal .modal-body div:has(> label.form-label) > .form-select {
+    width: 100%;
+}
+
+.modal .modal-body :is(.form-control, .form-select, [data-searchable-select]) {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.modal .modal-body textarea.form-control {
+    resize: vertical;
+}
+
+.modal-event-field-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.modal-event-field-grid
+    > :is([class^="col-"], [class*=" col-"], .modal-event-time-fields, .modal-event-requirements) {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.modal-event-field-grid .event-duration {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    column-gap: 0.875rem;
+    justify-content: start;
+}
+
+.modal-event-field-grid .event-duration-label {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.modal-event-field-grid .event-duration-options {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.modal-event-time-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.modal .modal-body .modal-event-time-pair > div:has(> label.form-label) {
+    display: block;
+    min-width: 0;
+}
+
+.modal .modal-body .modal-event-time-pair > div > label.form-label {
+    display: block;
+    margin: 0 0 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.modal-event-time-pair > .form-text {
+    grid-column: 1 / -1;
+}
+
+.modal-event-requirements .form-check + .form-check {
+    margin-top: 0.35rem;
+}
+
+.modal .modal-body .modal-event-requirements > span.form-label,
+.modal .modal-body .modal-event-time-fields > span.form-label {
+    font-size: 1rem;
+}
+
+/* The relationship switch is a grouped control; its conditional picker is a
+   normal label/field row beneath it. */
+.modal [data-task-relationship] {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: 0.75rem 0.875rem;
+    align-items: start;
+}
+
+.modal [data-task-relationship] > .task-relationship-label {
+    grid-column: 1;
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.modal [data-task-relationship] > .task-relationship-options {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.modal [data-task-relationship] > [data-relationship-panel] {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin-top: 0 !important;
+}
+
+/* My Work add forms follow the Dashboard dialog's compact field rhythm. */
+@media (min-width: 576px) {
+    .task-command-page .dashboard-add-dialog,
+    .issue-command-page .dashboard-add-dialog {
+        max-width: 32.5rem;
+    }
+
+    .event-command-page .dashboard-add-dialog {
+        max-width: 42.5rem;
+    }
+}
+
+.dashboard-add-dialog :is(.modal-header, .modal-footer) {
+    padding: 10px 14px !important;
+}
+
+.dashboard-add-dialog .modal-body {
+    padding: 14px !important;
+}
+
+.dashboard-add-dialog .modal-body > .mb-3 {
+    margin-bottom: 10px !important;
+}
+
+.dashboard-add-dialog .modal-body .form-label {
+    font-size: 1rem;
+}
+
+.dashboard-add-dialog .modal-body textarea.form-control {
+    min-height: calc(3 * 1.5em + 14px);
+}
+
+.dashboard-add-dialog :is(.task-form-field-compact, .issue-form-field-compact) {
+    max-width: none;
+}
+
+.dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 140px minmax(0, 1fr);
+    align-items: start;
+    column-gap: 0.875rem;
+    min-width: 0;
+}
+
+.dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row > .form-label {
+    grid-column: 1;
+    margin: 0.5rem 0 0;
+}
+
+.dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row > div {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.dashboard-add-dialog .dashboard-add-relationship > [data-relationship-panel] {
+    margin-top: 10px !important;
+}
+
+@media (max-width: 700px) {
+    .dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 0.25rem;
+    }
+
+    .dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row > .form-label {
+        margin: 0;
+    }
+
+    .dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row > div {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 700px) {
+    .modal .modal-body div:has(> label.form-label),
+    .modal .modal-body div:has(> span.form-label) {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 0.25rem;
+    }
+
+    .modal .modal-body div:has(> label.form-label) > :is(label.form-label, span.form-label),
+    .modal .modal-body div:has(> span.form-label) > span.form-label {
+        grid-column: 1;
+        margin: 0;
+    }
+
+    .modal .modal-body div:has(> label.form-label) > :not(label.form-label),
+    .modal .modal-body div:has(> span.form-label) > :not(span.form-label) {
+        grid-column: 1;
+    }
+
+    .modal-event-field-grid .event-duration {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .modal-event-field-grid .event-duration-options {
+        grid-column: 1;
+    }
+
+    .modal [data-task-relationship] {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .modal [data-task-relationship] > .task-relationship-label {
+        margin: 0;
+    }
+
+    .modal [data-task-relationship] > .task-relationship-options {
+        grid-column: 1;
+    }
+
+    .modal [data-task-relationship] > [data-relationship-panel] {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 420px) {
+    .modal-event-time-pair {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.issue-task-row {
+    position: relative;
+}
+
+.issue-task-row:has(.issue-task-summary[aria-expanded="true"])::before {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    background: var(--pom-brand-blue);
+    content: "";
+    pointer-events: none;
+}
+
+.issue-task-summary {
+    cursor: pointer;
+}
+
+.issue-task-summary:focus-visible {
+    outline: 3px solid #80b7ff;
+    outline-offset: -3px;
+}
+
+.issue-task-summary:hover {
+    background: var(--pom-hover);
+}
+
+.issue-task-summary[aria-expanded="true"] {
+    background: var(--bs-tertiary-bg);
+}
+
+.issue-task-chevron {
+    display: grid;
+    flex: 0 0 1rem;
+    place-items: center;
+    color: var(--bs-secondary-color);
+}
+
+.issue-task-chevron svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.15s ease;
+}
+
+.issue-task-summary[aria-expanded="true"] .issue-task-chevron svg {
+    transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .issue-task-chevron svg {
+        transition: none;
+    }
+}
+
+.issue-task-row.terminated .issue-task-summary {
+    color: var(--bs-secondary-color);
+}
+
+.issue-task-details {
+    margin-left: 4px;
+    background: var(--bs-body-bg);
+}
+
+.issue-task-details-label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.issue-task-details-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.issue-task-details-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.issue-task-open-record {
+    margin-left: auto;
+}
+
+.issue-detail-scroll p,
+.issue-detail-scroll dd,
+.issue-task-details p {
+    overflow-wrap: anywhere;
+}
+
+.issue-detail-scroll .card,
+.issue-detail-scroll .card-body,
+.issue-detail-scroll dl,
+.issue-detail-scroll dd {
+    min-width: 0;
+}
+
+.issue-detail-scroll .card {
+    overflow: hidden;
+}
+
+.issue-form-field-compact {
+    max-width: 18rem;
+}
+
+@media (min-width: 768px) {
+    .issue-command-page {
+        height: 100dvh;
+    }
+
+    .issue-command-page .page-shell {
+        height: 100dvh;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+
+    .issue-command-main {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .issue-command-centre {
+        height: 100%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .issue-detail-header-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .issue-detail-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .issue-list-column {
+        width: 40%;
+    }
+
+    .issue-detail-column {
+        display: block;
+        width: 60%;
+    }
+}
+
+@media (max-width: 860px), (max-width: 1199.98px) and (max-height: 700px) {
+    .issue-command-page,
+    .issue-command-page .page-shell {
+        height: auto;
+        overflow: visible;
+    }
+
+    .issue-command-main,
+    .issue-command-centre,
+    .issue-workspace {
+        min-height: calc(100vh - 3.5rem);
+    }
+
+    .issue-command-centre,
+    .issue-workspace,
+    .issue-pane,
+    .issue-detail-body,
+    .issue-detail-body > .tab-pane,
+    .issue-detail-scroll {
+        height: auto;
+        overflow: visible;
+    }
+
+    .issue-list {
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
+
+    .issue-task-scroll {
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
+
+    .issue-list-column,
+    .issue-detail-column {
+        width: 100%;
+    }
+
+    .issue-list-column {
+        border-right: 0 !important;
+    }
+
+    .issue-detail-column {
+        display: none;
+    }
+
+    .issue-workspace.show-detail .issue-list-column {
+        display: none;
+    }
+
+    .issue-workspace.show-detail .issue-detail-column {
+        display: block;
+    }
+
+    .issue-mobile-back {
+        display: inline-flex;
+    }
+
+    .issue-detail-header-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .issue-detail-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) and (max-height: 700px) {
+    .issue-workspace.show-compact-detail .issue-list-column {
+        display: none;
+    }
+
+    .issue-workspace.show-compact-detail .issue-detail-column {
+        display: block;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .issue-task-details-footer {
+        justify-content: flex-start;
+    }
+}
+
+/* Accessible custom select controls */
+.app-select-trigger {
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.app-select-popup {
+    position: fixed;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    max-height: 15rem;
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-body-bg);
+    box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.16);
+}
+
+.app-select-popup[hidden] {
+    display: none;
+}
+
+.app-select-search {
+    flex: 0 0 auto;
+    width: calc(100% - 1rem);
+    margin: 0.5rem;
+    padding-left: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m15.5 15.5 5 5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.6rem center;
+    background-size: 1rem;
+}
+
+.app-select-results {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.app-select-option,
+.app-select-empty {
+    padding: 0.45rem 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-select-option {
+    cursor: pointer;
+}
+
+.app-select-option:hover,
+.app-select-option.is-active {
+    background: var(--pom-hover);
+}
+
+.work-date-relative--overdue {
+    color: #aa392c;
+}
+
+.work-detail-list {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, 36%) minmax(0, 1fr);
+    gap: 0;
+}
+
+.work-detail-list dt,
+.work-detail-list dd {
+    min-width: 0;
+    margin: 0;
+    padding: 0.55rem 0;
+    border-top: 0;
+}
+
+.work-detail-list dt:nth-child(1),
+.work-detail-list dd:nth-child(2) {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.work-detail-list dt:last-of-type,
+.work-detail-list dd:last-of-type {
+    padding-top: 0.55rem;
+}
+
+.work-detail-list dt {
+    color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.work-detail-list dd {
+    overflow-wrap: anywhere;
+    text-align: right;
+}
+
+.work-detail-list .task-related-link {
+    padding: 0.45rem 0.55rem;
+}
+
+.work-detail-list .task-related-deleted {
+    justify-content: flex-end;
+}
+
+.task-detail-scroll .work-detail-list dd {
+    text-align: left;
+}
+
+.task-detail-scroll .work-detail-list :is(.task-related-link, .task-related-deleted) {
+    width: max-content;
+    max-width: min(100%, 12rem);
+}
+
+.task-detail-scroll .work-detail-list .task-related-deleted {
+    justify-content: flex-start;
+}
+
+.task-detail-overdue-date {
+    color: #a23229;
+    font-weight: 500;
+}
+
+.task-detail-scroll .work-date-relative--overdue {
+    color: #a23229;
+}
+
+.task-detail-scroll .expandable-text--inline-end .expandable-text-toggle:not([hidden]),
+.task-inline-description .expandable-text--inline-end .expandable-text-toggle:not([hidden]),
+.issue-detail-scroll .expandable-text--inline-end .expandable-text-toggle:not([hidden]),
+.issue-inline-description .expandable-text--inline-end .expandable-text-toggle:not([hidden]) {
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.35rem;
+    background: var(--bs-body-bg);
+    color: var(--bs-link-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.modal .modal-footer {
+    border-top: 0;
+}
+
+@media (min-width: 768px) and (max-width: 860px) {
+    :is(.task-command-centre, .issue-command-centre, .event-command-centre) {
+        max-width: 720px;
+        margin-inline: auto;
+    }
+}
+
+@media (min-width: 700px) and (max-width: 860px) {
+    .task-command-centre {
+        max-width: 680px;
+        margin-inline: auto;
+    }
+}
+
+.contact-method-modal .modal-dialog {
+    max-width: 34rem;
+}
+
+.contact-method-modal .modal-content {
+    max-height: calc(100dvh - 2rem);
+}
+
+.contact-method-modal form {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.contact-method-modal .modal-body {
+    flex: 1 1 16rem;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.contact-method-modal [data-contact-method-value-label] {
+    white-space: nowrap;
+}
+
+@media (max-height: 28rem) {
+    .contact-method-modal .modal-body {
+        height: auto;
+    }
+}
+
+.app-select-option.is-selected {
+    font-weight: 600;
+}
+
+.app-select-option.is-disabled {
+    color: var(--bs-secondary-color);
+    cursor: not-allowed;
+}
+
+.app-select-empty {
+    color: var(--bs-secondary-color);
+}
+
+.task-mobile-back {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .task-command-page {
+        height: 100dvh;
+    }
+
+    .task-command-page .page-shell {
+        height: 100dvh;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+
+    .task-command-main {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .task-command-centre {
+        height: 100%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .task-detail-header-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .task-detail-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    .task-list-column {
+        width: 40%;
+    }
+
+    .task-detail-column {
+        display: block;
+        width: 60%;
+    }
+}
+
+@media (max-width: 860px), (max-width: 1199.98px) and (max-height: 700px) {
+    .task-command-page,
+    .task-command-page .page-shell {
+        height: auto;
+        overflow: visible;
+    }
+
+    .task-command-main,
+    .task-command-centre,
+    .task-workspace {
+        min-height: calc(100vh - 4.9rem);
+    }
+
+    .task-command-centre,
+    .task-workspace,
+    .task-pane,
+    .task-detail-scroll {
+        height: auto;
+        overflow: visible;
+    }
+
+    .task-command-list {
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
+
+    .task-list-column,
+    .task-detail-column {
+        width: 100%;
+    }
+
+    .task-list-column {
+        border-right: 0 !important;
+    }
+
+    .task-detail-column {
+        display: none;
+    }
+
+    .task-workspace.show-detail .task-list-column {
+        display: none;
+    }
+
+    .task-workspace.show-detail .task-detail-column {
+        display: block;
+    }
+
+    .task-mobile-back {
+        display: inline-flex;
+    }
+
+    .task-detail-header-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .task-detail-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) and (max-height: 700px) {
+    .task-workspace.show-compact-detail .task-list-column {
+        display: none;
+    }
+
+    .task-workspace.show-compact-detail .task-detail-column {
+        display: block;
+    }
+}
+
+/* Compact controls shared by all My Work lists */
+.task-list-controls :is(.work-add-button, .task-local-control-row .theme-action),
+.issue-list-controls :is(.work-add-button, .issue-local-control-row .theme-action),
+.event-list-controls :is(.work-add-button, .event-control-row .theme-action) {
+    width: 6.5rem;
+    height: 2rem;
+}
+
+.task-filter-chip,
+.issue-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.16rem 0.55rem;
+    color: var(--bs-body-color);
+    font-size: 0.78rem;
+    background: var(--bs-tertiary-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 1rem;
+}
+
+.task-filter-chip:hover,
+.task-filter-chip:focus,
+.issue-filter-chip:hover,
+.issue-filter-chip:focus {
+    background: var(--bs-secondary-bg);
+}
+
+.issue-filter-chip--property {
+    max-width: 100%;
+    min-width: 0;
+    gap: 0.3rem;
+}
+
+.issue-filter-chip-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Shared button language: primary, strong-outline secondary, destructive, quiet. */
+:is(.task-detail-actions, .issue-detail-actions, .event-detail-actions, .contact-detail-actions)
+    .btn {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-action {
+    font-weight: 600;
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: #26313a;
+    --bs-btn-border-color: #56616d;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #27313a;
+    --bs-btn-hover-border-color: #27313a;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #27313a;
+    --bs-btn-active-border-color: #27313a;
+    --bs-btn-disabled-color: #56616d;
+    --bs-btn-disabled-border-color: #8b949d;
+    font-weight: 600;
+}
+
+.btn-danger {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #b42318;
+    --bs-btn-border-color: #b42318;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #941b13;
+    --bs-btn-hover-border-color: #941b13;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #801710;
+    --bs-btn-active-border-color: #801710;
+    font-weight: 600;
+}
+
+.pom-quiet {
+    --bs-btn-color: #2b3741;
+    --bs-btn-bg: transparent;
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #1f2932;
+    --bs-btn-hover-bg: #e9edf1;
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-color: #1f2932;
+    --bs-btn-active-bg: #dfe5ea;
+    --bs-btn-active-border-color: transparent;
+    --bs-btn-disabled-color: #69747e;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pom-quiet:hover,
+.pom-quiet:focus-visible {
+    text-decoration: none;
+}
+
+:is(
+    .btn,
+    .command-pagination-link,
+    .command-filter-clear,
+    .task-filter-chip,
+    .contact-method-action,
+    .notes-board-shell__action,
+    .contact-detail-tab,
+    .event-form-tab,
+    .dropdown-item,
+    .btn-close,
+    .navbar-toggler
+):focus-visible,
+:is(.my-work-section-nav, .issue-detail-tabs, .event-right-tabs) .nav-link:focus-visible,
+.event-duration-choice:focus-within {
+    outline: 3px solid var(--pom-brand-blue);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* Icons share a generous target without enlarging the glyph. */
+:is(
+    .task-menu-button,
+    .issue-menu-button,
+    .event-menu-button,
+    .contact-menu-button,
+    .account-menu-button,
+    .navbar-toggler,
+    .contact-method-action,
+    .notes-board-shell__action,
+    .btn-close
+) {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+}
+
+.btn-close {
+    box-sizing: border-box;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.65rem;
+    border-radius: var(--bs-border-radius-sm);
+}
+
+.btn-close:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.contact-method-row--editable,
+.notes-board-shell__content {
+    padding-right: 6.25rem;
+}
+
+/* One selected/hover convention for tabs, regardless of their screen. */
+:is(.my-work-section-nav, .issue-detail-tabs, .event-right-tabs) .nav-link,
+.contact-detail-tab,
+:is(.event-command-page, .dashboard-page) .event-form-tab {
+    color: var(--bs-secondary-color);
+    border-bottom: 3px solid transparent;
+    text-decoration: none;
+}
+
+:is(.my-work-section-nav, .issue-detail-tabs, .event-right-tabs) .nav-link:hover,
+.contact-detail-tab:hover,
+:is(.event-command-page, .dashboard-page) .event-form-tab:hover {
+    color: var(--bs-emphasis-color);
+    background: var(--pom-hover);
+    border-bottom-color: transparent;
+}
+
+:is(.my-work-section-nav, .issue-detail-tabs, .event-right-tabs) .nav-link.active,
+.contact-detail-tab.active,
+:is(.event-command-page, .dashboard-page) .event-form-tab.is-active {
+    color: var(--bs-emphasis-color);
+    border-bottom-color: var(--pom-brand-blue);
+    font-weight: 600;
+    background: transparent;
+}
+
+.contact-detail-tab.active::after {
+    display: none;
+}
+
+/* One chip vocabulary; event chips are labels, not interactive filters. */
+.task-filter-chip,
+.command-filter-clear {
+    color: #26313a;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.task-filter-chip:hover,
+.command-filter-clear:hover {
+    color: #1f2932;
+    background: var(--pom-hover);
+    border-color: #a9b4be;
+}
+
+.event-command-page .event-filter-chip {
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border-color: var(--bs-border-color);
+}
+
+.btn-check:checked + .btn-outline-secondary,
+.btn-check:active + .btn-outline-secondary {
+    color: var(--bs-emphasis-color);
+    background: var(--bs-tertiary-bg);
+    border-color: var(--bs-emphasis-color);
+    box-shadow: none;
+}
+
+:is(.event-command-page, .dashboard-page) .event-duration-choice:has(input:checked) {
+    color: var(--bs-emphasis-color);
+    background: var(--bs-tertiary-bg);
+    border-color: var(--bs-emphasis-color);
+}
+
+/* Shared workspace pager palette */
+.command-pagination-link {
+    color: var(--bs-emphasis-color);
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.command-pagination-link:hover {
+    color: var(--bs-emphasis-color);
+    background: var(--pom-hover);
+    border-color: var(--bs-border-color);
+}
+
+.command-pagination-link.is-disabled {
+    color: var(--bs-secondary-color);
+    background: var(--bs-tertiary-bg);
+    opacity: 0.65;
+}
+
+.pagination {
+    gap: 0.25rem;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+    color: var(--bs-emphasis-color);
+    background: var(--pom-hover);
+}
+
+.note-undo-toast {
+    position: fixed;
+    z-index: 1100;
+    top: 110px;
+    right: max(20px, calc((100vw - 1600px) / 2 + 20px));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: min(345px, calc(100vw - 20px));
+    padding: 8px 10px;
+    border: 1px solid #a9ceb4;
+    border-radius: 7px;
+    background: #f0faf2;
+    color: #185a31;
+    box-shadow: 0 9px 25px #17212b2b;
+}
+
+.note-undo-toast [data-note-undo] {
+    flex: none;
+    border: 1px solid #24683d;
+    border-radius: 4px;
+    padding: 4px 8px;
+    background: #287646;
+    color: #fff;
+    font-size: 0.83rem;
+    font-weight: 650;
+}
+
+.note-undo-toast [data-note-undo]:hover,
+.note-undo-toast [data-note-undo]:focus-visible {
+    background: #185a31;
+    color: #fff;
+}
+
+.note-undo-toast .btn-close {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: 2px;
+    padding: 0.45rem;
+    opacity: 0.65;
+}
+
+/* Application feedback toasts */
+.app-toast-stack {
+    z-index: 1090;
+    top: 110px !important;
+    right: max(20px, calc((100vw - 1600px) / 2 + 20px)) !important;
+    width: max-content;
+    max-width: min(345px, calc(100vw - 20px));
+    padding: 0 !important;
+}
+
+.app-feedback-toast {
+    width: max-content;
+    max-width: 100%;
+    border: 1px solid #a9ceb4;
+    border-radius: 7px;
+    background: #f0faf2;
+    color: #185a31;
+    box-shadow: 0 9px 25px #17212b2b !important;
+}
+
+.app-feedback-body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+}
+
+.app-feedback-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: #287646;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.app-feedback-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    flex: 0 1 auto;
+    font-size: 0.83rem;
+    line-height: 1.3;
+}
+
+.app-feedback-toast .btn-close {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-left: 2px;
+    padding: 0.45rem;
+    opacity: 0.65;
+}
+
+@media (max-width: 700px) {
+    .app-toast-stack {
+        top: 98px !important;
+        right: 10px !important;
+    }
+
+    .note-undo-toast {
+        top: 98px;
+        right: 10px;
+    }
+}
+
+.modal textarea[name="description"] {
+    min-height: 6.5rem;
+    resize: vertical;
+}
+
+/* Keyboard focus is blue on app surfaces and white in the dark navigation. */
+body :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--pom-brand-blue);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.app-navbar
+    :is(
+        .navbar-brand,
+        .nav-link,
+        .navbar-toggler,
+        .account-menu-button,
+        .app-mobile-logout
+    ):focus-visible {
+    outline-color: #fff;
+}

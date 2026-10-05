@@ -23,7 +23,7 @@
 
         <link rel="stylesheet" href="{% static 'css/foundation.css' %}">
         <link rel="stylesheet" href="{% static 'css/components.css' %}">
-        <link rel="stylesheet" href="{% static 'css/site.css' %}">
+        {% block page_css %}{% endblock %}
         <link rel="stylesheet" href="{% static 'css/workspace.css' %}">
 
         {% block extra_css %}{% endblock %}

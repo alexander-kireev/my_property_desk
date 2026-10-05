@@ -3,6 +3,9 @@
 {% load work_status %}
 
 {% block title %}Tasks | My Property Desk{% endblock %}
+{% block page_css %}
+    <link rel="stylesheet" href="{% static 'css/task-page.css' %}">
+{% endblock %}
 {% block body_class %}bg-body-tertiary task-command-page{% endblock %}
 {% block main_class %}task-command-main flex-grow-1 app-main{% endblock %}
 

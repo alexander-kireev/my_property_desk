@@ -2,6 +2,9 @@
 {% load static event_display %}
 
 {% block title %}Contacts | My Property Desk{% endblock %}
+{% block page_css %}
+    <link rel="stylesheet" href="{% static 'css/contact-page.css' %}">
+{% endblock %}
 {% block body_class %}bg-body-tertiary contact-command-page{% endblock %}
 {% block main_class %}contact-command-main flex-grow-1 app-main{% endblock %}
 

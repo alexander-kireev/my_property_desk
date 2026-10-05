@@ -5,11 +5,15 @@ const test = require("node:test");
 const vm = require("node:vm");
 
 const source = readFileSync(path.join(__dirname, "../static/js/expandable-text.js"), "utf8");
-const styles = readFileSync(path.join(__dirname, "../static/css/site.css"), "utf8");
+const styles = ["components.css", "task-page.css", "workspace.css"]
+    .map((file) => readFileSync(path.join(__dirname, "../static/css", file), "utf8"))
+    .join("\n");
 const propertyStyles = readFileSync(path.join(__dirname, "../static/css/property-workspace.css"), "utf8");
 const sharedTemplate = readFileSync(path.join(__dirname, "../templates/includes/expandable_text.html"), "utf8");
 const taskInlineTemplate = readFileSync(path.join(__dirname, "../task/templates/task/includes/mobile_task_details.html"), "utf8");
-const taskTemplate = readFileSync(path.join(__dirname, "../task/templates/task/tasks.html"), "utf8");
+const taskTemplate = ["tasks.html", "includes/task_detail_panel.html"]
+    .map((file) => readFileSync(path.join(__dirname, "../task/templates/task", file), "utf8"))
+    .join("\n");
 
 function fixture({singleLine = false, fitCard = false, inlineEnd = false, overflow = true} = {}) {
     const handlers = new Map();
@@ -133,7 +137,7 @@ test("Task inline description alone opts into an inline, accessible disclosure",
     assert.match(sharedTemplate, /\{% if inline_end_toggle %\} expandable-text--inline-end\{% endif %\}/);
     assert.match(taskInlineTemplate, /inline_end_toggle=True/);
     assert.match(sharedTemplate, /aria-controls="\{\{ text_id \}\}/);
-    assert.match(sharedTemplate, /aria-expanded="false" hidden data-expandable-toggle/);
+    assert.match(sharedTemplate, /aria-expanded="false"\s+hidden\s+data-expandable-toggle/);
     assert.match(styles, /\.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\)\s*\{[^}]*background: var\(--bs-tertiary-bg\);/s);
     const view = fixture();
     view.window.ExpandableText.refresh();
@@ -160,7 +164,7 @@ test("desktop Task description reserves the last preview line for an inline See 
 });
 
 test("Task See more controls use the Dashboard disclosure style at all widths", () => {
-    assert.match(styles, /\.task-detail-scroll \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),\s*\.task-inline-description \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),[^{]*\{[^}]*background: var\(--bs-body-bg\);[^}]*color: var\(--bs-link-color\);[^}]*font-size: \.85rem;[^}]*font-weight: 600;/s);
+    assert.match(styles, /\.task-detail-scroll \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),\s*\.task-inline-description \.expandable-text--inline-end \.expandable-text-toggle:not\(\[hidden\]\),[^{]*\{[^}]*background: var\(--bs-body-bg\);[^}]*color: var\(--bs-link-color\);[^}]*font-size: 0?\.85rem;[^}]*font-weight: 600;/s);
 });
 
 test("Task inline preview uses separate cards and compact two-column facts", () => {
@@ -169,13 +173,13 @@ test("Task inline preview uses separate cards and compact two-column facts", () 
     assert.match(taskInlineTemplate, /<dl class="task-inline-facts">/);
     assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Status<\/dt>/);
     assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Priority<\/dt>/);
-    assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Created<\/dt>/);
+    assert.match(taskInlineTemplate, /class="task-inline-fact">\s*<dt>Created<\/dt>/);
     assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Scheduled<\/dt>/);
     assert.match(taskInlineTemplate, /class="task-inline-fact"><dt>Deadline<\/dt>/);
     assert.match(taskInlineTemplate, /\{% if task.issue or task.property %\}[\s\S]*class="task-inline-fact task-inline-relationship"/);
-    assert.match(styles, /:is\(\.task-inline-relationship, \.issue-inline-relationship, \.event-inline-relationship\) :is\(\.task-related-link, \.task-related-deleted\)\s*\{[^}]*max-width: min\(100%, 16rem\)/s);
+    assert.match(styles, /:is\(\.task-inline-relationship, \.issue-inline-relationship, \.event-inline-relationship\)\s+:is\(\.task-related-link, \.task-related-deleted\)\s*\{[^}]*max-width: min\(100%, 16rem\)/s);
     assert.match(styles, /@media \(min-width: 600px\) and \(max-width: 860px\)[\s\S]*?:is\(\.task-inline-facts, \.issue-inline-facts, \.event-inline-facts\)\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/s);
-    assert.match(styles, /:is\(\.task-inline-actions, \.issue-inline-actions, \.event-mobile-inline-actions\) \.work-mobile-open \{[^}]*white-space: nowrap;/s);
+    assert.match(styles, /:is\(\.task-inline-actions, \.issue-inline-actions, \.event-mobile-inline-actions\)\s+\.work-mobile-open \{[^}]*white-space: nowrap;/s);
 });
 
 test("Property summaries grow for wrapped badges and header address shares one line with its control", () => {
