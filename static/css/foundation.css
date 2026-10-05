@@ -200,44 +200,6 @@ body {
     }
 }
 
-.card {
-    --bs-card-border-color: var(--pom-border);
-    --bs-card-border-radius: var(--pom-radius);
-    background-color: var(--pom-surface);
-}
-
-.card.border-0 {
-    border: 1px solid var(--pom-border) !important;
-}
-
-.shadow-sm {
-    box-shadow: var(--pom-shadow-md) !important;
-}
-
-.dropdown-menu {
-    --bs-dropdown-border-color: var(--pom-border-strong);
-    --bs-dropdown-border-radius: 0.5rem;
-    box-shadow: var(--pom-shadow-md);
-}
-
-.btn,
-.form-control,
-.form-select {
-    border-radius: 0.5rem;
-}
-
-.form-control,
-.form-select {
-    border-color: var(--pom-border-strong);
-    background-color: var(--pom-surface);
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: #6f7379;
-    box-shadow: 0 0 0 0.18rem rgba(28, 29, 31, 0.12);
-}
-
 /* Account profile and settings */
 .profile-content {
     max-width: 860px;
@@ -360,18 +322,6 @@ body {
         right: 0;
         left: auto;
     }
-}
-
-.theme-action {
-    background-color: var(--pom-night);
-    border-color: var(--pom-night);
-    color: #fff;
-}
-
-.theme-action:hover {
-    background-color: var(--pom-night-hover);
-    border-color: var(--pom-night-hover);
-    color: #fff;
 }
 
 .app-footer {

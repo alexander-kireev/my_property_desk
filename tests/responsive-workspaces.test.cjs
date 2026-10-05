@@ -8,7 +8,11 @@ const readAll = (...files) => files.map(read).join("\n");
 const readCss = (file) => read(file).replace(/\s+/g, " ");
 const dashboardCss = readCss("static/css/dashboard.css");
 const dashboardJs = read("static/js/dashboard.js");
-const siteCss = ["static/css/foundation.css", "static/css/site.css"].map(readCss).join(" ");
+const siteCss = [
+    "static/css/foundation.css",
+    "static/css/components.css",
+    "static/css/site.css",
+].map(readCss).join(" ");
 const eventComponentsCss = readCss("static/css/event-components.css");
 const eventCss = readCss("static/css/event-page.css");
 const eventJs = read("static/js/event-command-centre.js");
