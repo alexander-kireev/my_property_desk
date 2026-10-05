@@ -158,41 +158,12 @@
 }
 
 .property-heading-copy h2,
-.property-heading-copy p,
-.property-panel-card {
+.property-heading-copy p {
     overflow-wrap: anywhere;
 }
 
 .property-menu-button {
     min-width: 2.7rem;
-}
-
-.property-tabs {
-    display: flex;
-    padding: 0 1rem;
-    border-top: 1px solid var(--bs-border-color);
-    border-bottom: 1px solid var(--bs-border-color);
-}
-
-.property-tab {
-    padding: 0.8rem 1rem;
-    color: var(--bs-secondary-color);
-    background: transparent;
-    border: 0;
-    border-bottom: 0.2rem solid transparent;
-}
-
-.property-tab:hover,
-.property-tab:focus-visible {
-    color: var(--bs-emphasis-color);
-    background: var(--pom-hover);
-}
-
-.property-tab.is-active {
-    color: var(--bs-emphasis-color);
-    border-bottom-color: var(--pom-brand-blue);
-    font-weight: 600;
-    background: transparent;
 }
 
 .property-detail-recovery {
@@ -251,29 +222,6 @@
 /* Contextual Add-record dialogs and locked property fields */
 
 /* Keep long property names inside their locked Add-record fields; forms scroll in the modal. */
-.property-context-modal-title {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.property-context-modal-title + .btn-close {
-    flex: 0 0 auto;
-}
-
-.property-context-modal-name {
-    display: block;
-    max-width: 100%;
-    overflow: hidden;
-    color: var(--bs-secondary-color);
-    font-size: 0.85rem;
-    font-weight: 400;
-    line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 .property-context-readonly {
     min-width: 0;
@@ -556,139 +504,9 @@
     color: var(--bs-secondary-color);
 }
 
-.property-overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-areas: "issues tasks" "schedule history";
-    gap: 0.8rem;
-}
-
-.property-overview-issues {
-    grid-area: issues;
-}
-
-.property-overview-tasks {
-    grid-area: tasks;
-}
-
-.property-overview-schedule {
-    grid-area: schedule;
-}
-
-.property-overview-history {
-    grid-area: history;
-}
-
-.property-overview-grid .property-panel-card {
-    display: flex;
-    flex-direction: column;
-    height: 17.5rem;
-}
-
-.property-overview-grid .property-card-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-}
-
-.property-panel-stack {
-    display: grid;
-    align-content: start;
-    gap: 1rem;
-    max-width: 48rem;
-}
-
 /* Legacy overview, work, and history panels */
-.property-list-card,
 #propertyPanelHistory > p {
     max-width: 48rem;
-}
-
-.property-work-filters {
-    display: flex;
-    gap: 0.35rem;
-    max-width: 48rem;
-    margin-bottom: 0.8rem;
-}
-
-.property-work-filters button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.65rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    color: var(--bs-secondary-color);
-    background: var(--bs-body-bg);
-}
-
-.property-work-filters button.is-active {
-    color: var(--bs-emphasis-color);
-    border-color: var(--bs-emphasis-color);
-    font-weight: 600;
-}
-
-.property-work-filters button:hover,
-.property-work-filters button:focus-visible {
-    background: var(--pom-hover);
-}
-
-.property-work-filters span {
-    font-size: 0.8rem;
-    color: var(--bs-secondary-color);
-}
-
-.property-panel-card {
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-}
-
-.property-card-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    min-height: 3rem;
-    padding: 0.45rem 0.85rem;
-    background: var(--bs-tertiary-bg);
-    border-bottom: 1px solid var(--bs-border-color);
-}
-
-.property-card-heading h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-width: 0;
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.property-card-body {
-    padding: 0.55rem 0.85rem 0.8rem;
-}
-
-.property-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.65rem;
-    min-height: 1.5rem;
-    padding: 0.1rem 0.4rem;
-    border: 1px solid var(--bs-emphasis-color);
-    border-radius: 0.3rem;
-    color: var(--bs-body-bg);
-    background: var(--bs-emphasis-color);
-    font-size: 0.82rem;
-    font-weight: 600;
-}
-
-.property-count.is-zero {
-    color: var(--bs-secondary-color);
-    background: transparent;
-    border-color: var(--bs-border-color);
 }
 
 /* Work and history record rows */
@@ -783,14 +601,6 @@ summary.property-record-link::-webkit-details-marker {
     white-space: nowrap;
 }
 
-.property-outcome--resolved,
-.property-outcome--completed,
-.property-outcome--occurred {
-    color: #176949;
-    background: #eaf7ef;
-    border-color: #badcc8;
-}
-
 .property-event-badge {
     color: #0757b5;
     background: #f3f8ff;
@@ -839,19 +649,6 @@ summary.property-record-link::-webkit-details-marker {
     margin-top: 0.75rem;
 }
 
-.property-section-link {
-    padding: 0;
-    color: var(--bs-link-color);
-    background: transparent;
-    border: 0;
-    text-align: left;
-    white-space: nowrap;
-}
-
-.property-section-link:hover {
-    text-decoration: underline;
-}
-
 /* Desktop sizing and stacked layouts for narrower viewports */
 @media (min-width: 992px) {
     .property-command-page,
@@ -868,11 +665,6 @@ summary.property-record-link::-webkit-details-marker {
 }
 
 @media (min-width: 992px) and (max-width: 1199.98px) {
-    .property-overview-grid {
-        grid-template-columns: 1fr;
-        grid-template-areas: "issues" "tasks" "schedule" "history";
-    }
-
     .property-related-filters {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -992,16 +784,6 @@ summary.property-record-link::-webkit-details-marker {
         white-space: nowrap;
     }
 
-    .property-tabs {
-        justify-content: space-between;
-        padding: 0 0.25rem;
-    }
-
-    .property-tab {
-        padding: 0.75rem 0.55rem;
-        font-size: 0.88rem;
-    }
-
     .property-panel-area {
         display: block;
         padding: 1rem;
@@ -1034,11 +816,6 @@ summary.property-record-link::-webkit-details-marker {
         grid-template-columns: minmax(0, 1fr) minmax(6rem, 7.5rem) 27px;
         gap: 0.75rem;
         padding: 0.625rem 1.25rem;
-    }
-
-    .property-overview-grid {
-        grid-template-columns: 1fr;
-        grid-template-areas: "issues" "tasks" "schedule" "history";
     }
 
     .property-record-link {
