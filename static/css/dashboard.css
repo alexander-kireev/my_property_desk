@@ -367,19 +367,6 @@
     margin-top: 0.25rem;
 }
 
-.dashboard-linked-issue {
-    display: inline-block;
-    max-width: 36%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    vertical-align: bottom;
-}
-
-.dashboard-meta-tail {
-    white-space: nowrap;
-}
-
 .dashboard-type-cue {
     margin-right: 5px;
     color: #46545d;
@@ -605,21 +592,11 @@
     max-width: 100%;
 }
 
-.dashboard-property-label {
-    flex: none;
-    white-space: nowrap;
-}
-
 .dashboard-property-name {
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-.dashboard-property-status {
-    flex: none;
-    white-space: nowrap;
 }
 
 .dashboard-row-facts .dashboard-issue-fact {
@@ -628,11 +605,6 @@
     gap: 0.25rem;
     max-width: 100%;
     min-width: 0;
-}
-
-.dashboard-issue-label,
-.dashboard-issue-status {
-    flex: none;
 }
 
 .dashboard-issue-title {
@@ -1041,15 +1013,6 @@
 
 .dashboard-day-tabs span {
     min-width: 18px;
-}
-
-.dashboard-day-section-heading {
-    padding: 8px 12px;
-    border-bottom: 1px solid #dbe1e6;
-    background: #f7f8f8;
-    color: #505d67;
-    font-size: 0.74rem;
-    font-weight: 700;
 }
 
 .dashboard-day-plan.drag-over {
