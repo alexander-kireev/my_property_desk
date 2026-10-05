@@ -55,9 +55,7 @@
                                     <label class="visually-hidden"
                                            for="{{ edit_contact_note_form.content.id_for_label }}">Edit note</label>
                                     {{ edit_contact_note_form.content }}
-                                    {% for error in edit_contact_note_form.content.errors %}
-                                        <div class="invalid-feedback d-block">{{ error }}</div>
-                                    {% endfor %}
+                                    {% include "includes/field_feedback.html" with field=edit_contact_note_form.content only %}
                                 {% else %}
                                     <label class="visually-hidden" for="edit-note-{{ note.pk }}">Edit note</label>
                                     <textarea class="form-control"
@@ -95,9 +93,7 @@
                 <label class="visually-hidden"
                        for="{{ add_contact_note_form.content.id_for_label }}">New note</label>
                 {{ add_contact_note_form.content }}
-                {% for error in add_contact_note_form.content.errors %}
-                    <div class="invalid-feedback d-block">{{ error }}</div>
-                {% endfor %}
+                {% include "includes/field_feedback.html" with field=add_contact_note_form.content only %}
             </div>
             <button class="btn theme-action" type="submit">Add</button>
         </form>

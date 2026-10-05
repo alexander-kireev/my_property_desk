@@ -1,3 +1,4 @@
+{# Inactive contacts need state=all in the destination list; deleted contacts remain readable without a link. #}
 {% load event_display %}
 <div class="event-participant-heading">
     {% if event_contact.contact.deleted_at %}

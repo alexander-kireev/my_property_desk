@@ -1,0 +1,37 @@
+{% comment %}
+    id_prefix and picker_id must stay unique on the page and match the caller's script hooks.
+    The caller owns the form, submission, CSRF and modal; this partial owns its tabs and panels.
+{% endcomment %}
+<div class="event-form-tabs" role="tablist" aria-label="{{ tab_label }}">
+    <button class="event-form-tab{% if not contacts_form.errors or event_form.errors %} is-active{% endif %}"
+            id="{{ id_prefix }}DetailsTab"
+            type="button"
+            role="tab"
+            aria-controls="{{ id_prefix }}DetailsPanel"
+            aria-selected="{% if contacts_form.errors and not event_form.errors %}false{% else %}true{% endif %}"
+            data-event-tab="details">Details</button>
+    <button class="event-form-tab{% if contacts_form.errors and not event_form.errors %} is-active{% endif %}"
+            id="{{ id_prefix }}ParticipantsTab"
+            type="button"
+            role="tab"
+            aria-controls="{{ id_prefix }}ParticipantsPanel"
+            aria-selected="{% if contacts_form.errors and not event_form.errors %}true{% else %}false{% endif %}"
+            data-event-tab="participants">Participants <span class="event-form-tab-count" data-contact-tab-count>{{ contacts_form.contacts.value|length }}</span></button>
+</div>
+<div class="modal-body event-form-body">
+    <div id="{{ id_prefix }}DetailsPanel"
+         role="tabpanel"
+         aria-labelledby="{{ id_prefix }}DetailsTab"
+         data-event-panel="details"
+         {% if contacts_form.errors and not event_form.errors %} hidden{% endif %}>
+        {% include "event/includes/event_form_fields.html" with event_form=event_form property_context=property_context selected_property=selected_property only %}
+    </div>
+    <div id="{{ id_prefix }}ParticipantsPanel"
+         role="tabpanel"
+         aria-labelledby="{{ id_prefix }}ParticipantsTab"
+         data-event-panel="participants"
+         {% if not contacts_form.errors or event_form.errors %} hidden{% endif %}>
+        {% if contacts_non_field_errors %}<div class="alert alert-danger py-2">{{ contacts_non_field_errors }}</div>{% endif %}
+        {% include "event/includes/contact_picker.html" with picker_field=contacts_form.contacts picker_id=picker_id picker_mode=picker_mode only %}
+    </div>
+</div>

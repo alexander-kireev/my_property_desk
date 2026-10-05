@@ -32,7 +32,7 @@
 
 {% if selected_property and selected_property.state == "active" %}
     {# Edit or deactivate the selected active property #}
-    {# {% if is_detail_route %}edit Property dialog{% else %}list Edit Property dialog{% endif %} #}
+    {# Detail and list routes retain distinct edit-dialog IDs for their launch buttons. #}
     <div class="modal fade"
          id="{% if is_detail_route %}editPropertyModal{% else %}listEditPropertyModal{% endif %}"
          data-modal-clear-query="form_state edit"
@@ -118,7 +118,7 @@
 {% endif %}
 
 {% if selected_property %}
-    {# Add linked records and permanently delete the selected property #}
+    {# Add linked records and show the property deletion confirmation #}
     {% if selected_property.state == "active" %}
         {% include "property/includes/record_add_modals.html" %}
     {% endif %}

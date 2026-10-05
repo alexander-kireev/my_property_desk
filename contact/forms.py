@@ -62,6 +62,8 @@ class ContactMethodForm(forms.ModelForm):
         ]
         self.fields["value"].label = "Contact information"
         self.fields["type"].widget.attrs["class"] = "form-select"
+        # Native validation can focus this required two-choice control when it is empty.
+        self.fields["type"].widget.attrs["data-native-select"] = ""
         self.fields["value"].widget.attrs["class"] = "form-control"
         self.fields["value"].widget.attrs["autocomplete"] = "off"
 

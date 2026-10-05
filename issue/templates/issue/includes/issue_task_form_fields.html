@@ -5,13 +5,13 @@
         <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
         <div {% if field.name == 'priority' or field.name == 'scheduled_date' or field.name == 'completion_deadline' %} class="task-form-field-compact"{% endif %}>
             {{ field }}
-            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            {% include "includes/field_feedback.html" with field=field only %}
         </div>
     </div>
     {% if field.name == "description" %}
         <div class="mb-3">
             <span class="form-label" id="issueAddTaskRelatedIssueLabel">Related issue</span>
-            {% include "includes/locked_relation.html" with locked_id="issueAddTaskRelatedIssue" locked_label="Related issue" locked_value=selected_issue.title %}
+            {% include "includes/locked_relation.html" with locked_id="issueAddTaskRelatedIssue" locked_value=selected_issue.title %}
         </div>
     {% endif %}
 {% endfor %}

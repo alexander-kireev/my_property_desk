@@ -7,7 +7,7 @@ const read = (file) => readFileSync(path.join(__dirname, "..", file), "utf8");
 const readAll = (...files) => files.map(read).join("\n");
 const readCss = (file) => read(file).replace(/\s+/g, " ");
 const dashboardCss = readCss("static/css/dashboard.css");
-const dashboardJs = read("static/js/dashboard.js");
+const dashboardJs = read("static/js/dashboard.js") + read("static/js/dashboard-dialogs.js");
 const siteCss = [
     "static/css/foundation.css",
     "static/css/components.css",
@@ -76,7 +76,7 @@ test("Task relationship labels say Not linked while retaining standalone values"
     const mobileDetails = read("task/templates/task/includes/mobile_task_details.html");
     assert.match(fields, /value="standalone"[^>]*>Not linked<\/option>/);
     assert.match(fields, /relationship_standalone">Not linked<\/label>/);
-    assert.match(dashboardJs, /\[\["standalone", "Not linked"\]/);
+    assert.match(dashboardJs, /\[\s*\["standalone", "Not linked"\]/);
     assert.doesNotMatch(fields + taskPage + mobileDetails + dashboardJs, />Standalone<|"Standalone"|No linked record|No linked property or issue/);
     assert.doesNotMatch(taskPage + mobileDetails, />Not linked</);
 });
@@ -225,7 +225,7 @@ test("Events share work cards and disclosure while retaining a mobile calendar",
     assert.match(eventCss, /\.event-command-list \{\s*overflow-x: clip;\s*overflow-y: visible;/);
     assert.match(events, /data-calendar-agenda-href="\?\{\{ day_query_base \}\}&amp;agenda_day=/);
     assert.doesNotMatch(events, /event-mobile-agenda-arrow/);
-    assert.match(scrollJs, /workspace === "events"\) \{\s*pageScrollQuery = "\(max-width: 860px\)/);
+    assert.match(scrollJs, /events: workPageScroll/);
 });
 
 test("Event Add and Apply controls share the same compact button footprint", () => {

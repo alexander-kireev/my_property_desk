@@ -95,6 +95,8 @@ class EmailChangeForm(forms.Form):
     current_password = forms.CharField(strip=False, widget=forms.PasswordInput)
 
     def __init__(self, *args, user, **kwargs):
+        # These forms share the Profile page, so their field IDs must be distinct.
+        kwargs.setdefault("auto_id", "change_email_%s")
         super().__init__(*args, **kwargs)
         self.user = user
 
@@ -124,6 +126,7 @@ class DeleteAccountForm(forms.Form):
     confirmation = forms.CharField()
 
     def __init__(self, *args, user, **kwargs):
+        kwargs.setdefault("auto_id", "delete_account_%s")
         super().__init__(*args, **kwargs)
         self.user = user
         self.fields["current_password"].widget.attrs.update({"class": "form-control", "autocomplete": "current-password"})

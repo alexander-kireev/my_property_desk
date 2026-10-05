@@ -70,6 +70,27 @@ class TaskForm(forms.ModelForm):
             else:
                 field.widget.attrs["class"] = "form-control"
 
+    @property
+    def relationship_selection(self):
+        """Selection markers shared by the compact picker and radio buttons."""
+        if self.is_bound:
+            # Redisplay the submitted choice, including an explicit Not linked selection.
+            choice = self.data.get("relationship_type")
+            unlinked = not choice and not self.data.get("property") and not self.data.get("issue")
+            return {
+                "standalone": choice == "standalone" or unlinked,
+                "property": choice == "property",
+                "issue": choice == "issue",
+            }
+
+        has_property = bool(self.initial.get("property") or self.instance.property_id)
+        has_issue = bool(self.instance.issue_id)
+        return {
+            "standalone": not has_property and not has_issue,
+            "property": has_property,
+            "issue": has_issue,
+        }
+
     class Meta:
         model = Task
         fields = (

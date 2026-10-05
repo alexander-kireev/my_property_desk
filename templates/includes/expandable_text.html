@@ -1,3 +1,4 @@
+{# The caller combines text_id, optional kind and record_id into a page-unique ID; the toggle targets that same ID. #}
 <div class="expandable-text{% if fit_card %} expandable-text--fit-card{% endif %}{% if inline_end_toggle %} expandable-text--inline-end{% endif %}"
      data-expandable-text>
     <p class="expandable-text-content {{ text_class }}{% if not text %} is-expanded{% endif %}"

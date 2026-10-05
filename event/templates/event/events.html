@@ -16,7 +16,7 @@
                  aria-label="Events command centre"
                  data-workspace-scroll-root="events"
                  data-navigation-query="{{ navigation_query }}">
-            {% include "includes/my_work_nav.html" with active_section="events" task_count=task_count issue_count=issue_count event_count=event_count %}
+            {% include "includes/my_work_nav.html" with active_section="events" %}
 
             {% if event_count == 0 %}
                 <div class="event-first-empty flex-grow-1 d-flex align-items-center justify-content-center p-4 p-md-5 text-center">
@@ -58,5 +58,6 @@
 
 {% block extra_js %}
     <script src="{% static 'js/workspace-list-scroll.js' %}"></script>
+    <script src="{% static 'js/event-form.js' %}"></script>
     <script src="{% static 'js/event-command-centre.js' %}"></script>
 {% endblock %}

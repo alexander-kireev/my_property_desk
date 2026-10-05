@@ -1,20 +1,24 @@
-const test=require('node:test');
-const assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path');
-const root=path.resolve(__dirname,'..');
-const js=fs.readFileSync(path.join(root,'static/js/dashboard.js'),'utf8');
-
-test('A bare date click returns to Tasks while category shortcuts keep their own tab',()=>{
-    assert.match(js,/const category = event\.target\.closest\("\[data-category\]"\);\s*dayTab = category \? category\.dataset\.category : "tasks";\s*selectDay\(day\.dataset\.day\);/);
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const browser = {};
+vm.runInNewContext(fs.readFileSync('static/js/dashboard-records.js','utf8'), {window:browser});
+const display = browser.DashboardRecords;
+test('issue week includes Monday and Sunday and excludes adjacent dates', () => {
+    const issue = ['2026-09-27','2026-09-28','2026-10-04','2026-10-05',''].map(due => ({due,title:'Issue',description:'',property:''}));
+    const result = display.visibleRecords({issue}, {kind:'issue',filter:'week',secondaryFilter:'any',search:'',today:'2026-09-30'});
+    assert.deepEqual(Array.from(result, item => item.due), ['2026-09-28','2026-10-04']);
 });
-
-test('Selected day uses one full date heading and issue week covers Monday through Sunday',()=>{
-    assert.match(js,/get\("selectedDayHeading"\)\.textContent = longDate\(selected\);/);
-    assert.doesNotMatch(js,/selectedDayNumber|selectedDayMonth/);
-    assert.match(js,/filter === "week" && \(!item\.due \|\| item\.due < isoDate\(mondayOf\(data\.today\)\) \|\| item\.due > isoDate\(weekEnd\)\)/);
+test('date-only formatting and week start remain stable across month boundaries', () => {
+    assert.equal(display.isoDate(display.mondayOf('2026-10-04')), '2026-09-28');
+    assert.equal(display.longDate('2026-10-05'), 'Monday, 5 October 2026');
 });
-
-test('More menus remember their pointer-down state so a second pointer click closes them',()=>{
-    assert.match(js,/button\.dataset\.dashboardMenuWasOpen = String\(Boolean\(menu && menu\.matches\(":popover-open"\)\)\)/);
-    assert.match(js,/const wasOpenAtPointerDown = button\.dataset\.dashboardMenuWasOpen === "true";/);
+test('row rendering escapes user text and preserves full record navigation', () => {
+    const html = display.recordRow({id:7,kind:'task',title:'<img src=x onerror="bad()">',description:'<script>bad()</script>',property:'A & B',date:'',due:''}, 'queue',
+        {expanded:null,today:'2026-10-05',urls:{taskUrl:'/tasks/'}});
+    assert.ok(html.includes('&lt;img'));
+    assert.ok(html.includes('A &amp; B'));
+    assert.ok(!html.includes('<script>'));
+    assert.ok(html.includes('/tasks/?selected=7&amp;open=detail'));
 });

@@ -24,18 +24,14 @@
                         <label for="{{ profile_form.first_name.id_for_label }}">First name</label>
                         <div class="profile-setting-value">
                             {{ profile_form.first_name }}
-                            {% for error in profile_form.first_name.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=profile_form.first_name only %}
                         </div>
                     </div>
                     <div class="profile-setting-row">
                         <label for="{{ profile_form.last_name.id_for_label }}">Last name</label>
                         <div class="profile-setting-value">
                             {{ profile_form.last_name }}
-                            {% for error in profile_form.last_name.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=profile_form.last_name only %}
                         </div>
                     </div>
                     <div class="profile-setting-row profile-setting-row-last profile-setting-row--submit">
@@ -105,17 +101,13 @@
     </div>
 
     {# Email and password changes require fresh account verification #}
-    {# Change Email dialog #}
     {% include "accounts/includes/modals/change_email_modal.html" %}
 
-    {# Change Password dialog #}
     {% include "accounts/includes/modals/change_password_modal.html" %}
 
     {# Two-step permanent account deletion #}
-    {# Delete Account dialog #}
     {% include "accounts/includes/modals/delete_account_modal.html" %}
 
-    {# Delete Account Confirm dialog #}
     {% include "accounts/includes/modals/delete_account_confirm_modal.html" %}
     {% if open_modal %}<span hidden data-modal-auto-open="{{ open_modal }}"></span>{% endif %}
 {% endblock %}

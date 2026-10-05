@@ -27,9 +27,7 @@
                         <div class="col-md-8">
                             {{ form.first_name }}
 
-                            {% for error in form.first_name.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.first_name only %}
                         </div>
                     </div>
 
@@ -39,9 +37,7 @@
                         <div class="col-md-8">
                             {{ form.last_name }}
 
-                            {% for error in form.last_name.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.last_name only %}
                         </div>
                     </div>
 
@@ -50,9 +46,7 @@
                         <div class="col-md-8">
                             {{ form.email }}
 
-                            {% for error in form.email.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.email only %}
                         </div>
                     </div>
 
@@ -62,9 +56,7 @@
                         <div class="col-md-8">
                             {{ form.password_1 }}
 
-                            {% for error in form.password_1.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.password_1 only %}
                         </div>
                     </div>
 
@@ -74,9 +66,7 @@
                         <div class="col-md-8">
                             {{ form.password_2 }}
 
-                            {% for error in form.password_2.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.password_2 only %}
                         </div>
                     </div>
 

@@ -13,10 +13,12 @@
            placeholder="Search by name, email or phone"
            autocomplete="off"
            aria-controls="{{ picker_id }}Choices"
+           {% if picker_field.errors %}aria-describedby="{{ picker_field.auto_id }}_error" aria-invalid="true"{% endif %}
            data-contact-search>
     <div class="event-contact-choices mt-2"
          id="{{ picker_id }}Choices"
          role="group"
+         {% if picker_field.errors %}aria-describedby="{{ picker_field.auto_id }}_error" aria-invalid="true"{% endif %}
          aria-label="Contacts">
         {% for choice in picker_field %}
             {% with contact=choice.data.value.instance %}
@@ -40,7 +42,5 @@
            data-contact-empty
            hidden>No matching contacts.</p>
     </div>
-    {% for error in picker_field.errors %}
-        <div class="invalid-feedback d-block">{{ error }}</div>
-    {% endfor %}
+    {% include "includes/field_feedback.html" with field=picker_field only %}
 </div>

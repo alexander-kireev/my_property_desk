@@ -43,9 +43,11 @@ Development follows a structured but lightweight software-development lifecycle:
 
 ## Development formatting
 
-Read the [maintainer guide](docs/MAINTAINER_GUIDE.md) for HTML/CSS ownership, shared templates, commenting conventions, and the refactoring checks.
+When available locally, `docs/MAINTAINER_GUIDE.md` describes front-end ownership, shared templates, commenting conventions and focused checks. It is intentionally Git-ignored and is not included in a fresh clone.
 
 Install the optional formatting tools after installing the application requirements:
+
+Use a Node.js version supported by ESLint: 20.19+, 22.13+ or 24+. This tooling baseline was checked with Node 24.19.
 
 ```powershell
 pip install -r requirements-dev.txt
@@ -69,6 +71,15 @@ python -m djlint path\to\templates --reformat
 ```
 
 CSS rules that could alter the cascade or impose a new naming scheme are deliberately excluded from the initial lint baseline. Those changes belong in reviewed refactoring work rather than automatic formatting.
+
+JavaScript correctness checks cover all authored browser scripts:
+
+```powershell
+npm run lint:js
+npm run format:js:check
+```
+
+JavaScript formatting covers every authored `static/js/*.js` file. Use `npm run format:js` to format them. See the maintainer guide for module ownership and focused browser checks.
 
 ## Project status
 

@@ -1,4 +1,3 @@
-{# delete Account Confirm Modal; visibility is controlled by the parent dialog collection. #}
 <div class="modal fade"
      id="deleteAccountConfirmModal"
      tabindex="-1"
@@ -32,16 +31,12 @@
                         <label class="form-label"
                                for="{{ delete_form.current_password.id_for_label }}">Current password</label>
                         {{ delete_form.current_password }}
-                        {% for error in delete_form.current_password.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+                        {% include "includes/field_feedback.html" with field=delete_form.current_password only %}
                     </div>
                     <div>
                         <label class="form-label" for="{{ delete_form.confirmation.id_for_label }}">Type DELETE</label>
                         {{ delete_form.confirmation }}
-                        {% for error in delete_form.confirmation.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
+                        {% include "includes/field_feedback.html" with field=delete_form.confirmation only %}
                     </div>
                 </div>
                 <div class="modal-footer">

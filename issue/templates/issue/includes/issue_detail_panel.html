@@ -55,10 +55,14 @@
                 <ul class="nav" role="tablist">
                     <li class="nav-item"><button class="nav-link px-3 py-3{% if active_tab == 'details' %} active{% endif %}"
         data-bs-toggle="tab"
+        id="issueDetailsTab"
+        aria-controls="issueDetailsPanel"
         data-bs-target="#issueDetailsPanel"
         type="button">Details</button></li>
                     <li class="nav-item"><button class="nav-link px-3 py-3{% if active_tab == 'tasks' %} active{% endif %}"
         data-bs-toggle="tab"
+        id="issueTasksTab"
+        aria-controls="issueTasksPanel"
         data-bs-target="#issueTasksPanel"
         type="button">Tasks <span class="badge text-bg-secondary ms-1">{{ linked_task_count }}</span></button></li>
                 </ul>
@@ -70,7 +74,8 @@
 
             <div class="issue-detail-body tab-content">
                 <section class="tab-pane fade{% if active_tab == 'details' %} show active{% endif %}"
-                         id="issueDetailsPanel">
+                         id="issueDetailsPanel"
+                         aria-labelledby="issueDetailsTab">
                     <div class="issue-detail-scroll p-3 p-md-4">
                         {% if selected_issue.state != "active" %}<div class="alert alert-secondary" role="status">This issue was {{ selected_issue.get_state_display|lower }}{% if selected_issue.terminated_at %} on {{ selected_issue.terminated_at|date:"j F Y" }}{% endif %}. It is retained as history.</div>{% endif %}
                         <div class="row g-3 align-items-stretch">
@@ -103,7 +108,9 @@
                                         </dl>
                                         <dl class="work-detail-list small mb-0">
                                             <dt>Resolve by</dt>
-                                            <dd><span class="issue-detail-date{% if selected_status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}">{{ selected_issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if selected_issue.resolution_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == "overdue" %}{{ selected_status.headline }}{% else %}{{ selected_issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
+                                            <dd>
+                                                {% include "issue/includes/deadline_detail.html" with issue=selected_issue status=selected_status today=today date_class="issue-detail-date" only %}
+                                            </dd>
                                             {% if selected_issue.terminated_at %}<dt>Terminated</dt>
                                                 <dd>{{ selected_issue.terminated_at|date:"j M Y" }}</dd>{% endif %}
                                             <dt>Active tasks</dt>
@@ -111,10 +118,11 @@
                                                 {{ active_task_count }}
                                             </dd>
                                             {% if selected_issue.property %}<dt>Related to</dt>
-                                                <dd>{% if selected_issue.property.deleted_at %}<span class="task-related-deleted"
-      title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' selected_issue.property.pk %}"
-   title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}
+                                                <dd>
+                                                    {% url 'property:property_detail' selected_issue.property.pk as related_url %}
+                                                    {% include "includes/related_record_link.html" with label=selected_issue.property.name url=related_url deleted=selected_issue.property.deleted_at only %}
+                                                </dd>
+                                            {% endif %}
                                         </dl>
                                     </div>
                                 </article>
@@ -124,7 +132,8 @@
                 </section>
 
                 <section class="tab-pane fade{% if active_tab == 'tasks' %} show active{% endif %}"
-                         id="issueTasksPanel">
+                         id="issueTasksPanel"
+                         aria-labelledby="issueTasksTab">
                     <div class="issue-task-scroll">
                         <div class="issue-linked-tasks-card">
                             <div class="issue-task-list">

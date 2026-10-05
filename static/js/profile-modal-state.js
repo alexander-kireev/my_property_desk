@@ -1,3 +1,4 @@
+// Clear Profile form values and errors after closing a dialog or returning to a cached page.
 // A validation error stays visible until its modal is dismissed.
 // Reopening the modal, or returning through browser history, starts fresh.
 document.addEventListener("DOMContentLoaded", () => {
@@ -7,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const url = new URL(window.location.href);
         if (!url.searchParams.has("form_state") && !url.searchParams.has("modal")) return;
         url.searchParams.delete("form_state");
-        url.searchParams.delete("modal"); // Also clean links created before the profile migration.
+        url.searchParams.delete("modal"); // Older links may use modal instead of form_state.
         window.history.replaceState(
             window.history.state,
             "",
@@ -24,9 +25,19 @@ document.addEventListener("DOMContentLoaded", () => {
             field.defaultValue = "";
             field.classList.remove("is-invalid");
             field.removeAttribute("aria-invalid");
+            // Remove only error references; keep the password guidance associated with its field.
+            const descriptions = (field.getAttribute("aria-describedby") || "")
+                .split(/\s+/)
+                .filter((id) => id && !document.getElementById(id)?.matches(".invalid-feedback"));
+            if (descriptions.length) field.setAttribute("aria-describedby", descriptions.join(" "));
+            else field.removeAttribute("aria-describedby");
         });
-        form.querySelectorAll(".invalid-feedback, .alert-danger").forEach((error) => error.remove());
-        form.querySelectorAll("[data-validation-help]").forEach((help) => { help.hidden = false; });
+        form.querySelectorAll(".invalid-feedback, .alert-danger").forEach((error) =>
+            error.remove(),
+        );
+        form.querySelectorAll("[data-validation-help]").forEach((help) => {
+            help.hidden = false;
+        });
         form.removeAttribute("data-preserve-restored-email");
     };
 
@@ -34,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.addEventListener("hidden.bs.modal", () => resetModal(modal));
     });
 
-    // A refreshed one-use URL no longer has state to show.
+    // Remove form parameters when the server has not supplied a dialog to reopen.
     if (!document.querySelector("[data-modal-auto-open]")) {
         clearFormStateFromUrl();
     }

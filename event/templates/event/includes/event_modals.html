@@ -1,29 +1,23 @@
+{# This collection decides which dialogs exist; each included partial owns one modal. Bootstrap controls visibility. #}
 {# Create, edit, participant, and state dialogs #}
 {% if add_event_form %}
-    {# Add Event dialog #}
     {% include "event/includes/modals/add_event_modal.html" %}
 {% endif %}
 
 {% if selected_event %}
     {% if selected_event.state == "scheduled" and add_contacts_form %}
-        {# Add Event Contacts dialog #}
         {% include "event/includes/modals/add_event_contacts_modal.html" %}
     {% endif %}
     {% if selected_event.state == "scheduled" and edit_event_form %}
-        {# Edit Event dialog #}
         {% include "event/includes/modals/edit_event_modal.html" %}
     {% endif %}
 
     {% if selected_event.state == "scheduled" %}
-        {# Occur Event dialog #}
         {% include "event/includes/modals/occur_event_modal.html" %}
-        {# Cancel Event dialog #}
         {% include "event/includes/modals/cancel_event_modal.html" %}
     {% else %}
-        {# Reactivate Event dialog #}
         {% include "event/includes/modals/reactivate_event_modal.html" %}
     {% endif %}
-    {# Delete Event dialog #}
     {% include "event/includes/modals/delete_event_modal.html" %}
 {% endif %}
 

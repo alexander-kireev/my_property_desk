@@ -26,9 +26,7 @@
                         <div class="col-md-8">
                             {{ form.username }}
 
-                            {% for error in form.username.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.username only %}
                         </div>
                     </div>
 
@@ -38,9 +36,7 @@
                         <div class="col-md-8">
                             {{ form.password }}
 
-                            {% for error in form.password.errors %}
-                                <div class="invalid-feedback d-block">{{ error }}</div>
-                            {% endfor %}
+                            {% include "includes/field_feedback.html" with field=form.password only %}
                         </div>
                     </div>
 

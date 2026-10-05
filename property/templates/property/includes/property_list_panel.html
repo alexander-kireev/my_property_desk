@@ -44,7 +44,7 @@
          data-workspace-scroll-list>
         {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">Selected property is outside these filters. <a class="btn btn-sm btn-outline-secondary"
     href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
-        {# Result rows: identity, state and date or contact summary #}
+        {# Property names, addresses, state badges and linked-work counts #}
         {% for record in page_obj %}
             <a class="property-command-row workspace-compact-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}"
                href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"

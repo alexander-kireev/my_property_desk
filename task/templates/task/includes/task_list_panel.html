@@ -135,7 +135,7 @@
                  aria-label="Tasks"
                  data-workspace-scroll-list>
                 {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This task is outside the current filters. <a href="{% url 'task:tasks' %}?selected={{ selected_task.pk }}">Clear filters to find it in the list</a>.</div>{% endif %}
-                {# Result rows: identity, state and date or contact summary #}
+                {# Task summaries, priority or state badges, and scheduling #}
                 {% for task in page_obj %}
                     {% work_status task today as task_status %}
                     <a class="task-command-row list-group-item list-group-item-action{% if task == selected_task %} is-selected{% endif %}{% if task.state != 'active' %} terminated{% endif %}"

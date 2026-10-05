@@ -30,7 +30,10 @@
             </div>
             <div class="issue-inline-fact">
                 <dt>Resolve by</dt>
-                <dd><span {% if issue_status.kind == 'overdue' %} class="issue-detail-overdue-date"{% endif %}>{{ issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if issue.resolution_deadline %}<span class="work-date-relative{% if issue_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if issue_status.kind == "overdue" %}{{ issue_status.headline }}{% else %}{{ issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd></div>
+                <dd>
+                    {% include "issue/includes/deadline_detail.html" with issue=issue status=issue_status today=today only %}
+                </dd>
+            </div>
             {% if issue.terminated_at %}<div class="issue-inline-fact"><dt>Terminated</dt>
                 <dd>{{ issue.terminated_at|date:"j M Y" }}</dd></div>{% endif %}
             <div class="issue-inline-fact">
@@ -40,9 +43,12 @@
                 </dd>
             </div>
             {% if issue.property %}<div class="issue-inline-fact issue-inline-relationship"><dt>Related to</dt>
-                <dd>{% if issue.property.deleted_at %}<span class="task-related-deleted" title="{{ issue.property.name }}"><span class="task-related-copy">{{ issue.property.name }}</span></span>{% else %}<a class="task-related-link"
-   href="{% url 'property:property_detail' issue.property.pk %}"
-   title="{{ issue.property.name }}"><span class="task-related-copy">{{ issue.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd></div>{% endif %}
+                <dd>
+                    {% url 'property:property_detail' issue.property.pk as related_url %}
+                    {% include "includes/related_record_link.html" with label=issue.property.name url=related_url deleted=issue.property.deleted_at only %}
+                </dd>
+                </div>
+            {% endif %}
         </dl>
     </div>
     {# Primary and overflow actions #}
