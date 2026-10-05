@@ -84,16 +84,8 @@
                             </div>
                         {% endfor %}
                     </div>
-                    {% if page_obj.paginator.num_pages > 1 %}
-                        <nav class="command-pagination border-top px-3 py-2"
-                             aria-label="Property pagination">
-                            {% if page_obj.has_previous %}<a class="command-pagination-link"
-   href="{% url 'property:properties' %}?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">← Previous</span>{% endif %}
-                            <span class="command-pagination-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                            {% if page_obj.has_next %}<a class="command-pagination-link"
-   href="{% url 'property:properties' %}?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">Next →</span>{% endif %}
-                        </nav>
-                    {% endif %}
+                    {% url 'property:properties' as property_list_url %}
+                    {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Property pagination" pagination_class="command-pagination border-top px-3 py-2" pagination_base=property_list_url only %}
                 </aside>
 
                 {# Selected property summary and related records #}

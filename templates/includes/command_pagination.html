@@ -1,0 +1,19 @@
+{% if page_obj.paginator.num_pages > 1 %}
+    <nav class="{{ pagination_class|default:'command-pagination' }}"
+         aria-label="{{ pagination_label }}">
+        {% if page_obj.has_previous %}
+            <a class="command-pagination-link"
+               href="{{ pagination_base|default:'' }}?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Previous</a>
+        {% else %}
+            <span class="command-pagination-link is-disabled" aria-disabled="true">← Previous</span>
+        {% endif %}
+        <span class="command-pagination-status"
+              aria-current="page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a class="command-pagination-link"
+               href="{{ pagination_base|default:'' }}?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next →</a>
+        {% else %}
+            <span class="command-pagination-link is-disabled" aria-disabled="true">Next →</span>
+        {% endif %}
+    </nav>
+{% endif %}

@@ -221,16 +221,7 @@
                         </div>
 
                         <div class="task-pagination d-flex justify-content-center border-top px-3 py-2">
-                            {% if page_obj.paginator.num_pages > 1 %}
-                                <nav class="command-pagination" aria-label="Task pagination">
-                                    {% if page_obj.has_previous %}<a class="command-pagination-link"
-   href="?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">← Previous</span>{% endif %}
-                                    <span class="command-pagination-status"
-                                          aria-current="page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                                    {% if page_obj.has_next %}<a class="command-pagination-link"
-   href="?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">Next →</span>{% endif %}
-                                </nav>
-                            {% endif %}
+                            {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Task pagination" only %}
                         </div>
             {% else %}
                 {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">This task is outside the current filters. <a href="{% url 'task:tasks' %}?selected={{ selected_task.pk }}">Clear filters to find it in the list</a>.</div>{% endif %}

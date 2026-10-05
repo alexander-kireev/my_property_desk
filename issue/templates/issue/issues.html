@@ -205,17 +205,7 @@
             {% endfor %}
         </div>
 
-        {% if page_obj.paginator.num_pages > 1 %}
-            <nav class="issue-pagination command-pagination border-top bg-body p-3"
-                 aria-label="Issue pagination">
-                {% if page_obj.has_previous %}<a class="command-pagination-link"
-   href="?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">← Previous</span>{% endif %}
-                <span class="command-pagination-status"
-                      aria-current="page">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_next %}<a class="command-pagination-link"
-   href="?{% if list_query %}{{ list_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span class="command-pagination-link is-disabled" aria-disabled="true">Next →</span>{% endif %}
-            </nav>
-        {% endif %}
+        {% include "includes/command_pagination.html" with page_obj=page_obj list_query=list_query pagination_label="Issue pagination" pagination_class="issue-pagination command-pagination border-top bg-body p-3" only %}
     </div>
     </aside>
 
