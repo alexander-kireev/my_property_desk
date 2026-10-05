@@ -1,0 +1,299 @@
+{# Create and edit dialogs #}
+<div class="modal fade"
+     id="addIssueModal"
+     data-modal-clear-query="form_state"
+     tabindex="-1"
+     aria-labelledby="addIssueModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered dashboard-add-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="addIssueModalLabel">Add issue</h2>
+                {% if return_property_id %}
+                    <a class="btn-close"
+                       href="{% url 'property:property_detail' return_property_id %}"
+                       aria-label="Close and return to property"></a>
+                {% else %}
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                {% endif %}
+            </div>
+            <form action="{% url 'issue:add_issue' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                  method="post">
+                {% csrf_token %}
+                {% if return_property_id %}
+                    <input type="hidden" name="return_property" value="{{ return_property_id }}">
+                {% endif %}
+                <div class="modal-body p-4">{% include "issue/includes/issue_form_fields.html" with issue_form=add_issue_form %}</div>
+                <div class="modal-footer">
+                    {% if return_property_id %}
+                        <a class="btn btn-outline-secondary"
+                           href="{% url 'property:property_detail' return_property_id %}">Cancel</a>
+                    {% else %}
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Cancel</button>
+                    {% endif %}
+                    <button class="btn theme-action" type="submit">Add issue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if selected_issue %}
+    {% if edit_issue_form %}
+        <div class="modal fade"
+             id="editIssueModal"
+             data-modal-clear-query="form_state open"
+             tabindex="-1"
+             aria-labelledby="editIssueModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="editIssueModalLabel">Edit issue</h2>
+                        <button class="btn-close"
+                                type="button"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <form action="{% url 'issue:edit_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                          method="post">
+                        {% csrf_token %}
+                        <div class="modal-body p-4">{% include "issue/includes/issue_form_fields.html" with issue_form=edit_issue_form %}</div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn theme-action" type="submit">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if add_task_form %}
+        <div class="modal fade"
+             id="addIssueTaskModal"
+             data-modal-clear-query="form_state"
+             tabindex="-1"
+             aria-labelledby="addIssueTaskModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="addIssueTaskModalLabel">Add task to issue</h2>
+                        <button class="btn-close"
+                                type="button"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <form action="{% url 'issue:add_issue_task' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                          method="post">
+                        {% csrf_token %}
+                        <div class="modal-body p-4">
+                            {% include "issue/includes/issue_task_form_fields.html" with task_form=add_task_form %}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn theme-action" type="submit">Add task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if edit_task_form %}
+        <div class="modal fade"
+             id="editIssueTaskModal"
+             data-modal-clear-query="form_state"
+             tabindex="-1"
+             aria-labelledby="editIssueTaskModalLabel"
+             aria-hidden="true">
+            <div class="task-form-dialog modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="editIssueTaskModalLabel">Edit task</h2>
+                        <button class="btn-close"
+                                type="button"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <form id="editIssueTaskForm"
+                          action="{% if edit_task %}{% url 'issue:edit_issue_task' selected_issue.pk edit_task.pk %}{% else %}#{% endif %}"
+                          method="post"
+                          data-task-form>
+                        {% csrf_token %}
+                        <div class="modal-body p-4">{% include "task/includes/task_form_fields.html" with task_form=edit_task_form %}</div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    data-bs-dismiss="modal">Cancel</button>
+                            <button class="btn theme-action" type="submit">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# Issue state and deletion confirmations #}
+    <div class="modal fade modal-resilient"
+         id="resolveIssueModal"
+         tabindex="-1"
+         aria-labelledby="resolveIssueModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="resolveIssueModalLabel">Resolve issue?</h2>
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form action="{% url 'issue:resolve_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>The issue will be marked as resolved and retained in your history.</p>
+                        {% if active_task_count %}
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       id="resolveLinkedTasks"
+                                       name="affect_linked_tasks"
+                                       value="yes"
+                                       type="checkbox">
+                                <label class="form-check-label" for="resolveLinkedTasks">Also dismiss {{ active_task_count }} active linked task{{ active_task_count|pluralize }}</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Keep issue</button>
+                        <button class="btn theme-action" type="submit">Resolve issue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-resilient"
+         id="dismissIssueModal"
+         tabindex="-1"
+         aria-labelledby="dismissIssueModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="dismissIssueModalLabel">Dismiss issue?</h2>
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form action="{% url 'issue:dismiss_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>The issue will be marked as dismissed and retained in your history.</p>
+                        {% if active_task_count %}
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       id="dismissLinkedTasks"
+                                       name="affect_linked_tasks"
+                                       value="yes"
+                                       type="checkbox">
+                                <label class="form-check-label" for="dismissLinkedTasks">Also dismiss {{ active_task_count }} active linked task{{ active_task_count|pluralize }}</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Keep issue</button>
+                        <button class="btn theme-action" type="submit">Dismiss issue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-resilient"
+         id="deleteIssueModal"
+         tabindex="-1"
+         aria-labelledby="deleteIssueModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="deleteIssueModalLabel">Delete issue?</h2>
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form action="{% url 'issue:delete_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>This issue will be removed from your workspace.</p>
+                        {% if linked_task_count %}
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       id="deleteLinkedTasks"
+                                       name="affect_linked_tasks"
+                                       value="yes"
+                                       type="checkbox">
+                                <label class="form-check-label" for="deleteLinkedTasks">Also delete {{ linked_task_count }} linked task{{ linked_task_count|pluralize }}</label>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Keep issue</button>
+                        <button class="btn btn-danger" type="submit">Delete issue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade modal-resilient"
+         id="reactivateIssueModal"
+         tabindex="-1"
+         aria-labelledby="reactivateIssueModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="reactivateIssueModalLabel">Reactivate issue?</h2>
+                    <button class="btn-close"
+                            type="button"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <form action="{% url 'issue:reactivate_issue' selected_issue.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                      method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>The issue will return to the active state. Linked tasks will not change.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                data-bs-dismiss="modal">Keep as is</button>
+                        <button class="btn theme-action" type="submit">Reactivate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% if open_modal %}
+    <span hidden data-modal-auto-open="{{ open_modal }}"></span>
+{% endif %}
