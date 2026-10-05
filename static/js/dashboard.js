@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })[character]);
     const parseDate = (value) => new Date(`${value}T12:00:00Z`);
     const isoDate = (value) => value.toISOString().slice(0, 10);
-    const prettyDate = (value) => parseDate(value).toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"});
+    const prettyDate = (value) => parseDate(value).toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric", timeZone: "UTC"}).replace("Sept", "Sep");
     const longDate = (value) => parseDate(value).toLocaleDateString("en-GB", {weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC"});
     const mondayOf = (value) => {
         const day = parseDate(value);
@@ -36,6 +36,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let month = null;
     let shown = 40;
     let expanded = null;
+    const returning = window.performance?.getEntriesByType?.("navigation")?.[0]?.type === "back_forward"
+        ? window.history.state?.pomDashboardReturn : null;
+    if (returning?.url === `${window.location.pathname}${window.location.search}`
+        && ["task", "issue", "event"].includes(returning.kind)) {
+        kind = returning.kind;
+        filter = returning.filter;
+        secondaryFilter = returning.secondaryFilter;
+        shown = returning.shown;
+        expanded = returning.expanded;
+    }
     let editingNote = null;
     let recordTarget = null;
     let confirmTarget = null;
@@ -151,8 +161,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!selected) selected = data.today;
         if (!month) month = parseDate(`${selected.slice(0, 7)}-01`);
         render();
-        get("workList").scrollTop = queueScroll;
+        if (returning?.url === `${window.location.pathname}${window.location.search}`) {
+            get("workSearch").value = returning.search || "";
+            renderQueue();
+        }
+        get("workList").scrollTop = returning?.url === `${window.location.pathname}${window.location.search}`
+            ? returning.scrollTop || 0 : queueScroll;
         get("dayList").scrollTop = dayScroll;
+        if (returning?.expanded) {
+            const row = get("workList").querySelector(`[data-area="queue"][data-kind="${kind}"][data-id="${returning.expanded.split("-").at(-1)}"]`);
+            row?.querySelector(".dashboard-row-toggle")?.focus({preventScroll: true});
+        }
     }
 
     function visibleRecords() {
@@ -168,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (secondaryFilter === "high" && !["High", "Urgent"].includes(item.priority)) return false;
             } else if (kind === "issue") {
                 if (filter === "overdue" && (!item.due || item.due >= data.today)) return false;
-                if (filter === "week" && (!item.due || item.due < data.today || item.due > isoDate(weekEnd))) return false;
+                if (filter === "week" && (!item.due || item.due < isoDate(mondayOf(data.today)) || item.due > isoDate(weekEnd))) return false;
                 if (filter === "undated" && item.due) return false;
                 if (secondaryFilter === "high" && !["High", "Urgent"].includes(item.priority)) return false;
             } else {
@@ -180,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function badge(item) {
         if (item.priority) return `<span class="work-pill work-pill--priority-${item.priority_id}" aria-label="${escapeHtml(item.priority)} priority" title="${escapeHtml(item.priority)} priority">${escapeHtml(item.priority)}</span>`;
+        if (item.kind === "event") return `<span class="work-pill work-pill--${item.state === "scheduled" ? "active" : "terminal"}">${escapeHtml(item.state.charAt(0).toUpperCase() + item.state.slice(1))}</span>`;
         return "";
     }
     function recordMeta(item) {
@@ -221,21 +241,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 <button type="button" class="dashboard-action-danger" data-action="delete">Delete</button>
             </div>
         </div>`;
-        const taskSummary = area === "queue" && item.kind === "task";
-        const timingMeta = recordMeta(item);
-        const meta = item.kind === "task" && item.issue_id
-            ? `<span class="dashboard-linked-issue" title="${escapeHtml(item.issue_title)}">${escapeHtml(item.issue_title)}</span><span class="dashboard-meta-tail"> · ${escapeHtml(timingMeta)}</span>`
-            : `${item.property ? `${escapeHtml(item.property)}${timingMeta ? " · " : ""}` : ""}${escapeHtml(timingMeta)}`;
+        const taskSummary = item.kind === "task";
         const taskContext = item.issue_id ? item.issue_title : item.property;
+        const dueDays = item.due ? Math.round((parseDate(item.due) - parseDate(data.today)) / 86400000) : null;
         const taskTiming = item.due
-            ? `${item.due < data.today ? "Overdue" : "Due"} ${prettyDate(item.due)}`
-            : item.date ? `Scheduled ${prettyDate(item.date)}` : "Unscheduled";
+            ? `${dueDays < 0 ? "Overdue" : dueDays <= 3 ? "Due soon" : "Due"} ${prettyDate(item.due)}`
+            : item.date ? `Scheduled ${prettyDate(item.date)}` : "No date";
+        const issueTiming = item.due
+            ? `${dueDays < 0 ? "Overdue" : dueDays <= 3 ? "Due soon" : "Resolve by"} ${prettyDate(item.due)}`
+            : "No target date";
+        const eventTiming = `<span>${prettyDate(item.date)} ·</span><span>${item.all_day ? "All day" : `${escapeHtml(item.start_time)}${item.end_time ? `–${escapeHtml(item.end_time)}` : ""}`}</span>`;
         const summary = taskSummary
-            ? `<span class="dashboard-task-copy"><strong class="dashboard-task-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong><small class="dashboard-task-context"${taskContext ? ` title="${escapeHtml(taskContext)}"` : ' aria-hidden="true"'}>${escapeHtml(taskContext)}</small></span>
+            ? `<span class="dashboard-task-copy"><strong class="dashboard-task-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong><small class="dashboard-task-context"${taskContext ? ` title="${escapeHtml(taskContext)}"` : ' aria-hidden="true"'}>${typeCue}${escapeHtml(taskContext)}</small></span>
                 <span class="dashboard-task-meta">${badge(item)}<span class="dashboard-task-timing${item.due && item.due < data.today ? " is-overdue" : ""}">${taskTiming}</span></span>
                 <span class="dashboard-row-chevron">${chevron}</span>`
-            : `<span class="dashboard-row-main"><strong>${escapeHtml(item.title)}</strong>${typeCue || meta ? `<small>${typeCue}${meta}</small>` : ""}</span>
-                <span class="dashboard-row-side">${badge(item)}<span class="dashboard-row-chevron">${chevron}</span></span>`;
+            : `<span class="dashboard-row-main"><strong title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong><small class="dashboard-row-context"${item.property ? ` title="${escapeHtml(item.property)}"` : typeCue ? "" : ' aria-hidden="true"'}>${typeCue}${escapeHtml(item.property)}</small></span>
+                <span class="dashboard-row-side${item.kind === "event" ? " dashboard-event-side" : ""}">${badge(item)}<span class="dashboard-row-timing${item.due && item.due < data.today ? " is-overdue" : ""}">${item.kind === "issue" ? issueTiming : eventTiming}</span></span><span class="dashboard-row-chevron">${chevron}</span>`;
         const issueFact = item.issue_id
             ? `<span class="dashboard-issue-fact" title="${escapeHtml(item.issue_title)}"><span class="dashboard-issue-title">${escapeHtml(item.issue_title)}</span></span>`
             : "";
@@ -343,11 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
         grid.innerHTML = cells.join("");
     }
     function renderDay() {
-        const selectedDate = parseDate(selected);
-        get("selectedDayNumber").textContent = selectedDate.getUTCDate();
-        get("selectedDayMonth").textContent = selectedDate.toLocaleDateString("en-GB", {month: "short", timeZone: "UTC"}).toUpperCase();
-        get("selectedDayHeading").textContent = selectedDate.toLocaleDateString("en-GB", {weekday: "long", timeZone: "UTC"});
-        get("selectedDayHeading").setAttribute("aria-label", longDate(selected));
+        get("selectedDayHeading").textContent = longDate(selected);
         const tasks = data.records.task.filter((item) => item.date === selected);
         const events = data.records.event.filter((item) => item.date === selected);
         const dueTasks = data.records.task.filter((item) => item.due === selected);
@@ -480,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return html;
     }
-    function openWork(type, id = null, proposedDate = null) {
+    function openWork(type, id = null, proposedDate = null, returnFocus = document.activeElement) {
         const item = id ? findRecord(type, id) : null;
         recordTarget = {type, id};
         get("workDialogHeading").textContent = `${id ? "Edit" : "Add"} ${type}`;
@@ -491,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
         get("workFormErrors").textContent = "";
         updateRelationshipFields();
         updateEventTimeFields();
-        get("workDialog")._dashboardReturnFocus = document.activeElement;
+        get("workDialog")._dashboardReturnFocus = window.WorkspaceModalReturnFocus?.resolve(returnFocus) || returnFocus;
         bootstrap.Modal.getOrCreateInstance(get("workDialog")).show();
     }
     const addEventForm = get("dashboardAddEventForm");
@@ -573,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
         activateAddEventTab(firstField?.name === "contacts" || firstField?.id === "dashboardEventContactsSearch" ? "participants" : "details");
         firstField?.focus();
     }
-    function openAddEvent() {
+    function openAddEvent(returnFocus = document.activeElement) {
         addEventForm.reset();
         clearAddEventErrors();
         addEventForm.elements.namedItem("scheduled_date").value = selected || data.today;
@@ -583,7 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateAddEventPresence();
         updateAddEventContacts();
         activateAddEventTab("details");
-        addEventModal._dashboardReturnFocus = document.activeElement;
+        addEventModal._dashboardReturnFocus = window.WorkspaceModalReturnFocus?.resolve(returnFocus) || returnFocus;
         bootstrap.Modal.getOrCreateInstance(addEventModal).show();
     }
     function showWorkErrors(error) {
@@ -626,7 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
             input.disabled = !!allDay?.checked;
         });
     }
-    function openConfirm(type, id, action) {
+    function openConfirm(type, id, action, returnFocus = document.activeElement) {
         confirmTarget = {type, id, action};
         const item = findRecord(type, id);
         const linkedCount = type === "issue" ? (action === "finish" ? item.active_linked_tasks : action === "delete" ? item.linked_tasks : 0) : 0;
@@ -657,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
         get("confirmAction").textContent = copy.submit;
         get("confirmAction").classList.toggle("dashboard-danger-button", action === "delete");
         get("confirmError").textContent = "";
-        get("confirmDialog")._dashboardReturnFocus = document.activeElement;
+        get("confirmDialog")._dashboardReturnFocus = window.WorkspaceModalReturnFocus?.resolve(returnFocus) || returnFocus;
         bootstrap.Modal.getOrCreateInstance(get("confirmDialog")).show();
     }
     async function changeDate(type, id, date, field = "date") {
@@ -706,7 +723,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function openActionMenu(button) {
         const menu = document.getElementById(button.getAttribute("aria-controls"));
-        if (menu.matches(":popover-open")) { menu.hidePopover(); return; }
+        const wasOpenAtPointerDown = button.dataset.dashboardMenuWasOpen === "true";
+        delete button.dataset.dashboardMenuWasOpen;
+        if (wasOpenAtPointerDown || menu.matches(":popover-open")) {
+            if (menu.matches(":popover-open")) menu.hidePopover();
+            return;
+        }
         closeActionMenus();
         menu.showPopover();
         const trigger = button.getBoundingClientRect();
@@ -725,15 +747,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!row) return;
         if (event.target.closest("[data-expandable-toggle]")) return;
         const type = row.dataset.kind, id = Number(row.dataset.id), area = row.dataset.area;
+        const recordLink = event.target.closest('a[href]');
+        if (recordLink?.textContent.trim() === "Open record" && area === "queue"
+            && !event.defaultPrevented && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+            const state = window.history.state;
+            window.history.replaceState({...(state && typeof state === "object" ? state : {}),
+                pomDashboardReturn: {
+                    url: `${window.location.pathname}${window.location.search}`,
+                    kind, filter, secondaryFilter, shown, expanded,
+                    search: get("workSearch").value, scrollTop: get("workList").scrollTop,
+                },
+            }, "", window.location.href);
+        }
         const button = event.target.closest("[data-action]");
         if (button) {
             const action = button.dataset.action;
             if (action === "more") { openActionMenu(button); return; }
+            const returnFocus = window.WorkspaceModalReturnFocus?.resolve(button) || button;
             closeActionMenus();
-            if (action === "edit") openWork(type, id);
-            else if (action === "finish" && type === "issue" && findRecord(type, id)?.active_linked_tasks) openConfirm(type, id, action);
+            if (action === "edit") openWork(type, id, null, returnFocus);
+            else if (action === "finish" && type === "issue" && findRecord(type, id)?.active_linked_tasks) openConfirm(type, id, action, returnFocus);
             else if (action === "finish") performQuickAction(type, id);
-            else openConfirm(type, id, action);
+            else openConfirm(type, id, action, returnFocus);
             return;
         }
         if (event.target.closest(".dashboard-row-toggle")) {
@@ -812,6 +847,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
     get("workList").addEventListener("click", clickRecord);
     get("dayList").addEventListener("click", clickRecord);
+    for (const list of [get("workList"), get("dayList")]) {
+        list.addEventListener("pointerdown", (event) => {
+            const button = event.target.closest('[data-action="more"]');
+            if (!button) return;
+            const menu = document.getElementById(button.getAttribute("aria-controls"));
+            button.dataset.dashboardMenuWasOpen = String(Boolean(menu && menu.matches(":popover-open")));
+        }, true);
+    }
     get("workList").addEventListener("pointerover", (event) => {
         const row = event.target.closest("[data-scheduled-date]");
         if (row) highlightDate(row.dataset.scheduledDate);
@@ -853,7 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const day = event.target.closest("[data-day]");
         if (!day) return;
         const category = event.target.closest("[data-category]");
-        if (category) dayTab = category.dataset.category;
+        dayTab = category ? category.dataset.category : "tasks";
         selectDay(day.dataset.day);
     });
     get("calendarGrid").addEventListener("dragover", (event) => {
@@ -927,9 +970,10 @@ document.addEventListener("DOMContentLoaded", () => {
         get("dashboardAddToggle").setAttribute("aria-expanded", String(opening));
     });
     document.querySelectorAll("[data-add]").forEach((button) => button.addEventListener("click", () => {
+        const returnFocus = window.WorkspaceModalReturnFocus?.resolve(button) || button;
         closeAddMenu();
-        if (button.dataset.add === "event") openAddEvent();
-        else openWork(button.dataset.add);
+        if (button.dataset.add === "event") openAddEvent(returnFocus);
+        else openWork(button.dataset.add, null, null, returnFocus);
     }));
     addEventForm.querySelectorAll("[data-event-tab]").forEach((tab, index, tabs) => {
         tab.addEventListener("click", () => activateAddEventTab(tab.dataset.eventTab));
@@ -1097,14 +1141,14 @@ document.addEventListener("DOMContentLoaded", () => {
         get(id).addEventListener("hide.bs.modal", (event) => { if (pending()) event.preventDefault(); });
         get(id).addEventListener("hidden.bs.modal", () => {
             const previous = get(id)._dashboardReturnFocus;
-            if (previous?.isConnected) previous.focus();
+            window.WorkspaceModalReturnFocus?.restore(previous);
         });
     }
     get("workDialog").addEventListener("shown.bs.modal", () => get("workForm").elements.namedItem("title").focus());
     addEventModal.addEventListener("hide.bs.modal", (event) => { if (eventAddPending) event.preventDefault(); });
     addEventModal.addEventListener("hidden.bs.modal", () => {
         const previous = addEventModal._dashboardReturnFocus;
-        if (previous?.isConnected) previous.focus();
+        window.WorkspaceModalReturnFocus?.restore(previous);
     });
     addEventModal.addEventListener("shown.bs.modal", () => addEventForm.elements.namedItem("title").focus());
     get("confirmDialog").addEventListener("shown.bs.modal", () => get("confirmCancel").focus());

@@ -19,9 +19,20 @@
     const secondaryKey = `${storageKey}:secondary:${selection}`;
     const intentKey = `${storageKey}:navigation-intent`;
     const workspace = root.dataset.workspaceScrollRoot;
+    const historyStateKey = "pomWorkspaceScroll";
+    const readEntry = () => window.history?.state?.[historyStateKey]?.[workspace] || null;
+    const writeEntry = (position) => {
+        if (!window.history?.replaceState) return;
+        const state = window.history.state;
+        const current = state && typeof state === "object" ? state : {};
+        window.history.replaceState({
+            ...current,
+            [historyStateKey]: {...current[historyStateKey], [workspace]: position},
+        }, "", window.location.href);
+    };
     let pageScrollQuery = "(max-width: 767.98px)";
     if (workspace === "properties") {
-        pageScrollQuery = "(max-width: 991.98px), (max-width: 1299.98px) and (max-height: 750px)";
+        pageScrollQuery = "(max-width: 1199.98px), (max-width: 1299.98px) and (max-height: 750px)";
     } else if (workspace === "contacts") {
         pageScrollQuery = "(max-width: 991.98px), (max-width: 1199.98px) and (max-height: 700px)";
     } else if (["tasks", "issues"].includes(workspace)) {
@@ -71,12 +82,21 @@
     };
 
     const saved = read();
+    const entry = readEntry();
     const internalNavigation = consumeInternalNavigation();
     if (saved && saved.key !== key) clear();
     if (!list) return;
-    const shouldRestore = saved?.key === key && (
+    const restorePosition = navigationType === "back_forward" && entry?.key === key ? entry : saved;
+    const shouldRestore = restorePosition?.key === key && (
         internalNavigation || navigationType === "reload" || navigationType === "back_forward"
     );
+    const relatedReturnEntry = (workspace === "properties"
+        && window.history?.state?.pomPropertyRelatedReturn?.url === `${window.location.pathname}${window.location.search}`
+        && Boolean(window.history.state.pomPropertyRelatedReturn.key))
+        || (workspace === "issues"
+            && window.history?.state?.pomIssueRelatedReturn?.url === `${window.location.pathname}${window.location.search}`
+            && Boolean(window.history.state.pomIssueRelatedReturn.taskId || window.history.state.pomIssueRelatedReturn.property));
+    const relatedReturn = navigationType === "back_forward" && relatedReturnEntry;
     if (!shouldRestore && navigationType === "navigate") clear();
 
     const hiddenMobileDetail = () => usesPageScroll() && !list.getClientRects().length;
@@ -89,14 +109,14 @@
             }
         }
         if (hiddenMobileDetail()) {
-            window.scrollTo(0, 0);
+            window.scrollTo(0, relatedReturn && shouldRestore ? restorePosition.pageScrollY || 0 : 0);
         } else if (usesPageScroll()) {
             // A date or selected-row anchor is more specific than saved page scroll.
-            if (!window.location.hash || selectedRowHash) window.scrollTo(0, shouldRestore ? saved.pageScrollY || 0 : 0);
+            if (!window.location.hash || selectedRowHash) window.scrollTo(0, shouldRestore ? restorePosition.pageScrollY || 0 : 0);
         } else if (shouldRestore) {
-            list.scrollTop = saved.listScrollTop || 0;
+            list.scrollTop = restorePosition.listScrollTop || 0;
         }
-        if (!shouldRestore || saved?.selection !== selection) {
+        if (!shouldRestore || restorePosition?.selection !== selection) {
             root.querySelectorAll(".task-detail-scroll, .issue-detail-scroll, .event-detail-scroll, .contact-detail-scroll, .property-panel-area").forEach((pane) => { pane.scrollTop = 0; });
         }
         // An explicit selection takes precedence over saved scroll on reload or a
@@ -107,8 +127,8 @@
         const revealSelection = hasExplicitSelection && (
             (navigationType === "navigate" && !shouldRestore)
             || (["tasks", "issues", "events", "contacts", "properties"].includes(workspace) && (
-                navigationType === "reload"
-                || (navigationType === "navigate" && saved?.selection !== selection)
+                (navigationType === "reload" && !(workspace === "properties" && shouldRestore))
+                || (navigationType === "navigate" && restorePosition?.selection !== selection)
             ))
         );
         if (revealSelection) {
@@ -133,7 +153,14 @@
     requestAnimationFrame(restoreOnce);
     window.addEventListener("pageshow", (event) => {
         // A bfcache return already carries the browser's exact scroll position.
-        if (!event.persisted) requestAnimationFrame(restoreOnce);
+        if (event.persisted) {
+            const position = readEntry();
+            if (position?.key === key) requestAnimationFrame(() => {
+                if (hiddenMobileDetail()) window.scrollTo(0, relatedReturnEntry ? position.pageScrollY || 0 : 0);
+                else if (usesPageScroll()) window.scrollTo(0, position.pageScrollY || 0);
+                else list.scrollTop = position.listScrollTop || 0;
+            });
+        } else requestAnimationFrame(restoreOnce);
     });
     if (secondary) {
         const captureSecondary = () => {
@@ -147,24 +174,30 @@
         window.addEventListener("pagehide", captureSecondary);
     }
 
-    const capturePosition = () => {
+    const currentPosition = () => {
         const previous = read();
         const listVisible = Boolean(list.getClientRects().length);
-        write({
+        return {
             key,
             selection,
             listScrollTop: listVisible ? list.scrollTop : previous?.key === key ? previous.listScrollTop : 0,
             pageScrollY: listVisible ? window.scrollY : previous?.key === key ? previous.pageScrollY : 0,
-        });
+        };
+    };
+    const entryPosition = () => {
+        const position = currentPosition();
+        return {...position, pageScrollY: usesPageScroll() ? window.scrollY : position.pageScrollY};
+    };
+    const capturePosition = () => {
+        const position = currentPosition();
+        write(position);
+        writeEntry(entryPosition());
         markInternalNavigation();
     };
     window.addEventListener("pagehide", () => {
-        const previous = read();
-        write({
-            key, selection,
-            listScrollTop: list.getClientRects().length ? list.scrollTop : previous?.key === key ? previous.listScrollTop : 0,
-            pageScrollY: usesPageScroll() ? window.scrollY : previous?.key === key ? previous.pageScrollY : 0,
-        });
+        const position = currentPosition();
+        write(position);
+        writeEntry(entryPosition());
     });
 
     let scrollFrame = null;
@@ -202,7 +235,9 @@
         const link = event.target.closest("a[href]");
         if (!link || (link.target && link.target !== "_self")) return;
         const target = new URL(link.href);
-        if (target.origin !== window.location.origin || !target.pathname.startsWith(workspacePath)) return;
+        if (target.origin !== window.location.origin) return;
+        writeEntry(entryPosition());
+        if (!target.pathname.startsWith(workspacePath)) return;
         if (target.search === window.location.search && target.hash) return;
         capturePosition();
     });

@@ -301,8 +301,14 @@ def _property_detail_context(request, property_record, *, edit_property_form=Non
 
     if record_sort == "title":
         records.sort(key=lambda entry: (entry["item"].title.casefold(), entry["kind"], entry["item"].pk))
-    elif record_sort == "recent" or record_scope == "past":
+    elif record_sort == "recent":
         records.sort(key=lambda entry: (entry["item"].terminated_at or entry["item"].created_at, entry["item"].pk), reverse=True)
+    elif record_scope == "past":
+        records.sort(key=lambda entry: (
+            timezone.localdate(entry["item"].terminated_at or entry["item"].created_at),
+            entry["kind"],
+            entry["item"].pk,
+        ))
     else:
         records.sort(key=lambda entry: (entry["date"] is None, entry["date"] or timezone.localdate(), entry["kind"], entry["item"].pk))
 

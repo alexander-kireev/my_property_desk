@@ -1,6 +1,7 @@
+{% load event_display %}
 <div class="contact-method-row{% if selected_contact.state == 'active' %} contact-method-row--editable{% endif %}">
     <div class="contact-method-copy">
-        {% if method.type == "email" %}<span class="contact-method-value contact-method-value--email" title="{{ method.value }}">{{ method.value }}</span>{% else %}<span class="contact-method-value contact-method-value--telephone" title="{{ method.value }}">{{ method.value }}</span>{% endif %}
+        {% if method.type == "email" %}<span class="contact-method-value contact-method-value--email" title="{{ method.value }}">{{ method.value|compact_email }}</span>{% else %}<span class="contact-method-value contact-method-value--telephone" title="{{ method.value }}">{{ method.value }}</span>{% endif %}
     </div>
     {% if selected_contact.state == "active" %}
         <div class="contact-method-actions" aria-label="Contact detail actions">

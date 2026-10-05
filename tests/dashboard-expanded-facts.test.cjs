@@ -12,6 +12,7 @@ const recordRow = vm.runInNewContext(`${metaSource}\n${rowSource}\nrecordRow`, {
     expanded: null,
     escapeHtml: (value) => String(value ?? ""),
     prettyDate: (value) => value,
+    parseDate: (value) => new Date(`${value}T00:00:00Z`),
     badge: () => "",
     data: {today: "2026-09-30"},
 });
@@ -46,22 +47,19 @@ test("linked facts show names without deleted relationship labels", () => {
 test("collapsed subtitles omit absent relationships without leading separators in both areas", () => {
     for (const area of ["queue", "day"]) {
         const task = recordRow({...base, kind: "task", due: "2026-10-01"}, area);
-        if (area === "queue") {
-            assert.match(task, /<strong class="dashboard-task-title" title="Record">Record<\/strong><small class="dashboard-task-context" aria-hidden="true"><\/small>/);
-            assert.match(task, /<span class="dashboard-task-meta"><span class="dashboard-task-timing">Due 2026-10-01<\/span><\/span>[\s\S]*<span class="dashboard-row-chevron">/);
-            assert.match(task, /dashboard-task-timing">Due 2026-10-01<\/span>/);
-            assert.doesNotMatch(task, /Unscheduled · Due/);
-        } else {
-            assert.match(task, /<strong>Record<\/strong><small>Unscheduled · Due 2026-10-01<\/small>/);
-        }
+        assert.match(task, /<strong class="dashboard-task-title" title="Record">Record<\/strong><small class="dashboard-task-context" aria-hidden="true"><\/small>/);
+        assert.match(task, /dashboard-task-timing">Due soon 2026-10-01<\/span>[\s\S]*<span class="dashboard-row-chevron">/);
+        assert.doesNotMatch(task, /Unscheduled · Due/);
         assert.doesNotMatch(task, /Standalone|No property/);
 
         const issue = recordRow({...base, kind: "issue", due: "2026-10-02"}, area);
-        assert.match(issue, /<strong>Record<\/strong><small>Resolve by 2026-10-02<\/small>/);
+        assert.match(issue, /<strong title="Record">Record<\/strong><small class="dashboard-row-context" aria-hidden="true"><\/small>/);
+        assert.match(issue, /dashboard-row-timing">Due soon 2026-10-02<\/span>/);
         assert.doesNotMatch(issue, /No property|<small> ·/);
 
         const event = recordRow({...base, kind: "event", date: "2026-10-03"}, area);
-        assert.match(event, /<strong>Record<\/strong><small>2026-10-03 · All day<\/small>/);
+        assert.match(event, /<strong title="Record">Record<\/strong><small class="dashboard-row-context" aria-hidden="true"><\/small>/);
+        assert.match(event, /dashboard-row-timing"><span>2026-10-03 ·<\/span><span>All day<\/span><\/span>/);
         assert.doesNotMatch(event, /No property|<small> ·/);
     }
 });
@@ -69,23 +67,21 @@ test("collapsed subtitles omit absent relationships without leading separators i
 test("collapsed linked subtitles retain direct names and dates without deleted labels", () => {
     for (const area of ["queue", "day"]) {
         const propertyTask = recordRow({...base, kind: "task", property: "Canal View", property_deleted: true}, area);
-        if (area === "queue") assert.match(propertyTask, /dashboard-task-context[^>]*>Canal View<\/small>[\s\S]*dashboard-task-timing">Unscheduled/);
-        else assert.match(propertyTask, /Canal View · Unscheduled/);
+        assert.match(propertyTask, /dashboard-task-context[^>]*>Canal View<\/small>[\s\S]*dashboard-task-timing">No date/);
         assert.doesNotMatch(propertyTask, /Deleted property/);
-        assert.match(propertyTask, /Unscheduled/);
+        assert.match(propertyTask, /No date/);
 
         const issueTask = recordRow({...base, kind: "task", issue_id: 5, issue_title: "Roof leak", issue_deleted: true,
             property: "Inherited property", date: "2026-10-04"}, area);
-        if (area === "queue") assert.match(issueTask, /dashboard-task-context[^>]*>Roof leak<\/small>/);
-        else assert.match(issueTask, /dashboard-linked-issue[^>]*>Roof leak<\/span>/);
+        assert.match(issueTask, /dashboard-task-context[^>]*>Roof leak<\/small>/);
         assert.doesNotMatch(issueTask, /Deleted issue/);
         assert.match(issueTask, /Scheduled 2026-10-04/);
-        assert.doesNotMatch(issueTask.slice(0, issueTask.indexOf("dashboard-row-side")), /Inherited property|Standalone/);
+        assert.doesNotMatch(issueTask.slice(0, issueTask.indexOf("dashboard-row-detail")), /Inherited property|Standalone/);
 
         for (const kind of ["issue", "event"]) {
             const linked = recordRow({...base, kind, property: "Hill House", date: "2026-10-05",
                 due: kind === "issue" ? "2026-10-06" : ""}, area);
-            assert.match(linked, /<small>Hill House · /);
+            assert.match(linked, /dashboard-row-context[^>]*>Hill House<\/small>/);
             assert.doesNotMatch(linked, /No property|<small> ·/);
         }
     }

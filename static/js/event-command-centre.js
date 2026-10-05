@@ -100,11 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterForm = document.getElementById("eventFilterForm");
     filterForm?.querySelectorAll("[data-clear-event-filter]").forEach((button) => {
         button.addEventListener("click", () => {
-            const field = filterForm.elements.namedItem(button.dataset.clearEventFilter);
-            if (!field) return;
-            field.value = field.name === "state" ? "all" : "";
-            window.SearchableSelect?.refresh(field);
-            filterForm.requestSubmit();
+            window.WorkspaceFilterUrl.clear(button.dataset.clearEventFilter);
         });
     });
 

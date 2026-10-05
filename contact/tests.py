@@ -587,14 +587,14 @@ class ContactViewTests(ContactTestMixin, TestCase):
         response = self.client.get(reverse("contact:contacts"))
 
         self.assertContains(response, 'contact-method-value--email')
-        self.assertContains(response, f'<span class="contact-method-value contact-method-value--email" title="{email}">{email}</span>')
+        self.assertContains(response, f'<span class="contact-method-value contact-method-value--email" title="{email}">{email[:16]}...{email[-16:]}</span>')
         self.assertContains(response, f'title="{email}"')
         self.assertNotContains(response, 'href="mailto:')
         self.assertNotContains(response, 'href="tel:')
         self.assertNotContains(response, 'Tap a number to call')
         self.assertNotContains(response, 'Tap an address to compose')
 
-    def test_contact_list_shows_first_phone_then_email_and_combined_remaining_count(self):
+    def test_contact_list_shows_first_phone_and_email_without_remaining_count(self):
         contact = self.create_contact(self.user)
         for value in ("first@example.com", "second@example.com"):
             self.create_method(contact, value=value)
@@ -612,7 +612,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertIn("first@example.com", list_html)
         self.assertIn("+447700900001", list_html)
         self.assertLess(list_html.index("+447700900001"), list_html.index("first@example.com"))
-        self.assertIn("+2 more", list_html)
+        self.assertNotIn("+2 more", list_html)
         self.assertNotIn("second@example.com", list_html)
         self.assertNotIn("+447700900002", list_html)
         self.assertContains(response, "second@example.com")
@@ -642,7 +642,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertContains(response, "+447700900088")
         self.assertNotContains(response, "+0 more")
 
-    def test_contact_list_reserves_phone_and_truncates_long_email_preview(self):
+    def test_contact_list_reserves_phone_and_keeps_both_ends_of_long_email(self):
         contact = self.create_contact(self.user, "Long methods")
         phone = "+447700900123456"
         email = "averylongcontactemailaddress@example.com"
@@ -655,7 +655,8 @@ class ContactViewTests(ContactTestMixin, TestCase):
 
         self.assertIn(f'title="{phone}">{phone}</span>', list_html)
         self.assertIn(f'title="{email}"', list_html)
-        self.assertIn("averylongcontactemailadd…", list_html)
+        self.assertIn(f">{email[:9]}...{email[-16:]}</span>", list_html)
+        self.assertNotIn("contact-command-methods--long-email", list_html)
         self.assertNotIn(f'>{email}</span>', list_html)
 
     def test_mobile_back_link_keeps_contact_list_page(self):
@@ -668,7 +669,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
         self.assertContains(response, 'js/workspace-list-scroll.js')
         self.assertContains(response, 'data-workspace-scroll-root="contacts"')
 
-    def test_deactivated_contact_list_shows_state_beside_name_and_primary_method(self):
+    def test_deactivated_contact_list_shows_state_and_primary_method(self):
         contact = self.create_contact(
             self.user,
             state=Contact.State.DEACTIVATED,
@@ -684,7 +685,7 @@ class ContactViewTests(ContactTestMixin, TestCase):
 
         self.assertIn("Deactivated", list_html)
         self.assertIn("alice@example.com", list_html)
-        self.assertIn('class="contact-command-heading"', list_html)
+        self.assertIn('class="contact-command-heading workspace-compact-heading"', list_html)
         self.assertContains(response, "alice@example.com")
         self.assertNotContains(response, 'class="contact-method-actions"')
 
@@ -733,8 +734,11 @@ class ContactViewTests(ContactTestMixin, TestCase):
         response = self.client.get(
             reverse("contact:contacts"),
             {"search": " Alice ", "state": "invalid", "sort": "invalid"},
+            follow=True,
         )
 
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.redirect_chain[0][0], "/contacts/?search=+Alice+")
         self.assertEqual(response.context["search"], "Alice")
         self.assertEqual(response.context["state"], "")
         self.assertEqual(response.context["sort"], "name")
@@ -750,11 +754,63 @@ class ContactViewTests(ContactTestMixin, TestCase):
         invalid_response = self.client.get(
             reverse("contact:contacts"),
             {"selected": contact.pk, "tab": "invalid"},
+            follow=True,
         )
 
         self.assertEqual(notes_response.context["active_tab"], "notes")
         self.assertContains(notes_response, 'class="notes-board-shell"')
+        self.assertEqual(len(invalid_response.redirect_chain), 1)
+        self.assertEqual(invalid_response.redirect_chain[0][0], f"/contacts/?selected={contact.pk}")
         self.assertEqual(invalid_response.context["active_tab"], "details")
+
+    def test_invalid_contact_query_values_canonicalize_once(self):
+        for number in range(21):
+            self.create_contact(self.user, f"Contact {number:02}")
+
+        cases = (
+            ({"state": "bogus"}, "/contacts/"),
+            ({"sort": "bogus"}, "/contacts/"),
+            ({"tab": "bogus"}, "/contacts/"),
+            ({"selected": "abc"}, "/contacts/"),
+            ({"page": "bogus"}, "/contacts/"),
+            ({"page": "999999"}, "/contacts/?page=2"),
+            (
+                {"state": "bogus", "sort": "bogus", "tab": "bogus", "page": "999999", "selected": "abc"},
+                "/contacts/?page=2",
+            ),
+        )
+        for query, expected in cases:
+            with self.subTest(query=query):
+                response = self.client.get(reverse("contact:contacts"), query, follow=True)
+                self.assertEqual(response.redirect_chain, [(expected, 302)])
+                self.assertEqual(response.status_code, 200)
+
+    def test_valid_contact_deep_link_is_not_redirected(self):
+        for number in range(21):
+            self.create_contact(self.user, f"Contact {number:02}")
+        contact = Contact.objects.get(first_name="Contact 00")
+
+        response = self.client.get(
+            reverse("contact:contacts"),
+            {"selected": contact.pk, "page": 2, "tab": "notes", "sort": "-name"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["selected_contact"], contact)
+        self.assertEqual(response.context["active_tab"], "notes")
+
+    def test_invalid_query_redirect_preserves_form_state_until_render(self):
+        post_response = self.client.post(
+            reverse("contact:add_contact"),
+            {"first_name": "Alice", "email": "invalid"},
+        )
+        self.assertIn("form_state=", post_response.url)
+
+        response = self.client.get(f"{post_response.url}&sort=bogus", follow=True)
+
+        self.assertEqual(len(response.redirect_chain), 1)
+        self.assertEqual(response.context["open_modal"], "addContactModal")
+        self.assertIn("email", response.context["add_contact_form"].errors)
 
     def test_add_contact_creates_contact_and_initial_methods(self):
         response = self.client.post(

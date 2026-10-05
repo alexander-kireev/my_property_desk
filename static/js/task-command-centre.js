@@ -25,13 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (filterForm) {
         filterForm.querySelectorAll("[data-clear-task-filter]").forEach((button) => {
             button.addEventListener("click", () => {
-                const field = filterForm.elements.namedItem(
-                    button.dataset.clearTaskFilter
-                );
-                if (field) {
-                    field.value = "";
-                    filterForm.requestSubmit();
-                }
+                window.WorkspaceFilterUrl.clear(button.dataset.clearTaskFilter);
             });
         });
     }

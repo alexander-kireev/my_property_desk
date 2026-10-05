@@ -58,14 +58,14 @@
                             <div class="collapse" id="eventFilters">
                                 <div class="row g-2 pt-3">
                                     <div class="col-6">
-                                        <label class="visually-hidden" for="eventState">State</label>
+                                        <label class="small text-body-secondary" for="eventState">State</label>
                                         <select class="form-select form-select-sm" id="eventState" name="state">
                                             <option value="all"{% if state == "all" %} selected{% endif %}>All states</option>
                                             {% for value, label in event_state_choices %}<option value="{{ value }}"{% if state == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
                                         </select>
                                     </div>
                                     <div class="col-6">
-                                        <label class="visually-hidden" for="eventProperty">Property</label>
+                                        <label class="small text-body-secondary" for="eventProperty">Property</label>
                                         <select class="form-select form-select-sm" id="eventProperty" name="property">
                                             <option value="">All properties</option>
                                             {% for property in properties %}<option value="{{ property.pk }}"{% if property_id == property.pk %} selected{% endif %}>{{ property.name }}</option>{% endfor %}
@@ -94,10 +94,10 @@
                                 <div class="d-flex flex-wrap align-items-center gap-1 mt-2">
                                     {% if search %}<button class="event-filter-chip" type="button" data-clear-event-filter="search">Search: {{ search }} ×</button>{% endif %}
                                     {% if state != "all" %}<button class="event-filter-chip" type="button" data-clear-event-filter="state">{{ state|title }} ×</button>{% endif %}
-                                    {% if property_id %}{% for property in properties %}{% if property.pk == property_id %}<button class="event-filter-chip" type="button" data-clear-event-filter="property">{{ property.name }} ×</button>{% endif %}{% endfor %}{% endif %}
+                                    {% if property_id %}{% for property in properties %}{% if property.pk == property_id %}<button class="event-filter-chip event-filter-chip--property" type="button" data-clear-event-filter="property" title="{{ property.name }}"><span class="event-filter-chip-label">{{ property.name }}</span><span aria-hidden="true">×</span></button>{% endif %}{% endfor %}{% endif %}
                                     {% if participation != "any" %}<button class="event-filter-chip" type="button" data-clear-event-filter="participation">Participation: {% if participation == "required" %}required{% else %}not required{% endif %} ×</button>{% endif %}
                                     {% if presence != "any" %}<button class="event-filter-chip" type="button" data-clear-event-filter="presence">Presence: {% if presence == "required" %}required{% else %}not required{% endif %} ×</button>{% endif %}
-                                    <a class="command-filter-clear ms-1" href="{% url 'event:events' %}">Clear all</a>
+                                    {% if page_obj.object_list %}<a class="command-filter-clear ms-1" href="{% url 'event:events' %}">Clear all</a>{% endif %}
                                 </div>
                             {% endif %}
                         </form>
@@ -111,7 +111,7 @@
                                 <a class="event-command-row list-group-item list-group-item-action{% if selected_event.pk == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}" href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ event.pk }}&amp;tab=details" data-workspace-scroll-row{% if not mobile_calendar_view and mobile_expanded_event_id == event.pk %} data-mobile-event-expanded aria-expanded="true" aria-controls="eventInlineDetails{{ event.pk }}"{% endif %}{% if selected_event.pk == event.pk %} aria-current="true"{% endif %}>
                                     <span class="event-command-row-grid">
                                         <span class="event-command-copy"><strong class="event-command-title" title="{{ event.title }}">{{ event.title }}</strong><span class="event-command-context"{% if event.property %} title="{{ event.property.name }}"{% else %} aria-hidden="true"{% endif %}>{% if event.property %}{{ event.property.name }}{% endif %}</span></span>
-                                        <span class="event-command-meta">{% include "includes/work_state_badge.html" with item=event only %}<span class="event-command-when"><span>{{ event.scheduled_date|date:"j M Y" }}</span><span>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span></span>
+                                        <span class="event-command-meta">{% include "includes/work_state_badge.html" with item=event only %}<span class="event-command-when"><span>{{ event.scheduled_date|date:"j M Y" }} ·</span><span>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span></span>
                                         <span class="work-mobile-chevron event-mobile-row-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m5 9 7 7 7-7"/></svg></span>
                                     </span>
                                 </a>
@@ -120,7 +120,7 @@
                                 {% endif %}
                                 </div>
                             {% empty %}
-                                <div class="p-3 text-center text-body-secondary">{% if selected_day or has_filters %}<strong class="d-block text-body mb-1">No matching events</strong><span class="d-block small mb-2">Try changing the date or filters.</span><a class="btn btn-sm btn-outline-secondary" href="{% url 'event:events' %}">Clear filters</a>{% else %}No events yet.{% endif %}</div>
+                                <div class="p-3 text-center text-body-secondary">{% if selected_day or has_filters %}<strong class="d-block text-body mb-1">No matching events</strong><span class="d-block small mb-2">Try changing the date or filters.</span>{% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'event:events' %}">Clear filters</a>{% endif %}{% else %}No events yet.{% endif %}</div>
                             {% endfor %}
                         </div>
 
@@ -274,7 +274,7 @@
                                             </article>
                                         </div>
                                     {% else %}
-                                        <div class="event-no-selection d-flex align-items-center justify-content-center p-5 text-center"><div><h2 class="h4">No event selected</h2><p class="text-body-secondary mb-0">Select an event from the list or calendar.</p></div></div>
+                                        <div class="event-no-selection d-flex align-items-center justify-content-center p-5 text-center"><div>{% if selected_day or has_filters %}<h2 class="h4">No matching events</h2><p class="text-body-secondary">Try changing the date or filters.</p><a class="btn btn-sm btn-outline-secondary" href="{% url 'event:events' %}">Clear filters</a>{% else %}<h2 class="h4">No event selected</h2><p class="text-body-secondary mb-0">Select an event from the list or calendar.</p>{% endif %}</div></div>
                                     {% endif %}
                                 </div>
                             </section>

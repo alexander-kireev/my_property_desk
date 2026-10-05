@@ -20,9 +20,9 @@
 
 {% if property_context %}
 <div class="mb-3">
-    <label class="form-label" for="propertyAddTaskRelatedProperty">Related property</label>
+    <span class="form-label" id="propertyAddTaskRelatedPropertyLabel">Related property</span>
     <div>
-        <input class="form-control property-context-readonly" id="propertyAddTaskRelatedProperty" type="text" value="{{ selected_property.name }}" title="{{ selected_property.name }}" readonly>
+        {% include "includes/locked_relation.html" with locked_id="propertyAddTaskRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
         {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>

@@ -1,4 +1,5 @@
 from datetime import time, timedelta
+import re
 from unittest.mock import patch
 
 from django.test import Client, TestCase
@@ -109,7 +110,8 @@ class DashboardTests(TestCase):
         response = self.client.get(reverse("pages:dashboard"))
         self.assertContains(response, 'id="calendarMonth"')
         self.assertContains(response, 'id="calendarYear"')
-        self.assertContains(response, 'id="selectedDayNumber"')
+        self.assertContains(response, 'id="selectedDayHeading"')
+        self.assertNotContains(response, 'id="selectedDayNumber"')
         self.assertNotContains(response, 'data-view="week"')
 
     def test_dashboard_has_selected_day_tabs_and_toast(self):
@@ -155,6 +157,27 @@ class DashboardTests(TestCase):
             anonymous_response,
             f'class="navbar-brand" href="{reverse("pages:home")}" aria-label="My Property Desk home"',
         )
+
+    def test_authenticated_global_navigation_marks_only_matching_destination(self):
+        destinations = {
+            "pages:dashboard": "pages:dashboard",
+            "task:tasks": "task:tasks",
+            "issue:issues": "issue:issues",
+            "event:events": "event:events",
+            "property:properties": "property:properties",
+            "contact:contacts": "contact:contacts",
+            "accounts:profile_page": "accounts:profile_page",
+        }
+        for route_name, current_name in destinations.items():
+            with self.subTest(route=route_name):
+                response = self.client.get(reverse(route_name))
+                self.assertEqual(response.status_code, 200)
+                navbar = response.content.decode().split('<nav class="app-navbar ', 1)[1].split('</nav>', 1)[0]
+                self.assertEqual(navbar.count('aria-current="page"'), 2)
+                current_links = re.findall(r'<a\b[^>]*aria-current="page"[^>]*>', navbar)
+                self.assertEqual(len(current_links), 2)
+                self.assertTrue(all(f'href="{reverse(current_name)}"' in link for link in current_links))
+                self.assertNotIn('aria-current="page"', navbar.split('class="my-work-menu-toggle', 1)[1].split('</button>', 1)[0])
 
     def test_dashboard_event_filters_use_date_only(self):
         response = self.client.get(reverse("pages:dashboard"))
@@ -362,15 +385,15 @@ class DashboardTests(TestCase):
         })
         self.assertEqual(response.status_code, 404)
 
-    def test_event_cannot_move_into_past(self):
+    def test_existing_event_can_move_into_past_for_correction(self):
         event = Event.objects.create(user=self.user, title="Visit", scheduled_date=self.today + timedelta(days=2), all_day=True)
         response = self.client.post(reverse("pages:dashboard_action"), {
             "action": "date", "kind": "event", "id": event.pk,
             "date": (self.today - timedelta(days=1)).isoformat(),
         })
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200, response.content)
         event.refresh_from_db()
-        self.assertEqual(event.scheduled_date, self.today + timedelta(days=2))
+        self.assertEqual(event.scheduled_date, self.today - timedelta(days=1))
 
     def test_past_scheduled_event_can_move_to_future_from_dashboard(self):
         past = self.today - timedelta(days=2)

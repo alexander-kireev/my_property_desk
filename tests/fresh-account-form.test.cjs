@@ -21,9 +21,10 @@ test('account fields start blank and browser-restored values are cleared', () =>
     const password = field('saved-password');
     const timeouts = [];
     const listeners = new Map();
+    const form = {hasAttribute() { return false; }, querySelectorAll() { return [email, password]; }};
     const document = {
         activeElement: null,
-        querySelector() { return {hasAttribute() { return false; }, querySelectorAll() { return [email, password]; }}; },
+        querySelectorAll() { return [form]; },
     };
     const window = {
         addEventListener(name, callback) { listeners.set(name, callback); },
@@ -58,14 +59,13 @@ test('validation error keeps the submitted email but clears the password', () =>
     const email = field('entered@example.com', 'new_email');
     const password = field('saved-password', 'current_password');
     const listeners = new Map();
+    const form = {
+        hasAttribute(name) { return name === 'data-preserve-restored-email'; },
+        querySelectorAll() { return [email, password]; },
+    };
     const document = {
         activeElement: null,
-        querySelector() {
-            return {
-                hasAttribute(name) { return name === 'data-preserve-restored-email'; },
-                querySelectorAll() { return [email, password]; },
-            };
-        },
+        querySelectorAll() { return [form]; },
     };
     const window = {
         addEventListener(name, callback) { listeners.set(name, callback); },

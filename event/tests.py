@@ -222,7 +222,7 @@ class EventFormTests(EventTestMixin, TestCase):
         self.assertFalse(reversed_times.is_valid())
         self.assertIn("end_time", reversed_times.errors)
 
-    def test_scheduled_event_rejects_new_past_date_but_allows_unchanged_historical_date(self):
+    def test_scheduled_event_rejects_new_past_date_but_allows_historical_corrections(self):
         past = timezone.localdate() - timedelta(days=1)
         new_event = EventForm(
             data=self.valid_form_data(scheduled_date=past.isoformat()),
@@ -243,13 +243,9 @@ class EventFormTests(EventTestMixin, TestCase):
         self.assertIn("scheduled_date", new_event.errors)
         self.assertIn("Choose today or a future date for a new event.", new_event.errors["scheduled_date"])
         self.assertTrue(unchanged.is_valid(), unchanged.errors)
-        self.assertIn("scheduled_date", moved_earlier.errors)
-        self.assertIn(
-            "Move this event to today or a future date to change its date or time.",
-            moved_earlier.errors["scheduled_date"],
-        )
+        self.assertTrue(moved_earlier.is_valid(), moved_earlier.errors)
 
-    def test_past_event_rejects_time_and_all_day_changes_but_allows_title_edit(self):
+    def test_past_event_allows_time_date_and_all_day_corrections(self):
         past = timezone.localdate() - timedelta(days=1)
         event = self.create_event(
             self.user, scheduled_date=past, all_day=False,
@@ -265,12 +261,12 @@ class EventFormTests(EventTestMixin, TestCase):
             data={**base, "start_time": "08:00"}, user=self.user,
             instance=Event.objects.get(pk=event.pk),
         )
-        self.assertIn("scheduled_date", changed_time.errors)
+        self.assertTrue(changed_time.is_valid(), changed_time.errors)
         switched_all_day = EventForm(
             data={**base, "all_day": "on", "start_time": "", "end_time": ""},
             user=self.user, instance=Event.objects.get(pk=event.pk),
         )
-        self.assertIn("scheduled_date", switched_all_day.errors)
+        self.assertTrue(switched_all_day.is_valid(), switched_all_day.errors)
         moved_future = EventForm(
             data={**base, "scheduled_date": (timezone.localdate() + timedelta(days=2)).isoformat(), "start_time": "08:00"},
             user=self.user, instance=Event.objects.get(pk=event.pk),
@@ -662,7 +658,7 @@ class EventViewTests(EventTestMixin, TestCase):
 
         response = self.client.get(reverse("event:events"), {"selected": event.pk})
 
-        self.assertContains(response, '<span class="event-participant-status" title="Deleted contact">Deleted</span>', count=2)
+        self.assertContains(response, '<span class="event-participant-status">Deleted contact</span>', count=2)
         self.assertContains(response, '<span class="event-participant-status" title="Deactivated contact">Inactive</span>', count=2)
         self.assertNotContains(response, '<span class="badge text-bg-secondary">Deleted contact</span>')
 

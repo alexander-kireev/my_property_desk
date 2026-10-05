@@ -1,9 +1,9 @@
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
@@ -203,6 +203,57 @@ def _normalised_list_values(request):
         sort = "name"
 
     return {"search": search, "state": state, "sort": sort}
+
+
+def _canonical_contacts_url(request):
+    """Make invalid list choices agree with the state rendered by the workspace."""
+    invalid_choice = any(
+        name in request.GET and request.GET.get(name) not in accepted
+        for name, accepted in (
+            ("state", (*Contact.State.values, "all", "")),
+            ("sort", CONTACT_SORT_OPTIONS),
+            ("tab", CONTACT_WORKSPACE_TABS),
+        )
+    )
+    if not invalid_choice and "page" not in request.GET:
+        return None
+
+    parameters = request.GET.copy()
+    values = _normalised_list_values(request)
+    contacts = filtered_contacts_for_user(
+        user=request.user,
+        **{**values, "state": values["state"] or "all"},
+    )
+    _, _, _, selection_redirect = resolve_selection(
+        request,
+        filtered=contacts,
+        owned=contacts_for_user(user=request.user),
+        page_size=CONTACTS_PER_PAGE,
+    )
+    if selection_redirect:
+        parameters = QueryDict(urlsplit(selection_redirect).query, mutable=True)
+
+    for name, accepted in (
+        ("state", (*Contact.State.values, "all", "")),
+        ("sort", CONTACT_SORT_OPTIONS),
+        ("tab", CONTACT_WORKSPACE_TABS),
+    ):
+        if name in parameters and parameters.get(name) not in accepted:
+            parameters.pop(name)
+
+    if "page" in parameters:
+        actual_page = Paginator(contacts, CONTACTS_PER_PAGE).get_page(parameters.get("page")).number
+        if parameters.get("page") != str(actual_page):
+            if actual_page == 1:
+                parameters.pop("page")
+            else:
+                parameters["page"] = str(actual_page)
+
+    if parameters == request.GET:
+        return None
+    query = parameters.urlencode()
+    url = reverse("contact:contacts")
+    return f"{url}?{query}" if query else url
 
 
 def _list_query_parameters(values):
@@ -410,6 +461,9 @@ def _contact_list_context(
 @login_required
 @require_GET
 def contacts_view(request):
+    canonical_url = _canonical_contacts_url(request)
+    if canonical_url:
+        return redirect(canonical_url)
     context_overrides = _restore_contact_form_context(request)
     context = _contact_list_context(request, **context_overrides)
     if context["selection_redirect"]:

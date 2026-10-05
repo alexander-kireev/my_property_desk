@@ -16,8 +16,8 @@
         <div data-searchable-select>{{ event_form.property }}</div>
         {% for error in event_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>{% else %}<div class="col-md-6">
-        <label class="form-label" for="propertyAddEventRelatedProperty">Related property</label>
-        <input class="form-control property-context-readonly" id="propertyAddEventRelatedProperty" type="text" value="{{ selected_property.name }}" title="{{ selected_property.name }}" readonly>
+        <span class="form-label" id="propertyAddEventRelatedPropertyLabel">Related property</span>
+        {% include "includes/locked_relation.html" with locked_id="propertyAddEventRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
         {% for error in event_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>{% endif %}
     <div class="col-md-6">

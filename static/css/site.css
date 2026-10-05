@@ -114,6 +114,25 @@ body {
     white-space: nowrap;
 }
 
+.app-navbar .nav-link[aria-current="page"],
+.app-navbar .my-work-menu-toggle.is-active-group {
+    border-bottom-color: #f5f7fa;
+    color: #fff;
+    font-weight: 700;
+}
+
+.app-navbar .dropdown-item[aria-current="page"] {
+    background: var(--pom-hover);
+    color: #24313b;
+    font-weight: 700;
+}
+
+.app-navbar .dropdown-menu {
+    background-color: var(--pom-night);
+}
+
+.app-navbar .account-menu-button.is-active-group { box-shadow: 0 0 0 2px #f5f7fa; }
+
 .app-navbar .navbar-toggler,
 .app-navbar .navbar-toggler:hover,
 .app-navbar .navbar-toggler[aria-expanded="true"] {
@@ -157,6 +176,12 @@ body {
     .app-mobile-logout:hover,
     .app-mobile-logout:focus-visible {
         background: rgba(255, 255, 255, 0.11);
+    }
+
+    .app-navbar .app-mobile-menu .nav-link[aria-current="page"] {
+        background: rgba(255, 255, 255, 0.18);
+        border-left: 3px solid #f5f7fa;
+        padding-left: calc(0.75rem - 3px);
     }
 
     .app-mobile-menu-label {
@@ -390,12 +415,12 @@ body {
 }
 
 @media (min-width: 992px) and (hover: hover) and (pointer: fine) {
-    .navbar .dropdown:hover > .dropdown-menu {
+    .navbar .dropdown:hover:not(.app-dropdown-hover-suppressed) > .dropdown-menu {
         display: block;
         margin-top: 0;
     }
 
-    .navbar .dropdown:hover > .dropdown-menu-end {
+    .navbar .dropdown:hover:not(.app-dropdown-hover-suppressed) > .dropdown-menu-end {
         right: 0;
         left: auto;
     }
@@ -853,12 +878,14 @@ body {
 
 .modal-locked-relation {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    height: auto;
+    min-height: 2.375rem;
+    white-space: normal;
+    overflow-wrap: anywhere;
     background-color: var(--bs-secondary-bg);
     color: var(--bs-secondary-color);
-    cursor: default;
+    cursor: text;
+    user-select: text;
 }
 
 .modal-locked-relation:focus {
@@ -933,12 +960,12 @@ body {
 .task-confirm-modal .modal-body p + p { margin-top: .5rem; }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] .modal-content {
+    .modal[data-modal-clear-query~="form_state"] .modal-content {
     max-height: calc(100dvh - var(--bs-modal-margin) - var(--bs-modal-margin));
 }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] .modal-content > form {
+    .modal[data-modal-clear-query~="form_state"] .modal-content > form {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
@@ -946,25 +973,25 @@ body {
 }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] .modal-body {
+    .modal[data-modal-clear-query~="form_state"] .modal-body {
     min-height: 0;
     overflow-y: auto;
     overflow-wrap: anywhere;
 }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] .modal-body .row > * {
+    .modal[data-modal-clear-query~="form_state"] .modal-body .row > * {
     min-width: 0;
 }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] :is(.form-control, .form-select) {
+    .modal[data-modal-clear-query~="form_state"] :is(.form-control, .form-select) {
     min-width: 0;
     max-width: 100%;
 }
 
 :is(.task-command-page, .issue-command-page, .event-command-page)
-    .modal[data-modal-clear-query="form_state"] textarea {
+    .modal[data-modal-clear-query~="form_state"] textarea {
     resize: vertical;
 }
 
@@ -978,7 +1005,7 @@ body {
 
 @media (max-width: 575.98px) {
     :is(.task-command-page, .issue-command-page, .event-command-page)
-        .modal[data-modal-clear-query="form_state"] :is(.modal-header, .modal-body, .modal-footer) {
+        .modal[data-modal-clear-query~="form_state"] :is(.modal-header, .modal-body, .modal-footer) {
         padding-right: 1rem;
         padding-left: 1rem;
     }
@@ -1322,6 +1349,7 @@ body {
 .issue-detail-scroll .work-detail-list dd { text-align: left; }
 .issue-detail-scroll .work-detail-list :is(.task-related-link, .task-related-deleted) { width: max-content; max-width: min(100%, 12rem); }
 .issue-detail-scroll .work-detail-list .task-related-deleted { justify-content: flex-start; }
+.issue-detail-date { white-space: nowrap; }
 .issue-detail-overdue-date, .issue-detail-scroll .work-date-relative--overdue { color: #a23229; }
 .issue-detail-overdue-date { font-weight: 500; }
 @media (min-width: 1200px) {
@@ -1508,9 +1536,31 @@ body {
 .dashboard-add-dialog .modal-body > .mb-3 { margin-bottom: 10px !important; }
 .dashboard-add-dialog .modal-body .form-label { font-size: 1rem; }
 .dashboard-add-dialog .modal-body textarea.form-control { min-height: calc(3 * 1.5em + 14px); }
+/* Contextual Add forms share the My Work Add inset, without changing dialog width. */
+.property-command-page :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    :is(.modal-header, .modal-footer) { padding: 10px 14px !important; }
+.property-command-page :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    .modal-body { padding: 14px !important; }
+@media (max-width: 575.98px) {
+    .property-command-page :is(#propertyAddTaskModal, #propertyAddIssueModal)
+        :is(.modal-header, .modal-body, .modal-footer) {
+        padding-right: 16px !important;
+        padding-left: 16px !important;
+    }
+}
+/* Add Property retains its wider entity-form sides; only the vertical rhythm is shared. */
+.property-command-page #addPropertyModal :is(.modal-header, .modal-footer) {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+.property-command-page #addPropertyModal .modal-body {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
 .dashboard-add-dialog :is(.task-form-field-compact, .issue-form-field-compact) { max-width: none; }
 .dashboard-add-dialog .dashboard-add-relationship > .dashboard-add-form-row {
     display: grid;
+    grid-column: 1 / -1;
     grid-template-columns: 140px minmax(0, 1fr);
     align-items: start;
     column-gap: .875rem;
@@ -1995,6 +2045,19 @@ body {
 
 .task-command-row.terminated {
     color: var(--bs-secondary-color) !important;
+}
+
+.issue-filter-chip--property {
+    max-width: 100%;
+    min-width: 0;
+    gap: 0.3rem;
+}
+
+.issue-filter-chip-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .task-command-row.terminated .task-command-title { font-weight: 500; }
@@ -2784,6 +2847,8 @@ body {
     .workspace-detail-header { padding: 1rem; }
 }
 
+.contact-detail-header { padding: 1.25rem 1.5rem; }
+
 .contact-command-list {
     flex: 1 1 auto;
     min-height: 0;
@@ -2795,8 +2860,7 @@ body {
 
 .contact-command-row {
     position: relative;
-    min-height: 5.65rem;
-    padding: 1rem 1.25rem;
+    flex-shrink: 0;
     color: inherit !important;
     background: var(--bs-body-bg) !important;
     border: 0;
@@ -2818,17 +2882,19 @@ body {
     color: var(--bs-secondary-color) !important;
 }
 
-.contact-command-heading {
+.workspace-compact-row {
+    min-height: 4.25rem;
+    padding: .625rem 1.25rem;
+}
+
+.workspace-compact-heading {
     display: flex;
     min-width: 0;
     align-items: center;
-    gap: 0.5rem;
+    gap: .5rem;
 }
 
-.contact-command-heading .badge {
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
+.workspace-compact-heading .work-pill { min-height: 1.375rem; }
 
 .contact-command-title {
     min-width: 0;
@@ -2841,12 +2907,13 @@ body {
 
 .contact-command-methods {
     display: grid;
-    grid-template-columns: 16ch minmax(0, 25ch) auto;
+    grid-template-columns: 16ch minmax(0, 1fr);
     min-width: 0;
     align-items: baseline;
     gap: 0.45rem;
     color: var(--bs-secondary-color);
     font-size: 0.875rem;
+    margin-top: .25rem;
 }
 
 .contact-command-methods--empty {
@@ -2864,20 +2931,7 @@ body {
     color: var(--bs-secondary-color);
 }
 
-.contact-command-more {
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
-
-@media (max-width: 480px) {
-    .contact-command-methods:not(.contact-command-methods--empty) {
-        grid-template-columns: 16ch minmax(0, 1fr);
-    }
-
-    .contact-command-more {
-        grid-column: 2;
-    }
-}
+.contact-command-primary-method--email { text-align: right; }
 
 .contact-detail-scroll a,
 .contact-detail-scroll p {
@@ -3002,11 +3056,9 @@ body {
 }
 
 .contact-method-value--email {
-    display: -webkit-box;
     overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .contact-method-value--telephone {
@@ -3790,10 +3842,6 @@ body {
 }
 
 @media (max-width: 1199.98px) {
-    .task-command-row :is(.work-pill--priority-1, .work-pill--priority-2, .work-pill--priority-3, .work-pill--priority-4) {
-        inline-size: 3.75rem;
-        min-height: 1.375rem;
-    }
     .task-command-row-grid { grid-template-columns: minmax(0, 1fr); gap: .4rem; min-height: 0; }
     .task-command-row .task-command-meta { width: 100%; align-items: flex-start; gap: .3rem; }
     .task-command-row .task-command-badges { justify-content: flex-start; }

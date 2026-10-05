@@ -3,7 +3,7 @@
         {% if notes %}
             <ol class="notes-board-shell__notes">
                 {% for note in notes %}
-                    <li class="notes-board-shell__note" data-note>
+                    <li class="notes-board-shell__note" data-note data-saved-content="{{ note.content }}">
                         <div
                             class="notes-board-shell__note-display"
                             data-note-display

@@ -351,10 +351,10 @@ class IssueViewTests(IssueTestMixin, TestCase):
 
         self.assertRegex(response.content.decode(), r'class="form-label" for="[^"]+">Title</label>')
         self.assertNotContains(response, 'class="col-md-4 col-form-label"')
-        self.assertContains(response, 'for="issueAddTaskRelatedIssue">Related issue</label>')
+        self.assertContains(response, 'id="issueAddTaskRelatedIssueLabel">Related issue</span>')
         self.assertContains(
             response,
-            f'id="issueAddTaskRelatedIssue" type="text" value="{self.issue.title}" title="{self.issue.title}" readonly',
+            f'id="issueAddTaskRelatedIssue" role="note" tabindex="0" aria-labelledby="issueAddTaskRelatedIssueLabel">{self.issue.title}</div>',
         )
         self.assertNotContains(response, '>Locked</span>')
         self.assertContains(response, '<p>The issue will be marked as resolved and retained in your history.</p>')
@@ -369,6 +369,14 @@ class IssueViewTests(IssueTestMixin, TestCase):
         self.assertContains(response, '<h3 class="h5 mb-3">Details</h3>')
         self.assertNotContains(response, 'Related to: Property ·')
         self.assertContains(response, 'class="expandable-text expandable-text--fit-card expandable-text--inline-end"')
+
+    def test_resolve_by_date_has_a_non_wrapping_value_wrapper(self):
+        self.issue.resolution_deadline = timezone.localdate() - timedelta(days=1)
+        self.issue.save(update_fields=["resolution_deadline"])
+
+        response = self.client.get(reverse("issue:issues"), {"selected": self.issue.pk})
+
+        self.assertContains(response, 'class="issue-detail-date issue-detail-overdue-date"')
 
     def test_issue_list_defaults_to_all_states_and_can_filter_terminal_states(self):
         resolved = self.create_issue(self.user, "Resolved issue", state=Issue.State.RESOLVED)

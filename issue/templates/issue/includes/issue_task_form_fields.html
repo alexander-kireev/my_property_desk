@@ -9,8 +9,8 @@
     </div>
     {% if field.name == 'description' %}
     <div class="mb-3">
-        <label class="form-label" for="issueAddTaskRelatedIssue">Related issue</label>
-        <input class="form-control modal-locked-relation" id="issueAddTaskRelatedIssue" type="text" value="{{ selected_issue.title }}" title="{{ selected_issue.title }}" readonly>
+        <span class="form-label" id="issueAddTaskRelatedIssueLabel">Related issue</span>
+        {% include "includes/locked_relation.html" with locked_id="issueAddTaskRelatedIssue" locked_label="Related issue" locked_value=selected_issue.title %}
     </div>
     {% endif %}
 {% endfor %}

@@ -2,9 +2,9 @@
 {% for field in issue_form %}
     {% if property_context and field.name == 'property' %}
     <div class="mb-3">
-        <label class="form-label" for="propertyAddIssueRelatedProperty">Related property</label>
+        <span class="form-label" id="propertyAddIssueRelatedPropertyLabel">Related property</span>
         <div>
-            <input class="form-control property-context-readonly" id="propertyAddIssueRelatedProperty" type="text" value="{{ selected_property.name }}" title="{{ selected_property.name }}" readonly>
+            {% include "includes/locked_relation.html" with locked_id="propertyAddIssueRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
             {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
         </div>
     </div>

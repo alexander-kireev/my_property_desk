@@ -124,7 +124,7 @@
                                     {% if priority %}<button class="task-filter-chip" type="button" data-clear-task-filter="priority">{% if priority == 4 %}Urgent{% elif priority == 3 %}High{% elif priority == 2 %}Medium{% else %}Low{% endif %} ×</button>{% endif %}
                                     {% if scheduled_period %}<button class="task-filter-chip" type="button" data-clear-task-filter="scheduled_period">Scheduled: {{ scheduled_period_label }} ×</button>{% endif %}
                                     {% if deadline_period %}<button class="task-filter-chip" type="button" data-clear-task-filter="deadline_period">Deadline: {{ deadline_period_label }} ×</button>{% endif %}
-                                    <a class="command-filter-clear ms-1" href="{% url 'task:tasks' %}">Clear all</a>
+                                    {% if page_obj.object_list %}<a class="command-filter-clear ms-1" href="{% url 'task:tasks' %}">Clear all</a>{% endif %}
                                 </div>
                             {% endif %}
                         </form>
@@ -144,7 +144,7 @@
                                         <span class="task-command-row-grid">
                                             <span class="task-command-copy">
                                                 <span class="task-command-title" title="{{ task.title }}">{{ task.title }}</span>
-                                                {% if task.issue or task.property %}<span class="task-command-context mt-2" title="{% if task.issue %}{{ task.issue.title }}{% else %}{{ task.property.name }}{% endif %}">{% if task.issue %}{{ task.issue.title }}{% else %}{{ task.property.name }}{% endif %}</span>{% endif %}
+                                                <span class="task-command-context mt-2"{% if task.issue or task.property %} title="{% if task.issue %}{{ task.issue.title }}{% else %}{{ task.property.name }}{% endif %}"{% else %} aria-hidden="true"{% endif %}>{% if task.issue %}{{ task.issue.title }}{% elif task.property %}{{ task.property.name }}{% endif %}</span>
                                             </span>
                                             <span class="task-command-meta">
                                                 {% if task.state == "active" %}<span class="task-command-badges">{% include "task/includes/priority_badge.html" with task=task %}</span>{% endif %}
@@ -179,8 +179,8 @@
                                 <div>
                                     {% if has_filters %}
                                         <h2 class="h5">No matching tasks</h2>
-                                        <p class="text-body-secondary">Change or clear the current filters.</p>
-                                        <a class="btn btn-sm btn-outline-secondary" href="{% url 'task:tasks' %}">Clear filters</a>
+                                        <p class="text-body-secondary">Try changing the current filters.</p>
+                                        {% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'task:tasks' %}">Clear filters</a>{% endif %}
                                     {% else %}
                                         <h2 class="h5">No tasks yet</h2>
                                         <p class="text-body-secondary">Add a task to begin.</p>

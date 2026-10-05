@@ -1107,7 +1107,7 @@ class TaskViewTests(TestCase):
         self.assertContains(response, '<span class="task-related-copy">Water ingress</span>')
         self.assertContains(response, '<h3 class="h5 mb-3">Details</h3>')
         self.assertNotContains(response, 'Related to: Issue ·')
-        self.assertContains(response, 'class="expandable-text expandable-text--fit-card"')
+        self.assertContains(response, 'class="expandable-text expandable-text--fit-card expandable-text--inline-end"')
 
     def create_task(
         self,

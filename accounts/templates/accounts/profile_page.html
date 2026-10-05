@@ -86,7 +86,7 @@
                     This cannot be undone.
                 </span>
                 <button class="btn btn-outline-danger profile-setting-action" type="button"
-                        data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete account</button>
+                        id="deleteAccountTrigger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete account</button>
             </div>
         </div>
     </section>
@@ -214,7 +214,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="deleteAccountConfirmModal" tabindex="-1"
+<div class="modal fade" id="deleteAccountConfirmModal" tabindex="-1" data-modal-return-focus="#deleteAccountTrigger"
      data-profile-account-modal data-modal-clear-query="form_state modal"
      aria-labelledby="deleteAccountConfirmTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

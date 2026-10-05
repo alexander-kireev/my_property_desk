@@ -37,25 +37,25 @@
 
     <div class="collapse navbar-collapse" id="siteNavbar">
         <ul class="navbar-nav app-mobile-menu d-lg-none" aria-label="Mobile navigation">
-            <li class="nav-item"><a class="nav-link" href="{% url 'pages:dashboard' %}">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'pages:dashboard' %}"{% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'dashboard' %} aria-current="page"{% endif %}>Dashboard</a></li>
             <li class="app-mobile-menu-label">My work</li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'task:tasks' %}">Tasks</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'issue:issues' %}">Issues</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'event:events' %}">Events</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'task:tasks' %}"{% if request.resolver_match.namespace == 'task' %} aria-current="page"{% endif %}>Tasks</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'issue:issues' %}"{% if request.resolver_match.namespace == 'issue' %} aria-current="page"{% endif %}>Issues</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'event:events' %}"{% if request.resolver_match.namespace == 'event' %} aria-current="page"{% endif %}>Events</a></li>
             <li class="app-mobile-menu-label">Records</li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'property:properties' %}">Properties</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'contact:contacts' %}">Contacts</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'property:properties' %}"{% if request.resolver_match.namespace == 'property' %} aria-current="page"{% endif %}>Properties</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'contact:contacts' %}"{% if request.resolver_match.namespace == 'contact' %} aria-current="page"{% endif %}>Contacts</a></li>
             <li class="app-mobile-menu-label">Account</li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile_page' %}">Profile</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile_page' %}"{% if request.resolver_match.namespace == 'accounts' %} aria-current="page"{% endif %}>Profile</a></li>
             <li class="nav-item"><form method="post" action="{% url 'accounts:logout' %}" autocomplete="off">{% csrf_token %}<button class="app-mobile-logout" type="submit">Log out</button></form></li>
         </ul>
         <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1 d-none d-lg-flex">
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'pages:dashboard' %}">Dashboard</a>
+                <a class="nav-link" href="{% url 'pages:dashboard' %}"{% if request.resolver_match.namespace == 'pages' and request.resolver_match.url_name == 'dashboard' %} aria-current="page"{% endif %}>Dashboard</a>
             </li>
             <li class="nav-item dropdown">
                 <button
-                    class="my-work-menu-toggle nav-link"
+                    class="my-work-menu-toggle nav-link{% if request.resolver_match.namespace == 'task' or request.resolver_match.namespace == 'issue' or request.resolver_match.namespace == 'event' %} is-active-group{% endif %}"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
@@ -63,20 +63,20 @@
                     My work
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{% url 'task:tasks' %}">Tasks</a></li>
-                    <li><a class="dropdown-item" href="{% url 'issue:issues' %}">Issues</a></li>
-                    <li><a class="dropdown-item" href="{% url 'event:events' %}">Events</a></li>
+                    <li><a class="dropdown-item" href="{% url 'task:tasks' %}"{% if request.resolver_match.namespace == 'task' %} aria-current="page"{% endif %}>Tasks</a></li>
+                    <li><a class="dropdown-item" href="{% url 'issue:issues' %}"{% if request.resolver_match.namespace == 'issue' %} aria-current="page"{% endif %}>Issues</a></li>
+                    <li><a class="dropdown-item" href="{% url 'event:events' %}"{% if request.resolver_match.namespace == 'event' %} aria-current="page"{% endif %}>Events</a></li>
                 </ul>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'property:properties' %}">Properties</a>
+                <a class="nav-link" href="{% url 'property:properties' %}"{% if request.resolver_match.namespace == 'property' %} aria-current="page"{% endif %}>Properties</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'contact:contacts' %}">Contacts</a>
+                <a class="nav-link" href="{% url 'contact:contacts' %}"{% if request.resolver_match.namespace == 'contact' %} aria-current="page"{% endif %}>Contacts</a>
             </li>
             <li class="nav-item dropdown ms-lg-2">
                 <button
-                    class="account-menu-button btn btn-outline-light rounded-circle d-inline-flex align-items-center justify-content-center dropdown-toggle"
+                    class="account-menu-button btn btn-outline-light rounded-circle d-inline-flex align-items-center justify-content-center dropdown-toggle{% if request.resolver_match.namespace == 'accounts' %} is-active-group{% endif %}"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
@@ -98,7 +98,7 @@
 
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item" href="{% url 'accounts:profile_page' %}">Profile</a>
+                        <a class="dropdown-item" href="{% url 'accounts:profile_page' %}"{% if request.resolver_match.namespace == 'accounts' %} aria-current="page"{% endif %}>Profile</a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>

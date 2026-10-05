@@ -41,14 +41,13 @@
                 <div class="property-command-list list-group list-group-flush" data-workspace-scroll-list>
                     {% if selected_outside_filters %}<div class="workspace-selection-notice" role="status">Selected property is outside these filters. <a class="btn btn-sm btn-outline-secondary" href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
                     {% for record in page_obj %}
-                        <a class="property-command-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}" href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" data-workspace-scroll-row{% if selected_property.pk == record.pk %} aria-current="true"{% endif %}>
-                            <strong title="{{ record.name }}">{{ record.name }}</strong>
-                            <small class="property-command-address" title="{{ record.address|default:'No address provided' }}">{{ record.address|default:"No address provided" }}</small>
-                            <small>{% if record.state == "deactivated" %}Deactivated{% else %}{{ record.open_issues }} issue{{ record.open_issues|pluralize }} · {{ record.open_direct_tasks|add:record.open_issue_tasks }} task{{ record.open_direct_tasks|add:record.open_issue_tasks|pluralize }}{% if record.next_event_date %} · Next event {{ record.next_event_date|date:"j M" }}{% endif %}{% endif %}</small>
+                        <a class="property-command-row workspace-compact-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}" href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}" data-workspace-scroll-row{% if selected_property.pk == record.pk %} aria-current="true"{% endif %}>
+                            <span class="property-command-heading workspace-compact-heading"><strong title="{{ record.name }}">{{ record.name }}</strong>{% include "includes/work_state_badge.html" with item=record only %}</span>
+                            <span class="property-command-bottom"><small class="property-command-address" title="{{ record.address|default:'No address provided' }}">{{ record.address|default:"No address provided" }}</small><small class="property-command-counts">{% if record.state == "deactivated" %}No active work{% else %}{{ record.open_issues }} issue{{ record.open_issues|pluralize }} · {{ record.open_direct_tasks|add:record.open_issue_tasks }} task{{ record.open_direct_tasks|add:record.open_issue_tasks|pluralize }}{% endif %}</small></span>
                         </a>
                     {% empty %}
                         <div class="p-4 text-center text-body-secondary">
-                            {% if has_filters %}<strong class="d-block text-body mb-1">No matching properties</strong><span class="d-block small mb-2">Try changing your search or state filter.</span><a class="btn btn-sm btn-outline-secondary" href="{% url 'property:properties' %}">Clear filters</a>{% else %}No properties yet. Add your first property to begin.{% endif %}
+                            {% if has_filters %}<strong class="d-block text-body mb-1">No matching properties</strong><span class="d-block small mb-2">Try changing your search or state filter.</span>{% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'property:properties' %}">Clear filters</a>{% endif %}{% else %}No properties yet. Add your first property to begin.{% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -92,9 +91,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="property-panel-area">
                         {% if selected_property.state == "deactivated" %}<div class="property-attention"><strong>Read-only</strong><span>This property is deactivated; its records remain available.</span></div>{% endif %}
+                    </div>
+                    {% if selected_outside_filters %}<div class="workspace-selection-notice property-detail-recovery" role="status">Selected property is outside these filters. <a class="btn btn-sm btn-outline-secondary" href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
+                    <div class="property-panel-area">
                         <section class="property-heading-description" aria-label="Property description">
                             <h3>Description</h3>
                             {% if selected_property.description %}

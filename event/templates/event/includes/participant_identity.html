@@ -5,7 +5,7 @@
     {% else %}
         <a class="event-participant-name fw-semibold link-body-emphasis" href="{% url 'contact:contacts' %}?{% if event_contact.contact.state != 'active' %}state=all&amp;{% endif %}selected={{ event_contact.contact.pk }}" title="{{ event_contact.contact }}">{{ event_contact.contact }}</a>
     {% endif %}
-    {% if event_contact.contact.deleted_at %}<span class="event-participant-status" title="Deleted contact">Deleted</span>{% elif event_contact.contact.state != "active" %}<span class="event-participant-status" title="Deactivated contact">Inactive</span>{% endif %}
+    {% if event_contact.contact.deleted_at %}<span class="event-participant-status">Deleted contact</span>{% elif event_contact.contact.state != "active" %}<span class="event-participant-status" title="Deactivated contact">Inactive</span>{% endif %}
 </div>
 <div class="event-participant-methods small text-body-secondary">
     {% if event_contact.contact_email %}<span class="event-participant-email" title="{{ event_contact.contact_email }}">{{ event_contact.contact_email|compact_email }}</span>{% endif %}

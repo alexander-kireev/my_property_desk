@@ -13,11 +13,6 @@ class EventForm(forms.ModelForm):
         self.fields["title"].widget.attrs["maxlength"] = "75"
         if not self.is_bound and not self.instance.pk:
             self.initial.setdefault("scheduled_date", timezone.localdate())
-        self.original_temporal = {
-            name: getattr(self.instance, name)
-            for name in ("scheduled_date", "all_day", "start_time", "end_time")
-        } if self.instance.pk else {}
-
         properties = Property.objects.filter(
             user=user,
             state=Property.State.ACTIVE,
@@ -118,30 +113,15 @@ class EventForm(forms.ModelForm):
 
         if scheduled_date is not None:
             today = timezone.localdate()
-            date_unchanged = (
-                self.instance.pk is not None
-                and scheduled_date == self.original_temporal["scheduled_date"]
-            )
-            temporal_changed = bool(self.original_temporal) and any(
-                cleaned_data.get(name) != self.original_temporal[name]
-                for name in ("scheduled_date", "all_day", "start_time", "end_time")
-            )
-            if scheduled_date < today and (not date_unchanged or temporal_changed):
+            if scheduled_date < today and self.instance.pk is None:
                 self.add_error(
                     "scheduled_date",
-                    "Choose today or a future date for a new event."
-                    if self.instance.pk is None else
-                    "Move this event to today or a future date to change its date or time.",
+                    "Choose today or a future date for a new event.",
                 )
-            elif scheduled_date == today and not all_day and times_parsed and not end_before_start:
+            elif scheduled_date == today and self.instance.pk is None and not all_day and times_parsed and not end_before_start:
                 event_end = end_time or start_time
-                time_unchanged = (
-                    date_unchanged
-                    and start_time == self.original_temporal["start_time"]
-                    and end_time == self.original_temporal["end_time"]
-                )
                 current_time = timezone.localtime().time().replace(tzinfo=None)
-                if event_end is not None and event_end <= current_time and not time_unchanged:
+                if event_end is not None and event_end <= current_time:
                     self.add_error(
                         "end_time" if end_time is not None else "start_time",
                         "Choose a time that has not passed for a scheduled event.",

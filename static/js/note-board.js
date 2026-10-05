@@ -20,6 +20,8 @@ document.addEventListener("click", (event) => {
     if (isEditing) {
         editor.querySelector("textarea")?.focus();
     } else {
+        const field = editor.querySelector("textarea");
+        if (field) field.value = note.dataset.savedContent;
         toggle.focus();
     }
 });

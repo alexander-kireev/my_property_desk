@@ -179,7 +179,7 @@ test("Task inline preview uses separate cards and compact two-column facts", () 
 });
 
 test("Property summaries grow for wrapped badges and header address shares one line with its control", () => {
-    assert.match(propertyStyles, /\.property-related-summary\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*4\.5rem/s);
+    assert.match(propertyStyles, /\.property-related-summary\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*4\.25rem/s);
     assert.match(propertyStyles, /\.property-heading-address\s*\{[^}]*display:\s*flex;/s);
     assert.match(propertyStyles, /\.property-heading-address \.expandable-text-toggle\s*\{[^}]*flex:\s*0 0 auto;/s);
 });

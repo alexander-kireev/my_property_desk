@@ -97,9 +97,9 @@
                                 {% if search %}<button class="issue-filter-chip" type="button" data-clear-issue-filter="search">Search: {{ search }} ×</button>{% endif %}
                                 {% if state != "all" %}<button class="issue-filter-chip" type="button" data-clear-issue-filter="state">{{ state|title }} ×</button>{% endif %}
                                 {% if priority %}<button class="issue-filter-chip" type="button" data-clear-issue-filter="priority">{% if priority == 4 %}Urgent{% elif priority == 3 %}High{% elif priority == 2 %}Medium{% else %}Low{% endif %} ×</button>{% endif %}
-                                {% if property_id %}{% for property in properties %}{% if property.pk == property_id %}<button class="issue-filter-chip" type="button" data-clear-issue-filter="property">{{ property.name }} ×</button>{% endif %}{% endfor %}{% endif %}
+                                {% if property_id %}{% for property in properties %}{% if property.pk == property_id %}<button class="issue-filter-chip issue-filter-chip--property" type="button" data-clear-issue-filter="property"><span class="issue-filter-chip-label">{{ property.name }}</span><span aria-hidden="true">×</span></button>{% endif %}{% endfor %}{% endif %}
                                 {% if deadline_period %}<button class="issue-filter-chip" type="button" data-clear-issue-filter="deadline_period">Resolve by: {{ deadline_period_label }} ×</button>{% endif %}
-                                <a class="command-filter-clear ms-1" href="{% url 'issue:issues' %}">Clear all</a>
+                                {% if page_obj.object_list %}<a class="command-filter-clear ms-1" href="{% url 'issue:issues' %}">Clear all</a>{% endif %}
                             </div>
                         {% endif %}
                     </form>
@@ -129,7 +129,7 @@
                             </a>
                             {% if mobile_expanded_issue_id == issue.pk %}{% include "issue/includes/mobile_issue_details.html" %}{% endif %}
                         {% empty %}
-                            <div class="p-3 text-center text-body-secondary">{% if has_filters %}<strong class="d-block text-body mb-1">No matching issues</strong><span class="d-block small mb-2">Try changing the current filters.</span><a class="btn btn-sm btn-outline-secondary" href="{% url 'issue:issues' %}">Clear filters</a>{% else %}No issues yet.{% endif %}</div>
+                            <div class="p-3 text-center text-body-secondary">{% if has_filters %}<strong class="d-block text-body mb-1">No matching issues</strong><span class="d-block small mb-2">Try changing the current filters.</span>{% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'issue:issues' %}">Clear filters</a>{% endif %}{% else %}No issues yet.{% endif %}</div>
                         {% endfor %}
                     </div>
 
@@ -193,7 +193,7 @@
                                                 <dt>Created</dt><dd>{{ selected_issue.created_at|date:"j F Y" }}</dd>
                                             </dl>
                                             <dl class="work-detail-list small mb-0">
-                                                <dt>Resolve by</dt><dd><span{% if selected_status.kind == 'overdue' %} class="issue-detail-overdue-date"{% endif %}>{{ selected_issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if selected_issue.resolution_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == 'overdue' %}{{ selected_status.headline }}{% else %}{{ selected_issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
+                                                <dt>Resolve by</dt><dd><span class="issue-detail-date{% if selected_status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}">{{ selected_issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>{% if selected_issue.resolution_deadline %}<span class="work-date-relative{% if selected_status.kind == 'overdue' %} work-date-relative--overdue{% endif %}">{% if selected_status.kind == 'overdue' %}{{ selected_status.headline }}{% else %}{{ selected_issue.resolution_deadline|relative_day:today }}{% endif %}</span>{% endif %}</dd>
                                                 {% if selected_issue.terminated_at %}<dt>Terminated</dt><dd>{{ selected_issue.terminated_at|date:"j M Y" }}</dd>{% endif %}
                                                 <dt>Active tasks</dt><dd>{{ active_task_count }}</dd>
                                                 {% if selected_issue.property %}<dt>Related to</dt><dd>{% if selected_issue.property.deleted_at %}<span class="task-related-deleted" title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span></span>{% else %}<a class="task-related-link" href="{% url 'property:property_detail' selected_issue.property.pk %}" title="{{ selected_issue.property.name }}"><span class="task-related-copy">{{ selected_issue.property.name }}</span><span class="task-related-arrow" aria-hidden="true">→</span></a>{% endif %}</dd>{% endif %}
