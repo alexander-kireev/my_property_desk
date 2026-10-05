@@ -2,6 +2,7 @@
     <div class="alert alert-danger" role="alert">{{ error }}</div>
 {% endfor %}
 
+{# Core task fields #}
 <div class="mb-3">
     <label class="form-label" for="{{ task_form.title.id_for_label }}">{{ task_form.title.label }}</label>
     <div>
@@ -18,98 +19,108 @@
     </div>
 </div>
 
+{# Relationship controls vary by property, dashboard, and My Work entry point #}
 {% if property_context %}
-<div class="mb-3">
-    <span class="form-label" id="propertyAddTaskRelatedPropertyLabel">Related property</span>
-    <div>
-        {% include "includes/locked_relation.html" with locked_id="propertyAddTaskRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
-        {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-    </div>
-</div>
-{% else %}
-{% if dashboard_add %}
-<div class="mb-3 dashboard-add-relationship" data-task-relationship>
-    <div class="dashboard-add-form-row">
-        <label class="form-label" for="{{ task_form.title.id_for_label }}_relationship">Related to</label>
+    <div class="mb-3">
+        <span class="form-label" id="propertyAddTaskRelatedPropertyLabel">Related property</span>
         <div>
-            <select class="form-select" id="{{ task_form.title.id_for_label }}_relationship" name="relationship_type">
-                <option value="standalone"{% if task_form.data.relationship_type == "standalone" or not task_form.is_bound and not task_form.initial.property and not task_form.instance.property_id and not task_form.instance.issue_id or task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %} selected{% endif %}>Not linked</option>
-                <option value="property"{% if task_form.data.relationship_type == "property" or not task_form.is_bound and task_form.initial.property or not task_form.is_bound and task_form.instance.property_id %} selected{% endif %}{% if not task_form.has_property_choices %} disabled{% endif %}>Property</option>
-                <option value="issue"{% if task_form.data.relationship_type == "issue" or not task_form.is_bound and task_form.instance.issue_id %} selected{% endif %}{% if not task_form.has_issue_choices %} disabled{% endif %}>Issue</option>
-            </select>
-            {% if not task_form.has_property_choices or not task_form.has_issue_choices %}<div class="form-text">{% if not task_form.has_property_choices %}No active properties available.{% endif %} {% if not task_form.has_issue_choices %}No active issues available.{% endif %}</div>{% endif %}
+            {% include "includes/locked_relation.html" with locked_id="propertyAddTaskRelatedProperty" locked_label="Related property" locked_value=selected_property.name property_context=True %}
+            {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
         </div>
     </div>
 {% else %}
-<div class="mb-3" data-task-relationship>
-    <span class="task-relationship-label" id="{{ task_form.title.id_for_label }}_relationship_label">Related to</span>
-    <div class="task-relationship-options">
-        <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-labelledby="{{ task_form.title.id_for_label }}_relationship_label">
-            <input
-                class="btn-check"
-                id="{{ task_form.title.id_for_label }}_relationship_standalone"
-                name="relationship_type"
-                type="radio"
-                value="standalone"
-                autocomplete="off"
-                {% if task_form.data.relationship_type == "standalone" %}checked{% elif not task_form.is_bound and not task_form.instance.property_id and not task_form.instance.issue_id and not task_form.initial.property %}checked{% elif task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %}checked{% endif %}
-            >
-            <label class="btn btn-outline-secondary" for="{{ task_form.title.id_for_label }}_relationship_standalone">Not linked</label>
-
-            <input
-                class="btn-check"
-                id="{{ task_form.title.id_for_label }}_relationship_property"
-                name="relationship_type"
-                type="radio"
-                value="property"
-                autocomplete="off"
-                {% if task_form.data.relationship_type == "property" %}checked{% elif not task_form.is_bound and task_form.initial.property or not task_form.is_bound and task_form.instance.property_id %}checked{% endif %}
-                {% if not task_form.has_property_choices %}disabled{% endif %}
-            >
-            <label class="btn btn-outline-secondary" for="{{ task_form.title.id_for_label }}_relationship_property">Property</label>
-
-            <input
-                class="btn-check"
-                id="{{ task_form.title.id_for_label }}_relationship_issue"
-                name="relationship_type"
-                type="radio"
-                value="issue"
-                autocomplete="off"
-                {% if task_form.data.relationship_type == "issue" %}checked{% elif not task_form.is_bound and task_form.instance.issue_id %}checked{% endif %}
-                {% if not task_form.has_issue_choices %}disabled{% endif %}
-            >
-            <label class="btn btn-outline-secondary" for="{{ task_form.title.id_for_label }}_relationship_issue">Issue</label>
-        </div>
-
-        {% if not task_form.has_property_choices or not task_form.has_issue_choices %}
-            <div class="form-text">
-                {% if not task_form.has_property_choices %}No active properties available.{% endif %}
-                {% if not task_form.has_property_choices and not task_form.has_issue_choices %} {% endif %}
-                {% if not task_form.has_issue_choices %}No active issues available.{% endif %}
+    {% if dashboard_add %}
+        <div class="mb-3 dashboard-add-relationship" data-task-relationship>
+            <div class="dashboard-add-form-row">
+                <label class="form-label"
+                       for="{{ task_form.title.id_for_label }}_relationship">Related to</label>
+                <div>
+                    <select class="form-select"
+                            id="{{ task_form.title.id_for_label }}_relationship"
+                            name="relationship_type">
+                        <option value="standalone"
+                                {% if task_form.data.relationship_type == "standalone" or not task_form.is_bound and not task_form.initial.property and not task_form.instance.property_id and not task_form.instance.issue_id or task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %} selected{% endif %}>Not linked</option>
+                        <option value="property"
+                                {% if task_form.data.relationship_type == "property" or not task_form.is_bound and task_form.initial.property or not task_form.is_bound and task_form.instance.property_id %} selected{% endif %}
+                                {% if not task_form.has_property_choices %} disabled{% endif %}>Property</option>
+                        <option value="issue"
+                                {% if task_form.data.relationship_type == "issue" or not task_form.is_bound and task_form.instance.issue_id %} selected{% endif %}
+                                {% if not task_form.has_issue_choices %} disabled{% endif %}>Issue</option>
+                    </select>
+                    {% if not task_form.has_property_choices or not task_form.has_issue_choices %}<div class="form-text">{% if not task_form.has_property_choices %}No active properties available.{% endif %} {% if not task_form.has_issue_choices %}No active issues available.{% endif %}</div>{% endif %}
+                </div>
             </div>
-        {% endif %}
+    {% else %}
+        <div class="mb-3" data-task-relationship>
+            <span class="task-relationship-label"
+                  id="{{ task_form.title.id_for_label }}_relationship_label">Related to</span>
+            <div class="task-relationship-options">
+                <div class="d-flex flex-wrap gap-2"
+                     role="radiogroup"
+                     aria-labelledby="{{ task_form.title.id_for_label }}_relationship_label">
+                    <input class="btn-check"
+                           id="{{ task_form.title.id_for_label }}_relationship_standalone"
+                           name="relationship_type"
+                           type="radio"
+                           value="standalone"
+                           autocomplete="off"
+                           {% if task_form.data.relationship_type == "standalone" %}checked{% elif not task_form.is_bound and not task_form.instance.property_id and not task_form.instance.issue_id and not task_form.initial.property %}checked{% elif task_form.is_bound and not task_form.data.relationship_type and not task_form.data.property and not task_form.data.issue %}checked{% endif %}>
+                    <label class="btn btn-outline-secondary"
+                           for="{{ task_form.title.id_for_label }}_relationship_standalone">Not linked</label>
 
-    </div>
+                    <input class="btn-check"
+                           id="{{ task_form.title.id_for_label }}_relationship_property"
+                           name="relationship_type"
+                           type="radio"
+                           value="property"
+                           autocomplete="off"
+                           {% if task_form.data.relationship_type == "property" %}checked{% elif not task_form.is_bound and task_form.initial.property or not task_form.is_bound and task_form.instance.property_id %}checked{% endif %}
+                           {% if not task_form.has_property_choices %}disabled{% endif %}>
+                    <label class="btn btn-outline-secondary"
+                           for="{{ task_form.title.id_for_label }}_relationship_property">Property</label>
 
-{% endif %}
-    <div class="mt-3" data-relationship-panel="property">
+                    <input class="btn-check"
+                           id="{{ task_form.title.id_for_label }}_relationship_issue"
+                           name="relationship_type"
+                           type="radio"
+                           value="issue"
+                           autocomplete="off"
+                           {% if task_form.data.relationship_type == "issue" %}checked{% elif not task_form.is_bound and task_form.instance.issue_id %}checked{% endif %}
+                           {% if not task_form.has_issue_choices %}disabled{% endif %}>
+                    <label class="btn btn-outline-secondary"
+                           for="{{ task_form.title.id_for_label }}_relationship_issue">Issue</label>
+                </div>
+
+                {% if not task_form.has_property_choices or not task_form.has_issue_choices %}
+                    <div class="form-text">
+                        {% if not task_form.has_property_choices %}No active properties available.{% endif %}
+                        {% if not task_form.has_property_choices and not task_form.has_issue_choices %}{% endif %}
+                        {% if not task_form.has_issue_choices %}No active issues available.{% endif %}
+                    </div>
+                {% endif %}
+
+            </div>
+
+    {% endif %}
+        <div class="mt-3" data-relationship-panel="property">
             <label class="form-label" for="{{ task_form.property.id_for_label }}">Property</label>
             <div>
                 <div data-searchable-select>{{ task_form.property }}</div>
                 {% for error in task_form.property.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
-    </div>
+        </div>
 
-    <div class="mt-3" data-relationship-panel="issue">
+        <div class="mt-3" data-relationship-panel="issue">
             <label class="form-label" for="{{ task_form.issue.id_for_label }}">Issue</label>
             <div>
                 <div data-searchable-select>{{ task_form.issue }}</div>
                 {% for error in task_form.issue.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
+        </div>
     </div>
-</div>
 {% endif %}
 
+{# Priority and schedule #}
 <div class="mb-3">
     <label class="form-label" for="{{ task_form.priority.id_for_label }}">{{ task_form.priority.label }}</label>
     <div class="task-form-field-compact">
@@ -119,7 +130,8 @@
 </div>
 
 <div class="mb-3">
-    <label class="form-label" for="{{ task_form.scheduled_date.id_for_label }}">{{ task_form.scheduled_date.label }}</label>
+    <label class="form-label"
+           for="{{ task_form.scheduled_date.id_for_label }}">{{ task_form.scheduled_date.label }}</label>
     <div class="task-form-field-compact">
         {{ task_form.scheduled_date }}
         {% for error in task_form.scheduled_date.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
@@ -127,10 +139,13 @@
 </div>
 
 <div>
-    <label class="form-label" for="{{ task_form.completion_deadline.id_for_label }}">{{ task_form.completion_deadline.label }}</label>
+    <label class="form-label"
+           for="{{ task_form.completion_deadline.id_for_label }}">{{ task_form.completion_deadline.label }}</label>
     <div class="task-form-field-compact">
         {{ task_form.completion_deadline }}
         {% for error in task_form.completion_deadline.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
     </div>
 </div>
-<p class="form-text task-date-warning mb-0 mt-2" data-task-date-warning hidden>Deadline is before the scheduled date. You can save this, but check whether one date needs updating.</p>
+<p class="form-text task-date-warning mb-0 mt-2"
+   data-task-date-warning
+   hidden>Deadline is before the scheduled date. You can save this, but check whether one date needs updating.</p>
