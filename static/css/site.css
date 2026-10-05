@@ -45,10 +45,6 @@
     }
 }
 
-/* .site-main {
-    flex-grow: 1;
-} */
-
 body {
     min-height: 100vh;
     background-color: var(--pom-canvas);
@@ -478,7 +474,7 @@ body {
     text-decoration: underline;
 }
 
-/* Property list workspace */
+/* Shared expandable text */
 
 .expandable-text {
     min-width: 0;
@@ -570,55 +566,6 @@ body {
     display: inline;
 }
 
-.property-detail-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-        "breadcrumb actions"
-        "heading heading";
-    gap: 1rem;
-}
-
-.property-detail-address,
-.property-detail-description {
-    overflow-wrap: anywhere;
-}
-
-@media (min-width: 992px) {
-    .property-detail-header {
-        grid-template-areas:
-            "breadcrumb breadcrumb"
-            "heading actions";
-    }
-}
-
-.property-form-dialog .modal-header,
-.property-form-dialog .modal-body,
-.property-form-dialog .modal-footer {
-    padding-right: 1.5rem;
-    padding-left: 1.5rem;
-}
-
-.property-form-dialog .modal-title {
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-
-@media (min-width: 576px) {
-    .property-form-dialog {
-        max-width: 35rem;
-    }
-}
-
-@media (max-width: 575.98px) {
-    .property-form-dialog .modal-header,
-    .property-form-dialog .modal-body,
-    .property-form-dialog .modal-footer {
-        padding-right: 1.25rem;
-        padding-left: 1.25rem;
-    }
-}
-
 .task-form-field-compact {
     max-width: 18rem;
 }
@@ -647,9 +594,7 @@ body {
         #addIssueModal,
         #editIssueModal,
         #addIssueTaskModal,
-        #editIssueTaskModal,
-        #propertyAddTaskModal,
-        #propertyAddIssueModal
+        #editIssueTaskModal
     )
     :is(.modal-header, .modal-body, .modal-footer) {
     padding-right: 1.5rem;
@@ -663,9 +608,7 @@ body {
             #addIssueModal,
             #editIssueModal,
             #addIssueTaskModal,
-            #editIssueTaskModal,
-            #propertyAddTaskModal,
-            #propertyAddIssueModal
+            #editIssueTaskModal
         )
         :is(.modal-header, .modal-body, .modal-footer) {
         padding-right: 1rem !important;
@@ -792,7 +735,6 @@ body {
     }
 }
 
-.property-menu-button::after,
 .task-menu-button::after {
     display: none;
 }
@@ -1455,39 +1397,6 @@ body {
 
 .dashboard-add-dialog .modal-body textarea.form-control {
     min-height: calc(3 * 1.5em + 14px);
-}
-
-/* Contextual Add forms share the My Work Add inset, without changing dialog width. */
-.property-command-page
-    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
-    :is(.modal-header, .modal-footer) {
-    padding: 10px 14px !important;
-}
-
-.property-command-page
-    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
-    .modal-body {
-    padding: 14px !important;
-}
-
-@media (max-width: 575.98px) {
-    .property-command-page
-        :is(#propertyAddTaskModal, #propertyAddIssueModal)
-        :is(.modal-header, .modal-body, .modal-footer) {
-        padding-right: 16px !important;
-        padding-left: 16px !important;
-    }
-}
-
-/* Add Property retains its wider entity-form sides; only the vertical rhythm is shared. */
-.property-command-page #addPropertyModal :is(.modal-header, .modal-footer) {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-}
-
-.property-command-page #addPropertyModal .modal-body {
-    padding-top: 14px !important;
-    padding-bottom: 14px !important;
 }
 
 .dashboard-add-dialog :is(.task-form-field-compact, .issue-form-field-compact) {
@@ -3529,7 +3438,6 @@ body {
 
 /* Icons share a generous target without enlarging the glyph. */
 :is(
-    .property-menu-button,
     .task-menu-button,
     .issue-menu-button,
     .event-menu-button,
@@ -3629,7 +3537,7 @@ body {
     border-color: var(--bs-emphasis-color);
 }
 
-/* Property keeps its page numbers but shares the workspace pager palette. */
+/* Shared workspace pager palette */
 .command-pagination-link {
     color: var(--bs-emphasis-color);
     background: var(--bs-body-bg);
@@ -4521,20 +4429,6 @@ body {
     color: var(--bs-secondary-color);
     font-size: 0.8rem;
     line-height: 1.4;
-}
-
-.property-command-list .workspace-selection-notice {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.65rem;
-    background: var(--bs-tertiary-bg);
-    border-left: 0.2rem solid var(--pom-brand-blue);
-}
-
-.property-command-list .workspace-selection-notice .btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
 }
 
 .note-undo-toast {

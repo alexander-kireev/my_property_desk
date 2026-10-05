@@ -34,6 +34,20 @@
     overscroll-behavior: contain;
 }
 
+.property-command-list .workspace-selection-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    background: var(--bs-tertiary-bg);
+    border-left: 0.2rem solid var(--pom-brand-blue);
+}
+
+.property-command-list .workspace-selection-notice .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .property-command-row {
     position: relative;
     display: block;
@@ -164,6 +178,11 @@
 
 .property-menu-button {
     min-width: 2.7rem;
+    min-height: 2.75rem;
+}
+
+.property-menu-button::after {
+    display: none;
 }
 
 .property-detail-recovery {
@@ -222,6 +241,64 @@
 /* Contextual Add-record dialogs and locked property fields */
 
 /* Keep long property names inside their locked Add-record fields; forms scroll in the modal. */
+.property-form-dialog .modal-header,
+.property-form-dialog .modal-body,
+.property-form-dialog .modal-footer {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.property-form-dialog .modal-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 576px) {
+    .property-form-dialog {
+        max-width: 35rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .property-form-dialog .modal-header,
+    .property-form-dialog .modal-body,
+    .property-form-dialog .modal-footer {
+        padding-right: 1.25rem;
+        padding-left: 1.25rem;
+    }
+}
+
+.property-command-page
+    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    :is(.modal-header, .modal-footer) {
+    padding: 10px 14px !important;
+}
+
+.property-command-page
+    :is(#propertyAddTaskModal, #propertyAddIssueModal, #propertyAddEventModal)
+    .modal-body {
+    padding: 14px !important;
+}
+
+@media (max-width: 575.98px) {
+    .property-command-page
+        :is(#propertyAddTaskModal, #propertyAddIssueModal)
+        :is(.modal-header, .modal-body, .modal-footer) {
+        padding-right: 16px !important;
+        padding-left: 16px !important;
+    }
+}
+
+/* Add Property keeps wider side padding while sharing the compact vertical rhythm. */
+.property-command-page #addPropertyModal :is(.modal-header, .modal-footer) {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+.property-command-page #addPropertyModal .modal-body {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
 
 .property-context-readonly {
     min-width: 0;
@@ -585,7 +662,6 @@ summary.property-record-link::-webkit-details-marker {
 }
 
 .property-event-badge,
-.property-presence-badge,
 .property-outcome-badge {
     display: inline-flex;
     align-items: center;
