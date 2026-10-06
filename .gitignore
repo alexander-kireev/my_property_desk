@@ -32,6 +32,8 @@ wireframes/
 
 # For internal build docs
 build_docs/
+internal_tools/
+.ruff_cache/
 docs/*
 .github/*.md
 .github/audits/

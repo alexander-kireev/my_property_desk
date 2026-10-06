@@ -1,7 +1,7 @@
-from django.urls import path, reverse_lazy
-from . import views
 from django.contrib.auth import views as auth_views
+from django.urls import path, reverse_lazy
 
+from . import views
 from .forms import PasswordResetConfirmForm
 
 app_name = "accounts"
@@ -14,12 +14,24 @@ urlpatterns = [
     path("confirm/<str:token>/", views.confirm_registration_view, name="confirm_registration"),
     path("profile/", views.profile_page_view, name="profile_page"),
     path("change_email/", views.change_email_view, name="change_email"),
-    path("change_email/confirm/<str:token>/", views.confirm_email_change_view, name="confirm_email_change"),
+    path(
+        "change_email/confirm/<str:token>/",
+        views.confirm_email_change_view,
+        name="confirm_email_change",
+    ),
     path("change_email/complete/", views.email_change_complete_view, name="email_change_complete"),
     path("change_password/", views.change_password_view, name="change_password"),
     path("delete_account/", views.delete_account_view, name="delete_account"),
-    path("delete_account/complete/", views.delete_account_complete_view, name="delete_account_complete"),
-    path("password/reset/email/", views.reset_password_protected_view, name="reset_password_protected"),
+    path(
+        "delete_account/complete/",
+        views.delete_account_complete_view,
+        name="delete_account_complete",
+    ),
+    path(
+        "password/reset/email/",
+        views.reset_password_protected_view,
+        name="reset_password_protected",
+    ),
     path(
         "password/reset/<uidb64>/<token>/",
         views.PasswordResetConfirmPRGView.as_view(

@@ -83,4 +83,13 @@ JavaScript formatting covers every authored `static/js/*.js` file. Use `npm run 
 
 ## Project status
 
+Python checks cover the authored application code, excluding historical migrations and local tools:
+
+```powershell
+python -m ruff check accounts config contact event issue note pages property task manage.py
+python -m ruff format --check accounts config contact event issue note pages property task manage.py
+```
+
+Use `python -m ruff format path/to/file.py` for a bounded formatting change. Review import changes and run the affected tests; formatting does not replace behaviour checks.
+
 Requirements and domain analysis are substantially complete. Technical design and application setup are now underway.

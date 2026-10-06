@@ -1,8 +1,7 @@
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
-
-from django.conf import settings
 
 
 class Property(models.Model):
@@ -25,11 +24,7 @@ class Property(models.Model):
         on_delete=models.CASCADE,
         related_name="properties",
     )
-    state = models.CharField(
-        max_length=20,
-        choices=State.choices,
-        default=State.ACTIVE
-    )
+    state = models.CharField(max_length=20, choices=State.choices, default=State.ACTIVE)
     name = models.CharField(max_length=75)
     description = models.CharField(max_length=1000, blank=True)
     address = models.CharField(max_length=150, blank=True)

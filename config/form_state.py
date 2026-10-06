@@ -1,8 +1,9 @@
+"""One-use session storage for forms restored after a redirect."""
+
 import secrets
 
 from django.forms.utils import ErrorDict
 from django.http import QueryDict
-
 
 FORM_STATE_QUERY_PARAMETER = "form_state"
 FORM_STATE_SESSION_PREFIX = "form_state:"
@@ -10,11 +11,7 @@ FORM_STATE_SESSION_PREFIX = "form_state:"
 
 def serialise_form_data(post_data, *, exclude=()):
     excluded_fields = {"csrfmiddlewaretoken", *exclude}
-    return {
-        name: list(values)
-        for name, values in post_data.lists()
-        if name not in excluded_fields
-    }
+    return {name: list(values) for name, values in post_data.lists() if name not in excluded_fields}
 
 
 def deserialise_form_data(data):
@@ -32,6 +29,8 @@ def serialise_form_errors(form):
 
 
 def restore_form_errors(form, errors):
+    # Initialize cleaned_data, then restore the original errors. Passwords were
+    # deliberately omitted from storage, so revalidation alone would change feedback.
     form.errors
     form._errors = ErrorDict()
     for name, messages in errors.items():

@@ -1,9 +1,8 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator, RegexValidator
 from django.db import models
 from django.db.models.functions import Lower
-from django.conf import settings
-
 
 email_validator = EmailValidator()
 
@@ -14,6 +13,7 @@ def normalise_contact_method_value(method_type, value):
         return value.lower()
     return value
 
+
 e164_validator = RegexValidator(
     regex=r"^\+[1-9][0-9]{1,14}\Z",
     message="Enter an international number, for example +447700900123.",
@@ -21,22 +21,15 @@ e164_validator = RegexValidator(
 
 
 class Contact(models.Model):
-
     class State(models.TextChoices):
         ACTIVE = "active", "Active"
         DEACTIVATED = "deactivated", "Deactivated"
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="contacts"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="contacts"
     )
 
-    state = models.CharField(
-        max_length=20,
-        choices=State.choices,
-        default=State.ACTIVE
-    )
+    state = models.CharField(max_length=20, choices=State.choices, default=State.ACTIVE)
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, blank=True)
@@ -48,7 +41,6 @@ class Contact(models.Model):
 
 
 class ContactMethod(models.Model):
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -74,7 +66,6 @@ class ContactMethod(models.Model):
     )
 
     value = models.CharField(max_length=254)
-
 
     def clean(self):
         super().clean()

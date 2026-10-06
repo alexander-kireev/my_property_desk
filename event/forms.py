@@ -1,11 +1,13 @@
 from django import forms
 from django.db.models import Q
 from django.utils import timezone
-from .models import Event, EventContact
 
-from property.models import Property
 from contact.models import Contact
 from contact.selectors import contacts_for_user
+from property.models import Property
+
+from .models import Event, EventContact
+
 
 class EventForm(forms.ModelForm):
     def __init__(self, *args, user, **kwargs):
@@ -44,9 +46,7 @@ class EventForm(forms.ModelForm):
             "end_time",
         )
 
-        form_select_fields = (
-            "property",
-        )
+        form_select_fields = ("property",)
 
         form_input_fields = (
             "all_day",
@@ -54,7 +54,6 @@ class EventForm(forms.ModelForm):
             "user_presence_required",
         )
 
-        
         for field_name, field in self.fields.items():
             if field_name in form_select_fields:
                 field.widget.attrs["class"] = "form-select"
@@ -91,9 +90,7 @@ class EventForm(forms.ModelForm):
                 format="%H:%M",
                 attrs={"type": "text", "maxlength": 5},
             ),
-            "description": forms.Textarea(
-                attrs={"rows": 3}
-            ),
+            "description": forms.Textarea(attrs={"rows": 3}),
         }
 
     def clean(self):
@@ -107,8 +104,11 @@ class EventForm(forms.ModelForm):
         user_presence_required = cleaned_data.get("user_presence_required")
         times_parsed = "start_time" not in self.errors and "end_time" not in self.errors
         end_before_start = (
-            not all_day and times_parsed and start_time is not None
-            and end_time is not None and end_time <= start_time
+            not all_day
+            and times_parsed
+            and start_time is not None
+            and end_time is not None
+            and end_time <= start_time
         )
 
         if scheduled_date is not None:
@@ -118,7 +118,13 @@ class EventForm(forms.ModelForm):
                     "scheduled_date",
                     "Choose today or a future date for a new event.",
                 )
-            elif scheduled_date == today and self.instance.pk is None and not all_day and times_parsed and not end_before_start:
+            elif (
+                scheduled_date == today
+                and self.instance.pk is None
+                and not all_day
+                and times_parsed
+                and not end_before_start
+            ):
                 event_end = end_time or start_time
                 current_time = timezone.localtime().time().replace(tzinfo=None)
                 if event_end is not None and event_end <= current_time:
@@ -139,15 +145,12 @@ class EventForm(forms.ModelForm):
                 self.add_error("start_time", "Enter a start time.")
 
             if end_before_start:
-                self.add_error(
-                    "end_time",
-                    "End time must be later than start time."
-                )
+                self.add_error("end_time", "End time must be later than start time.")
 
         if user_presence_required and not user_participation_required:
             self.add_error(
                 "user_participation_required",
-                "You must participate in an event if you are attending it."
+                "You must participate in an event if you are attending it.",
             )
 
         return cleaned_data
@@ -165,16 +168,16 @@ class EventContactForm(forms.Form):
             if not self.is_bound:
                 self.initial.setdefault(
                     "contacts",
-                    list(EventContact.objects.filter(
-                        event=event,
-                        contact__state=Contact.State.ACTIVE,
-                        contact__deleted_at__isnull=True,
-                    ).values_list("contact_id", flat=True)),
+                    list(
+                        EventContact.objects.filter(
+                            event=event,
+                            contact__state=Contact.State.ACTIVE,
+                            contact__deleted_at__isnull=True,
+                        ).values_list("contact_id", flat=True)
+                    ),
                 )
         elif event is not None and event.pk:
-            contacts = contacts.exclude(
-                event_participations__event=event
-            )
+            contacts = contacts.exclude(event_participations__event=event)
 
         self.fields["contacts"].queryset = contacts.order_by(
             "first_name",
@@ -187,4 +190,3 @@ class EventContactForm(forms.Form):
         required=False,
         widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
     )
-

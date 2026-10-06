@@ -40,9 +40,7 @@ class IssueForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs["autocomplete"] = "off"
             field.widget.attrs["class"] = (
-                "form-select"
-                if field_name in ("property", "priority")
-                else "form-control"
+                "form-select" if field_name in ("property", "priority") else "form-control"
             )
 
     class Meta:

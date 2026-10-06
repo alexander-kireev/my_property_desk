@@ -19,5 +19,3 @@ def decode_confirmation_token(token):
         salt=CONFIRMATION_SALT,
         max_age=CONFIRMATION_MAX_AGE,
     )
-
-

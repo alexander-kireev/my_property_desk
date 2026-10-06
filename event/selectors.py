@@ -1,9 +1,9 @@
-from .models import Event, EventContact
-
-from django.db.models.functions import Lower
 from django.db.models import OuterRef, Q, Subquery
+from django.db.models.functions import Lower
 
 from contact.models import ContactMethod
+
+from .models import Event, EventContact
 
 EVENT_SORT_OPTIONS = {
     "title": (Lower("title"), "pk"),
@@ -24,11 +24,13 @@ USER_PRESENCE_REQUIRED_OPTIONS = {
     "not_required": False,
 }
 
+
 def events_for_user(*, user):
     return Event.objects.select_related("property").filter(
         user=user,
         deleted_at__isnull=True,
     )
+
 
 def filtered_events_for_user(
     *,
@@ -59,9 +61,7 @@ def filtered_events_for_user(
         )
 
     if presence in USER_PRESENCE_REQUIRED_OPTIONS:
-        events = events.filter(
-            user_presence_required=USER_PRESENCE_REQUIRED_OPTIONS[presence]
-        )
+        events = events.filter(user_presence_required=USER_PRESENCE_REQUIRED_OPTIONS[presence])
 
     if property_id:
         events = events.filter(property_id=property_id)
@@ -73,6 +73,7 @@ def filtered_events_for_user(
 
     return events.order_by(*ordering)
 
+
 def event_contacts_for_event(*, event):
     contact_methods = ContactMethod.objects.filter(
         contact_id=OuterRef("contact_id"),
@@ -81,12 +82,10 @@ def event_contacts_for_event(*, event):
         EventContact.objects.select_related("contact")
         .annotate(
             contact_email=Subquery(
-                contact_methods.filter(type=ContactMethod.Type.EMAIL)
-                .values("value")[:1]
+                contact_methods.filter(type=ContactMethod.Type.EMAIL).values("value")[:1]
             ),
             contact_telephone=Subquery(
-                contact_methods.filter(type=ContactMethod.Type.TELEPHONE)
-                .values("value")[:1]
+                contact_methods.filter(type=ContactMethod.Type.TELEPHONE).values("value")[:1]
             ),
         )
         .filter(event=event)
@@ -99,15 +98,19 @@ def event_contacts_for_event(*, event):
 
 
 def calendar_events_for_user(*, user, start_date, end_date, **filters):
-    return filtered_events_for_user(
-        user=user,
-        **filters,
-    ).filter(
-        scheduled_date__range=(start_date, end_date),
-    ).order_by(
-        "scheduled_date",
-        "-all_day",
-        "start_time",
-        Lower("title"),
-        "pk",
+    return (
+        filtered_events_for_user(
+            user=user,
+            **filters,
+        )
+        .filter(
+            scheduled_date__range=(start_date, end_date),
+        )
+        .order_by(
+            "scheduled_date",
+            "-all_day",
+            "start_time",
+            Lower("title"),
+            "pk",
+        )
     )

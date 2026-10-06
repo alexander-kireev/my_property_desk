@@ -28,7 +28,7 @@ def resolve_selection(request, *, filtered, owned, page_size):
         return None, None, False, None
     try:
         record_id = int(raw)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         record_id = 0
     record = owned.filter(pk=record_id).first() if record_id > 0 else None
     if record is None:
@@ -38,7 +38,12 @@ def resolve_selection(request, *, filtered, owned, page_size):
         wanted = str(natural_page) if natural_page > 1 else ""
         current = request.GET.get("page", "")
         if current != wanted:
-            return record, natural_page, False, amended_query_url(
-                request, changes={"page": natural_page if natural_page > 1 else None}
+            return (
+                record,
+                natural_page,
+                False,
+                amended_query_url(
+                    request, changes={"page": natural_page if natural_page > 1 else None}
+                ),
             )
     return record, natural_page, natural_page is None, None

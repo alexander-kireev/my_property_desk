@@ -1,8 +1,9 @@
-from .models import Task
 from django import forms
 
 from issue.models import Issue
 from property.models import Property
+
+from .models import Task
 
 
 class TaskForm(forms.ModelForm):
@@ -15,9 +16,7 @@ class TaskForm(forms.ModelForm):
         self.fields["title"].widget.attrs["maxlength"] = "75"
 
         active_properties = Property.objects.filter(
-            user=user,
-            state=Property.State.ACTIVE,
-            deleted_at__isnull=True
+            user=user, state=Property.State.ACTIVE, deleted_at__isnull=True
         )
 
         active_issues = Issue.objects.filter(
@@ -32,30 +31,24 @@ class TaskForm(forms.ModelForm):
         self.fields["property"].queryset = active_properties
         self.fields["issue"].queryset = active_issues
         if self.instance.pk and self.instance.property_id:
-            self.fields["property"].queryset = (
-                active_properties | Property.objects.filter(
-                    user=user, pk=self.instance.property_id,
-                )
+            self.fields["property"].queryset = active_properties | Property.objects.filter(
+                user=user,
+                pk=self.instance.property_id,
             )
         if self.instance.pk and self.instance.issue_id:
-            self.fields["issue"].queryset = (
-                active_issues | Issue.objects.filter(
-                    user=user, pk=self.instance.issue_id,
-                )
+            self.fields["issue"].queryset = active_issues | Issue.objects.filter(
+                user=user,
+                pk=self.instance.issue_id,
             )
 
         self.has_property_choices = self.fields["property"].queryset.exists()
         self.has_issue_choices = self.fields["issue"].queryset.exists()
 
         self.fields["property"].empty_label = (
-            "Choose a property"
-            if self.has_property_choices
-            else "No active properties available"
+            "Choose a property" if self.has_property_choices else "No active properties available"
         )
         self.fields["issue"].empty_label = (
-            "Choose an issue"
-            if self.has_issue_choices
-            else "No active issues available"
+            "Choose an issue" if self.has_issue_choices else "No active issues available"
         )
 
         if parent_issue is not None:
@@ -94,8 +87,14 @@ class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = (
-            "title", "description", "property", "issue", 
-            "priority", "scheduled_date", "completion_deadline")
+            "title",
+            "description",
+            "property",
+            "issue",
+            "priority",
+            "scheduled_date",
+            "completion_deadline",
+        )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
             "scheduled_date": forms.DateInput(

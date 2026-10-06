@@ -1,6 +1,6 @@
-from .models import Property
 from django import forms
 
+from .models import Property
 
 
 class PropertyForm(forms.ModelForm):
@@ -19,24 +19,19 @@ class PropertyForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 3}),
         }
 
-
     def clean_name(self):
         name = self.cleaned_data["name"]
 
         matching_properties = Property.objects.filter(
             user=self.user,
             name__iexact=name,
-            deleted_at__isnull = True,
+            deleted_at__isnull=True,
         )
 
         if self.instance.pk:
-            matching_properties = matching_properties.exclude(
-                pk=self.instance.pk
-            )
+            matching_properties = matching_properties.exclude(pk=self.instance.pk)
 
         if matching_properties.exists():
-            raise forms.ValidationError(
-                "You already have a property with this name."
-            )
+            raise forms.ValidationError("You already have a property with this name.")
 
         return name
