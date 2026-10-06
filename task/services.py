@@ -1,10 +1,14 @@
+"""Task writes. Lifecycle actions refresh the passed object and set action_changed for callers."""
+
+from django.db import transaction
 from django.utils import timezone
 
 from .models import Task
 
 
-def create_task(*, user, property, issue, priority, title,
-                description, scheduled_date, completion_deadline):
+def create_task(
+    *, user, property, issue, priority, title, description, scheduled_date, completion_deadline
+):
     return Task.objects.create(
         user=user,
         property=property,
@@ -13,12 +17,13 @@ def create_task(*, user, property, issue, priority, title,
         title=title,
         description=description,
         scheduled_date=scheduled_date,
-        completion_deadline=completion_deadline
+        completion_deadline=completion_deadline,
     )
 
 
-def update_task(*, task, property, issue, priority, title, description,
-                    scheduled_date, completion_deadline):
+def update_task(
+    *, task, property, issue, priority, title, description, scheduled_date, completion_deadline
+):
     task.property = property
     task.issue = issue
     task.priority = priority
@@ -26,48 +31,82 @@ def update_task(*, task, property, issue, priority, title, description,
     task.description = description
     task.scheduled_date = scheduled_date
     task.completion_deadline = completion_deadline
-    task.save(update_fields=["property", "issue", "priority", "title",
-                             "description", "scheduled_date", "completion_deadline"])
+    task.save(
+        update_fields=[
+            "property",
+            "issue",
+            "priority",
+            "title",
+            "description",
+            "scheduled_date",
+            "completion_deadline",
+        ]
+    )
 
     return task
 
+
+def _refresh_lifecycle(task):
+    """Refresh the passed object under a row lock; callers own the transaction."""
+    current = Task.objects.select_for_update().get(pk=task.pk, user_id=task.user_id)
+    task.state = current.state
+    task.terminated_at = current.terminated_at
+    task.deleted_at = current.deleted_at
+    task.action_changed = False
+
+
+@transaction.atomic
 def dismiss_task(*, task):
-    if task.state == Task.State.COMPLETED or task.state == Task.State.DISMISSED:
+    _refresh_lifecycle(task)
+    if task.deleted_at is not None or task.state != Task.State.ACTIVE:
         return task
 
     task.state = Task.State.DISMISSED
     task.terminated_at = timezone.now()
     task.save(update_fields=["state", "terminated_at"])
 
+    task.action_changed = True
     return task
 
+
+@transaction.atomic
 def complete_task(*, task):
-    if task.state == Task.State.COMPLETED or task.state == Task.State.DISMISSED:
+    _refresh_lifecycle(task)
+    if task.deleted_at is not None or task.state != Task.State.ACTIVE:
         return task
 
     task.state = Task.State.COMPLETED
     task.terminated_at = timezone.now()
     task.save(update_fields=["state", "terminated_at"])
 
+    task.action_changed = True
     return task
 
+
+@transaction.atomic
 def reactivate_task(*, task):
-    if task.state == Task.State.ACTIVE:
+    _refresh_lifecycle(task)
+    if task.deleted_at is not None or task.state == Task.State.ACTIVE:
         return task
 
     task.state = Task.State.ACTIVE
     task.terminated_at = None
     task.save(update_fields=["state", "terminated_at"])
 
+    task.action_changed = True
     return task
 
+
+@transaction.atomic
 def delete_task(*, task):
+    _refresh_lifecycle(task)
     if task.deleted_at is not None:
         return task
 
     task.deleted_at = timezone.now()
     task.save(update_fields=["deleted_at"])
 
+    task.action_changed = True
     return task
 
 

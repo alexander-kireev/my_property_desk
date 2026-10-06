@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from .models import Issue
 
-
 ISSUE_DEADLINE_PERIOD_OPTIONS = {
     "overdue": "Overdue",
     "today": "Today",

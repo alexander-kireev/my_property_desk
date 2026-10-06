@@ -1,14 +1,12 @@
+from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models import F, Q
 
-from django.conf import settings
 
 class Event(models.Model):
-
     class Meta:
         constraints = [
-
             models.CheckConstraint(
                 condition=(
                     Q(
@@ -16,28 +14,20 @@ class Event(models.Model):
                         start_time__isnull=True,
                         end_time__isnull=True,
                     )
-                    |
-                    (
+                    | (
                         Q(
                             all_day=False,
                             start_time__isnull=False,
                         )
-                        & (
-                            Q(end_time__isnull=True)
-                            | Q(start_time__lt=F("end_time"))
-                        )
+                        & (Q(end_time__isnull=True) | Q(start_time__lt=F("end_time")))
                     )
                 ),
                 name="event_has_valid_timing",
             ),
-
             models.CheckConstraint(
-                condition=(
-                    Q(user_presence_required=False)
-                    | Q(user_participation_required=True)
-                ),
+                condition=(Q(user_presence_required=False) | Q(user_participation_required=True)),
                 name="event_presence_requires_participation",
-            )
+            ),
         ]
 
     class State(models.TextChoices):
@@ -82,7 +72,6 @@ class Event(models.Model):
 
 
 class EventContact(models.Model):
-
     class Meta:
         constraints = [
             models.UniqueConstraint(

@@ -1,16 +1,15 @@
 from datetime import timedelta
 
-from django.db.models.functions import Lower
-
-from django.utils import timezone
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.db.models.functions import Lower
+from django.utils import timezone
 
 from .managers import UserManager
 
 
-# helper to set registration expiry to 72 hours 
+# Keep these expiry helpers at this import path: historical migrations reference them.
 def pending_registration_expiry():
     return timezone.now() + timedelta(hours=72)
 
@@ -83,8 +82,3 @@ class PendingEmailChange(models.Model):
     @property
     def is_expired(self):
         return self.expires_at <= timezone.now()
-
-
-
-
-

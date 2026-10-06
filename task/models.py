@@ -1,19 +1,14 @@
+from django.conf import settings
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Lower
-
-from django.conf import settings
 
 
 class Task(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=(
-                    Q(property__isnull=True)
-                    | Q(issue__isnull=True)
-                ),
+                condition=(Q(property__isnull=True) | Q(issue__isnull=True)),
                 name="task_has_at_most_one_parent",
             ),
         ]
@@ -23,45 +18,26 @@ class Task(models.Model):
         COMPLETED = "completed", "Completed"
         DISMISSED = "dismissed", "Dismissed"
 
-
     class Priority(models.IntegerChoices):
         LOW = 1, "Low"
         MEDIUM = 2, "Medium"
         HIGH = 3, "High"
         URGENT = 4, "Urgent"
 
-
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="tasks"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks"
     )
 
     property = models.ForeignKey(
-        "property.Property",
-        on_delete=models.SET_NULL,
-        related_name="tasks",
-        null=True,
-        blank=True
+        "property.Property", on_delete=models.SET_NULL, related_name="tasks", null=True, blank=True
     )
 
     issue = models.ForeignKey(
-        "issue.Issue",
-        on_delete=models.SET_NULL,
-        related_name="tasks",
-        null=True,
-        blank=True
+        "issue.Issue", on_delete=models.SET_NULL, related_name="tasks", null=True, blank=True
     )
 
-    state = models.CharField(
-        max_length=20,
-        choices=State.choices,
-        default=State.ACTIVE
-    )
-    priority = models.PositiveIntegerField(
-        choices=Priority.choices,
-        default=Priority.LOW
-    )
+    state = models.CharField(max_length=20, choices=State.choices, default=State.ACTIVE)
+    priority = models.PositiveIntegerField(choices=Priority.choices, default=Priority.LOW)
     title = models.CharField(max_length=100, validators=[MaxLengthValidator(75)])
     description = models.CharField(max_length=1000, blank=True)
     scheduled_date = models.DateField(null=True, blank=True)

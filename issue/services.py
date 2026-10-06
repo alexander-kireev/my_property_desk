@@ -1,3 +1,5 @@
+"""Issue writes lock the parent before cascades. Lifecycle results retain action_changed and affected_tasks for caller feedback."""
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -9,9 +11,7 @@ from task.services import (
 from .models import Issue
 
 
-def create_issue(
-    *, user, property, priority, title, description, resolution_deadline
-):
+def create_issue(*, user, property, priority, title, description, resolution_deadline):
     return Issue.objects.create(
         user=user,
         property=property,
@@ -22,9 +22,7 @@ def create_issue(
     )
 
 
-def update_issue(
-    *, issue, property, priority, title, description, resolution_deadline
-):
+def update_issue(*, issue, property, priority, title, description, resolution_deadline):
     issue.property = property
     issue.priority = priority
     issue.title = title
@@ -112,8 +110,6 @@ def delete_issue(*, issue, delete_linked_tasks=False):
     issue.action_changed = True
 
     if delete_linked_tasks:
-        issue.affected_linked_tasks = delete_tasks_for_issue(
-            issue=issue, deleted_at=deleted_at
-        )
+        issue.affected_linked_tasks = delete_tasks_for_issue(issue=issue, deleted_at=deleted_at)
 
     return issue

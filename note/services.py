@@ -52,8 +52,10 @@ def undo_deleted_note(*, request, token, contact_id=None, general_only=False, no
         if Note.objects.filter(pk=original["id"]).exists():
             return None
         note = Note.objects.create(
-            pk=original["id"], user=request.user,
-            contact_id=original["contact_id"], content=original["content"],
+            pk=original["id"],
+            user=request.user,
+            contact_id=original["contact_id"],
+            content=original["content"],
         )
         Note.objects.filter(pk=note.pk).update(created_at=parse_datetime(original["created_at"]))
     request.session.pop("note_undo", None)

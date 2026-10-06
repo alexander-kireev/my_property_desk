@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from django import template
 from django.utils import timezone
 
-
 register = template.Library()
 DUE_SOON_DAYS = 3
 
@@ -31,11 +30,15 @@ def status_for(record, *, today=None):
             overdue_days = -days
             unit = "day" if overdue_days == 1 else "days"
             return WorkStatus(
-                "overdue", f"Overdue by {overdue_days} {unit}",
-                "Still active · deadline passed.", "Overdue",
+                "overdue",
+                f"Overdue by {overdue_days} {unit}",
+                "Still active · deadline passed.",
+                "Overdue",
             )
         if days <= DUE_SOON_DAYS:
-            headline = "Due today" if days == 0 else f"Due in {days} {'day' if days == 1 else 'days'}"
+            headline = (
+                "Due today" if days == 0 else f"Due in {days} {'day' if days == 1 else 'days'}"
+            )
             return WorkStatus("soon", headline, "Still active · deadline approaching.", "Due soon")
 
     if deadline is not None:

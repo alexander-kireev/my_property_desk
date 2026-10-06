@@ -9,6 +9,7 @@ from .models import (
     normalise_contact_method_value,
 )
 
+
 class ContactForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,6 +32,7 @@ class ContactForm(forms.ModelForm):
                 "max_length": "Last name must be %(limit_value)d characters or fewer. You entered %(show_value)d.",
             },
         }
+
 
 class ContactCreateForm(ContactForm):
     email = forms.EmailField(
@@ -78,7 +80,9 @@ class ContactMethodForm(forms.ModelForm):
             # validation. Repeating it here produces two identical messages
             # when an existing detail changes type.
             try:
-                (email_validator if method_type == ContactMethod.Type.EMAIL else e164_validator)(value)
+                (email_validator if method_type == ContactMethod.Type.EMAIL else e164_validator)(
+                    value
+                )
             except ValidationError:
                 return cleaned_data
             if self.contact is not None:

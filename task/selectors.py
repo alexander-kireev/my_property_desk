@@ -6,7 +6,6 @@ from django.utils import timezone
 
 from .models import Task
 
-
 TASK_SCHEDULE_PERIOD_OPTIONS = {
     "today": "Today",
     "next_7_days": "Next 7 days",
@@ -49,14 +48,18 @@ def tasks_for_user(*, user):
 
 
 def tasks_for_issue(*, user, issue):
-    return tasks_for_user(user=user).filter(issue=issue).order_by(
-        Case(
-            When(state=Task.State.ACTIVE, then=Value(0)),
-            default=Value(1),
-            output_field=IntegerField(),
-        ),
-        F("completion_deadline").asc(nulls_last=True),
-        "pk",
+    return (
+        tasks_for_user(user=user)
+        .filter(issue=issue)
+        .order_by(
+            Case(
+                When(state=Task.State.ACTIVE, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            F("completion_deadline").asc(nulls_last=True),
+            "pk",
+        )
     )
 
 
