@@ -42,7 +42,7 @@
     justify-content: space-between;
     gap: 0.65rem;
     background: var(--bs-tertiary-bg);
-    border-left: 0.2rem solid var(--pom-brand-blue);
+    border-left: 0.2rem solid var(--pom-accent);
 }
 
 .property-command-list .workspace-selection-notice .btn {
@@ -75,7 +75,7 @@
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--pom-brand-blue);
+    background: var(--pom-accent);
     content: "";
 }
 
@@ -384,7 +384,7 @@
     bottom: 0;
     left: 0;
     width: 4px;
-    background: var(--pom-brand-blue);
+    background: var(--pom-accent);
     content: "";
     pointer-events: none;
 }
@@ -424,7 +424,7 @@
 }
 
 .property-related-summary:focus-visible {
-    outline: 3px solid var(--pom-brand-blue);
+    outline: 3px solid var(--pom-accent);
     outline-offset: -3px;
 }
 
@@ -511,10 +511,10 @@
     place-items: center;
     width: 27px;
     height: 27px;
-    border: 1px solid #c2cbd2;
+    border: 1px solid var(--pom-border-strong);
     border-radius: 50%;
     background: var(--bs-body-bg);
-    color: #394750;
+    color: var(--pom-text-muted);
 }
 
 .property-related-chevron svg {
@@ -697,9 +697,9 @@ summary.property-record-link::-webkit-details-marker {
 }
 
 .property-event-badge {
-    color: #0757b5;
-    background: #f3f8ff;
-    border-color: #a8c8f2;
+    color: var(--pom-accent);
+    background: var(--pom-selected);
+    border-color: var(--pom-border-strong);
 }
 
 .property-record-link:hover,
@@ -813,8 +813,7 @@ summary.property-record-link::-webkit-details-marker {
         padding-right: 3.75rem;
     }
 
-    .property-workspace:not(.show-detail, .has-selected-preview)
-        .property-command-row.is-selected {
+    .property-workspace:not(.show-detail, .has-selected-preview) .property-command-row.is-selected {
         background: var(--bs-body-bg) !important;
     }
 
@@ -895,7 +894,7 @@ summary.property-record-link::-webkit-details-marker {
         justify-content: space-between;
         gap: 0.65rem;
         background: var(--bs-tertiary-bg);
-        border-left: 0.2rem solid var(--pom-brand-blue);
+        border-left: 0.2rem solid var(--pom-accent);
     }
 
     .property-detail-recovery .btn {

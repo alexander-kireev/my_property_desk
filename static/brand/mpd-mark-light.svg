@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">My Property Desk mark</title>
-  <desc id="desc">One tall blue rounded tile and two stacked charcoal rounded tiles.</desc>
-  <rect x="3" y="3" width="27" height="58" rx="7" fill="#176CCB"/>
-  <rect x="34" y="3" width="27" height="27" rx="7" fill="#222A31"/>
-  <rect x="34" y="34" width="27" height="27" rx="7" fill="#222A31"/>
+  <desc id="desc">One tall olive rounded tile and two stacked dark olive rounded tiles.</desc>
+  <rect x="3" y="3" width="27" height="58" rx="7" fill="#4A6D3C"/>
+  <rect x="34" y="3" width="27" height="27" rx="7" fill="#243D26"/>
+  <rect x="34" y="34" width="27" height="27" rx="7" fill="#243D26"/>
 </svg>

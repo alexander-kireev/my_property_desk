@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">My Property Desk</title>
-  <desc id="desc">Blue and charcoal three-tile mark within a light rounded square.</desc>
+  <desc id="desc">Olive and dark olive three-tile mark within a light rounded square.</desc>
   <rect width="64" height="64" rx="12" fill="#FFFFFF"/>
-  <rect x="1" y="1" width="62" height="62" rx="11" fill="none" stroke="#222A31" stroke-width="2"/>
-  <rect x="10" y="10" width="19" height="44" rx="4" fill="#176CCB"/>
-  <rect x="33" y="10" width="21" height="20" rx="4" fill="#222A31"/>
-  <rect x="33" y="34" width="21" height="20" rx="4" fill="#222A31"/>
+  <rect x="1" y="1" width="62" height="62" rx="11" fill="none" stroke="#243D26" stroke-width="2"/>
+  <rect x="10" y="10" width="19" height="44" rx="4" fill="#4A6D3C"/>
+  <rect x="33" y="10" width="21" height="20" rx="4" fill="#243D26"/>
+  <rect x="33" y="34" width="21" height="20" rx="4" fill="#243D26"/>
 </svg>

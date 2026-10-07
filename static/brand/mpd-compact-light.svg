@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 188 66" role="img" aria-labelledby="title desc">
   <title id="title">MPD</title>
-  <desc id="desc">My Property Desk initials, with the D in blue.</desc>
-  <text x="2" y="53" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" letter-spacing="-5"><tspan fill="#222A31">MP</tspan><tspan fill="#176CCB">D</tspan></text>
+  <desc id="desc">My Property Desk initials, with the D in olive.</desc>
+  <text x="2" y="53" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" letter-spacing="-5"><tspan fill="#243D26">MP</tspan><tspan fill="#4A6D3C">D</tspan></text>
 </svg>

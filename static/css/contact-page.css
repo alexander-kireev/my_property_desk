@@ -101,7 +101,7 @@
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--pom-brand-blue);
+    background: var(--pom-accent);
     content: "";
 }
 

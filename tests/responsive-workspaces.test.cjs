@@ -145,10 +145,10 @@ test("compact tabs and linked-task rows retain readable layouts", () => {
     assert.match(eventCss, /\.event-mobile-participant-row \.event-participant-remove \{\s*width: 2\.75rem;\s*height: 2\.75rem/);
     assert.match(eventCss, /@media \(max-width: 575\.98px\) \{\s*\.event-participant-methods \{\s*grid-template-columns: minmax\(0, 1fr\)/);
     assert.doesNotMatch(eventCss, /\.event-participant-methods > :empty/);
-    assert.match(eventCss, /\.event-calendar-day\.today \.event-calendar-day-number::after \{[\s\S]*?background: var\(--pom-brand-blue\);/);
-    assert.match(eventCss, /\.event-calendar-day\.agenda-selected \{\s*background: #e5edf5;\s*box-shadow: inset 0 0 0 2px var\(--bs-emphasis-color\);/);
+    assert.match(eventCss, /\.event-calendar-day\.today \.event-calendar-day-number::after \{[\s\S]*?background: var\(--pom-accent\);/);
+    assert.match(eventCss, /\.event-calendar-day\.agenda-selected \{\s*background: var\(--pom-selected\);\s*box-shadow: inset 0 0 0 2px var\(--bs-emphasis-color\);/);
     assert.match(eventCss, /\.event-calendar-count-label \{ display: none; \}/);
-    assert.match(eventCss, /\.event-mobile-agenda-entry\.is-selected::before \{[\s\S]*?background: var\(--pom-brand-blue\);/);
+    assert.match(eventCss, /\.event-mobile-agenda-entry\.is-selected::before \{[\s\S]*?background: var\(--pom-accent\);/);
     assert.match(events, /class="event-mobile-agenda-title event-command-title"/);
     assert.match(events, /class="event-mobile-agenda-context event-command-context"/);
     assert.match(eventCss, /\.event-participants-card \{\s*width: 100%;\s*\}/);

@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">My Property Desk</title>
-  <desc id="desc">Blue and white three-tile mark within a charcoal rounded square.</desc>
-  <rect x="1" y="1" width="62" height="62" rx="11" fill="#222A31" stroke="#FFFFFF" stroke-width="2"/>
-  <rect x="10" y="10" width="19" height="44" rx="4" fill="#338BE6"/>
+  <desc id="desc">Sage and white three-tile mark within a dark olive rounded square.</desc>
+  <rect x="1" y="1" width="62" height="62" rx="11" fill="#243D26" stroke="#FFFFFF" stroke-width="2"/>
+  <rect x="10" y="10" width="19" height="44" rx="4" fill="#91A96F"/>
   <rect x="33" y="10" width="21" height="20" rx="4" fill="#FFFFFF"/>
   <rect x="33" y="34" width="21" height="20" rx="4" fill="#FFFFFF"/>
 </svg>
