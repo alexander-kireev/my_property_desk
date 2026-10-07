@@ -34,16 +34,45 @@
                             </form>
                         {% endif %}
                         <div class="dropdown">
-                            <button class="task-menu-button btn btn-outline-secondary dropdown-toggle"
+                            <button class="app-kebab-button task-menu-button btn btn-outline-secondary dropdown-toggle"
                                     type="button"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
-                                    aria-label="Open task actions">⋮</button>
+                                    aria-label="Open task actions">{% include "includes/kebab_icon.html" %}</button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                {% if selected_task.state == "active" %}<li><button class="dropdown-item"
-        type="button"
-        data-bs-toggle="modal"
-        data-bs-target="#dismissTaskModal">Dismiss task</button></li>{% endif %}
+                                {% if selected_task.state == "active" %}
+                                    <li class="work-header-menu-action">
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editTaskModal">Edit task</button>
+                                    </li>
+                                    <li class="work-header-menu-action">
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#completeTaskModal">Complete task</button>
+                                    </li>
+                                {% else %}
+                                    <li class="work-header-menu-action">
+                                        <form action="{% url 'task:reactivate_task' selected_task.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                                              method="post"
+                                              autocomplete="off">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ task_workspace_url }}">
+                                            <button class="dropdown-item" type="submit">Reactivate task</button>
+                                        </form>
+                                    </li>
+                                {% endif %}
+
+                                {% if selected_task.state == "active" %}
+                                    <li>
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#dismissTaskModal">Dismiss task</button>
+                                    </li>
+                                {% endif %}
                                 <li>
                                     <button class="dropdown-item text-danger"
                                             type="button"

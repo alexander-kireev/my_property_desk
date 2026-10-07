@@ -73,7 +73,8 @@ test("collapsed linked subtitles retain direct names and dates without deleted l
             property: "Inherited property", date: "2026-10-04"}, area);
         assert.match(issueTask, /dashboard-task-context[^>]*>Roof leak<\/small>/);
         assert.doesNotMatch(issueTask, /Deleted issue/);
-        assert.match(issueTask, /Scheduled 4 Oct 2026/);
+        if (area === "queue") assert.match(issueTask, /Scheduled 4 Oct 2026/);
+        else assert.doesNotMatch(issueTask, /Scheduled 4 Oct 2026/);
         assert.doesNotMatch(issueTask.slice(0, issueTask.indexOf("dashboard-row-detail")), /Inherited property|Standalone/);
 
         for (const kind of ["issue", "event"]) {
@@ -94,14 +95,14 @@ test("Operations tasks prioritise due dates and highlight overdue timing", () =>
     assert.match(task, /<span>Scheduled 29 Sep 2026<\/span>/);
 });
 
-test("Selected day deadlines retain their type and full expanded dates", () => {
+test("Selected day deadlines retain their type without repeating the selected date", () => {
     for (const kind of ["task", "issue"]) {
         const html = recordRow({...base, kind, due: "2026-09-29"}, "due");
         const summary = html.slice(0, html.indexOf("dashboard-row-detail"));
         assert.doesNotMatch(summary, /dashboard-(task|row)-timing/);
         assert.match(summary, /dashboard-type-cue/);
         assert.doesNotMatch(summary, /aria-hidden="true"><span class="dashboard-type-cue"/);
-        assert.match(html, /29 Sep 2026/);
+        assert.doesNotMatch(html, /29 Sep 2026/);
     }
 });
 
@@ -115,6 +116,23 @@ test("Selected day Event times retain start-only, range and all-day meaning", ()
         const summary = html.slice(0, html.indexOf("dashboard-row-detail"));
         assert.ok(summary.includes(expected));
         assert.doesNotMatch(summary, /3 Oct 2026/);
-        assert.match(html, /Date 3 Oct 2026/);
+        assert.doesNotMatch(html, /Date 3 Oct 2026/);
     }
+});
+
+
+test("Selected day keeps only dates different from its heading", () => {
+    const item = {...base, kind: "task", date: "2026-10-01", due: "2026-10-05"};
+    const scheduled = recordRow(item, "day");
+    assert.doesNotMatch(scheduled, /Scheduled 1 Oct 2026|Unscheduled/);
+    assert.match(scheduled, /Due 5 Oct 2026/);
+    const deadline = recordRow(item, "due");
+    assert.match(deadline, /Scheduled 1 Oct 2026/);
+    assert.doesNotMatch(deadline, /Due 5 Oct 2026/);
+    for (const area of ["day", "due"]) {
+        assert.doesNotMatch(recordRow({...item, due: item.date}, area), /1 Oct 2026|Unscheduled/);
+    }
+    const queue = recordRow(item, "queue");
+    assert.match(queue, /Scheduled 1 Oct 2026/);
+    assert.match(queue, /Due 5 Oct 2026/);
 });

@@ -86,7 +86,7 @@ test("My Work single-panel width cap and issue row sizing preserve responsive bo
     assert.match(siteCss, /@media \(min-width: 700px\) and \(max-width: 860px\) \{\s*\.task-command-centre \{ max-width: 680px; margin-inline: auto; \}/);
     assert.match(siteCss, /\.task-list-column \{ border-right: 0 !important; \}/);
     assert.match(siteCss, /\.task-command-row \.task-command-badges \{ justify-content: flex-start; \}/);
-    assert.match(siteCss, /\.work-pill \{[^}]*justify-content: center;[^}]*inline-size: 6rem;[^}]*min-height: 1\.7rem;/s);
+    assert.match(siteCss, /\.work-pill \{[^}]*justify-content: center;[^}]*inline-size: var\(--pom-state-badge-width\);[^}]*min-height: 1\.7rem;/s);
     assert.match(siteCss, /\.issue-list-row \{ min-height: 5\.65rem; padding: 1rem 1\.25rem; \}/);
     assert.match(siteCss, /\.issue-command-row-grid \{ display: grid;/);
 });
@@ -117,12 +117,12 @@ test("shared modal cleanup removes record boxes and footer dividers", () => {
     assert.match(read("task/templates/task/includes/task_form_fields.html"), /<span class="task-relationship-label"\s+id="[^"]+">Related to<\/span>\s*<div class="task-relationship-options">\s*<div class="d-flex flex-wrap gap-2"\s+role="radiogroup"\s+aria-labelledby="[^"]+">/);
 });
 
-test("navbar toggler and links use the same soft-white color", () => {
+test("navbar toggler and links use the same pure-white color", () => {
     assert.match(siteCss, /\.app-navbar \{[^}]*flex-shrink: 0;/s);
     assert.match(siteCss, /\.app-navbar \.navbar-collapse \{[^}]*max-height: calc\(100dvh - 4\.9rem\);[^}]*overflow-y: auto;/s);
-    assert.match(siteCss, /\.app-navbar \.nav-link \{\s*color: #f5f7fa;/);
-    assert.match(siteCss, /\.app-navbar \.navbar-toggler\[aria-expanded="true"\] \{[^}]*border: 1px solid #f5f7fa;[^}]*opacity: 1;/s);
-    assert.match(siteCss, /\.app-navbar \.navbar-toggler-icon \{[^}]*background-image: url\([^;]*%23f5f7fa/s);
+    assert.match(siteCss, /\.app-navbar \.nav-link \{\s*color: #fff;/);
+    assert.match(siteCss, /\.app-navbar \.navbar-toggler\[aria-expanded="true"\] \{[^}]*border: 1px solid #fff;[^}]*opacity: 1;/s);
+    assert.match(siteCss, /\.app-navbar \.navbar-toggler-icon \{[^}]*background-image: url\([^;]*%23ffffff/s);
 });
 
 test("My Work uses the same 860px inline boundary across layout and input", () => {

@@ -104,6 +104,17 @@
 }
 
 /* Compact workspace and short-viewport behavior */
+
+/* Compact My Work uses document scrolling. A contained auto-overflow list
+   consumes wheel/touch gestures even when it has no internal scroll range. */
+@media (max-width: 860px), (max-width: 1199.98px) and (max-height: 700px) {
+    :is(.task-command-list, .issue-list, .event-command-list) {
+        overflow-x: clip;
+        overflow-y: visible;
+        overscroll-behavior: auto;
+    }
+}
+
 @media (max-width: 991.98px), (max-width: 1199.98px) and (max-height: 700px) {
     .workspace-mobile-back {
         display: inline-flex;
@@ -193,16 +204,20 @@
 }
 
 /* Shared state, priority, and date indicators */
+:root {
+    --pom-state-badge-width: 5.125rem;
+}
+
 .work-pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    inline-size: 6rem;
+    inline-size: var(--pom-state-badge-width);
     min-height: 1.7rem;
-    padding: 0.1rem 0.45rem;
+    padding: 0.1rem 0.375rem;
     border: 1px solid;
-    border-radius: 999px;
+    border-radius: 5px;
     font-size: 0.73rem;
     font-weight: 650;
     line-height: 1.25;
@@ -250,35 +265,51 @@
     }
 }
 
-.work-pill--priority-1,
 .work-pill--terminal {
-    color: #59625b;
-    background: #f1f3f1;
-    border-color: #d4d9d5;
+    color: #fff;
+    background: #59645b;
+    border-color: #59645b;
+}
+
+.work-pill--priority-1 {
+    --priority-fill: #2865a0;
 }
 
 .work-pill--priority-2 {
-    color: #4c5f4b;
-    background: #edf1e9;
-    border-color: #cbd5c4;
+    --priority-fill: #efc05d;
 }
 
 .work-pill--priority-3 {
-    color: #805600;
-    background: #fff6df;
-    border-color: #eddaaa;
+    --priority-fill: #a64714;
 }
 
 .work-pill--priority-4 {
-    color: #a23229;
-    background: #fff0ee;
-    border-color: #e8bab4;
+    --priority-fill: #7b263f;
+}
+
+:is(
+    .work-pill--priority-1,
+    .work-pill--priority-2,
+    .work-pill--priority-3,
+    .work-pill--priority-4
+) {
+    color: #fff;
+    background: var(--priority-fill);
+    border-color: var(--priority-fill);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.13);
+    border-radius: 5px;
+    font-family: var(--pom-font-body);
+    letter-spacing: 0.1px;
+}
+
+.work-pill--priority-2 {
+    color: #382806;
 }
 
 .work-pill--active {
-    color: #2d7049;
-    background: #e6f2e9;
-    border-color: #badcc8;
+    color: #fff;
+    background: #365e3c;
+    border-color: #365e3c;
 }
 
 .work-status-strip {
@@ -315,16 +346,10 @@
 }
 
 /* Shared interaction refinements and mobile disclosure patterns */
-.app-navbar .dropdown-menu .dropdown-item:hover,
-.app-navbar .dropdown-menu .dropdown-item:focus-visible {
-    color: #fff;
-    background: #52616d;
-}
-
 .dropdown-item.text-danger:hover,
-.dropdown-item.text-danger:focus-visible {
-    color: #a52834 !important;
-    background: #fff0f1;
+.dropdown-item.text-danger:focus {
+    color: var(--pom-danger) !important;
+    background: var(--pom-danger-menu-hover);
 }
 
 .work-mobile-chevron,
@@ -462,9 +487,9 @@
 
     :is(.task-inline-fact, .issue-inline-fact, .event-inline-fact)
         :is(.work-pill--active, .work-pill--terminal) {
-        inline-size: 4.75rem;
+        inline-size: var(--pom-state-badge-width);
         min-height: 1.5rem;
-        padding-inline: 0.2rem;
+        padding-inline: 0.375rem;
     }
 
     :is(.task-inline-fact, .issue-inline-fact) .work-date-relative {
@@ -1174,6 +1199,22 @@
     }
 }
 
+/* Left-align the actions beneath compact contact headings; status is in the tabs row. */
+@media (max-width: 1199.98px) {
+    .contact-detail-action-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+
+    .contact-detail-action-group > .contact-detail-actions {
+        width: auto;
+        justify-content: flex-start;
+    }
+}
+
 /* Explain a selected record outside the active filters */
 .workspace-selection-notice {
     padding: 0.65rem 0.9rem;
@@ -1181,4 +1222,57 @@
     color: var(--bs-secondary-color);
     font-size: 0.8rem;
     line-height: 1.4;
+}
+
+/* Each state retains a label as well as its distinct colour. */
+.work-pill[data-state="scheduled"] {
+    background: #2865a0;
+    border-color: #2865a0;
+}
+
+.work-pill[data-state="completed"],
+.work-pill[data-state="resolved"] {
+    background: #176567;
+    border-color: #176567;
+}
+
+.work-pill[data-state="occurred"] {
+    background: #51458a;
+    border-color: #51458a;
+}
+
+.work-pill[data-state="dismissed"] {
+    background: #874565;
+    border-color: #874565;
+}
+
+.work-pill[data-state="cancelled"] {
+    background: #98491f;
+    border-color: #98491f;
+}
+
+/* Active is distinct from the olive application chrome. */
+.work-pill[data-state="active"] {
+    background: #365a82;
+    border-color: #365a82;
+}
+
+.work-header-menu-action {
+    display: none;
+}
+
+/* Intermediate split panes reserve the header width for the title. */
+@media (min-width: 861px) and (max-width: 1199.98px) {
+    :is(.task-detail-header, .issue-detail-header)
+        > :is(.task-detail-header-layout, .issue-detail-header-layout) {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    :is(.task-detail-actions, .issue-detail-actions) > :is(.btn, form) {
+        display: none;
+    }
+
+    .work-header-menu-action {
+        display: list-item;
+    }
 }

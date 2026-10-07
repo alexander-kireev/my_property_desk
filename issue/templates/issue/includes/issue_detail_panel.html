@@ -30,15 +30,41 @@
                                     data-bs-target="#reactivateIssueModal">Reactivate</button>
                         {% endif %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle issue-menu-button"
+                            <button class="app-kebab-button btn btn-outline-secondary dropdown-toggle issue-menu-button"
                                     type="button"
                                     data-bs-toggle="dropdown"
-                                    aria-label="Issue actions">⋮</button>
+                                    aria-label="Issue actions">{% include "includes/kebab_icon.html" %}</button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                {% if selected_issue.state == "active" %}<li><button class="dropdown-item"
-        type="button"
-        data-bs-toggle="modal"
-        data-bs-target="#dismissIssueModal">Dismiss issue</button></li>{% endif %}
+                                {% if selected_issue.state == "active" %}
+                                    <li class="work-header-menu-action">
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editIssueModal">Edit issue</button>
+                                    </li>
+                                    <li class="work-header-menu-action">
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#resolveIssueModal">Resolve issue</button>
+                                    </li>
+                                {% else %}
+                                    <li class="work-header-menu-action">
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#reactivateIssueModal">Reactivate issue</button>
+                                    </li>
+                                {% endif %}
+
+                                {% if selected_issue.state == "active" %}
+                                    <li>
+                                        <button class="dropdown-item"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#dismissIssueModal">Dismiss issue</button>
+                                    </li>
+                                {% endif %}
                                 <li>
                                     <button class="dropdown-item text-danger"
                                             type="button"
@@ -187,11 +213,13 @@
                                                           method="post"
                                                           action="{% url 'task:delete_task' task.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ task_workspace_url }}"><button class="btn btn-sm btn-outline-danger" type="submit">Delete</button></form>
                                                     <div class="dropdown issue-task-more">
-                                                        <button class="task-menu-button btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                        <button class="app-kebab-button task-menu-button btn btn-sm btn-outline-secondary dropdown-toggle"
                                                                 type="button"
                                                                 data-bs-toggle="dropdown"
                                                                 aria-expanded="false"
-                                                                aria-label="More task actions">⋮</button>
+                                                                aria-label="More task actions">
+                                                            {% include "includes/kebab_icon.html" %}
+                                                        </button>
                                                         <ul class="dropdown-menu dropdown-menu-end">
                                                             {% if task.state == "active" %}<li><form method="post" action="{% url 'task:dismiss_task' task.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ task_workspace_url }}"><button class="dropdown-item" type="submit">Dismiss task</button></form></li>{% endif %}
                                                             <li><form method="post" action="{% url 'task:delete_task' task.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ task_workspace_url }}"><button class="dropdown-item text-danger" type="submit">Delete task</button></form></li>

@@ -1,7 +1,7 @@
 """Public pages and thin authenticated Dashboard endpoints."""
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
@@ -13,6 +13,8 @@ from .dashboard.data import dashboard_data
 
 
 def home_view(request):
+    if request.user.is_authenticated:
+        return redirect("pages:dashboard")
     return render(request, "pages/home.html")
 
 
@@ -28,7 +30,10 @@ def contact_us_view(request):
 @ensure_csrf_cookie
 def dashboard_view(request):
     hour = timezone.localtime().hour
-    greeting = "Good morning" if hour < 12 else "Good afternoon" if hour < 18 else "Good evening"
+    greeting = (
+        "Hello" if hour < 5 else "Good morning" if hour < 12
+        else "Good afternoon" if hour < 18 else "Good evening"
+    )
     return render(
         request,
         "pages/dashboard.html",

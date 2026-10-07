@@ -30,9 +30,31 @@
     --bs-secondary-rgb: 101, 110, 103;
     --bs-link-color-rgb: 69, 102, 58;
     --bs-link-hover-color-rgb: 57, 87, 46;
+    --pom-menu-hover: #e6eedc;
+    --pom-menu-hover-text: #243d26;
     --pom-hover: var(--pom-surface-subtle);
     --pom-night: #243d26;
-    --pom-night-hover: #192c1b;
+    --pom-night-hover: #cad8bb;
+    --pom-danger: #7b263f;
+    --pom-danger-hover: #a53b5b;
+    --pom-danger-active: #591a2d;
+    --pom-danger-menu-hover: #f7dfe4;
+    --pom-danger-note-hover: #f4e3e8;
+
+    /* Shared notification palette; each toast retains its existing spacing. */
+    --pom-feedback-bg: #edf2e7;
+    --pom-feedback-border: #b9c9aa;
+    --pom-feedback-text: #243126;
+    --pom-feedback-accent: #365e3c;
+    --pom-feedback-detail: #466653;
+    --pom-feedback-error-bg: #fbf0f3;
+    --pom-feedback-error-border: #d4a7b5;
+    --bs-danger: #7b263f;
+    --bs-danger-rgb: 123, 38, 63;
+    --bs-danger-text-emphasis: #672039;
+    --bs-danger-bg-subtle: #fbf1f4;
+    --bs-danger-border-subtle: #d9acb9;
+    --pom-night-active: #39572e;
     --pom-shadow-sm: 0 1px 2px rgba(22, 24, 27, 0.05);
     --pom-shadow-md: 0 8px 22px rgba(22, 24, 27, 0.07);
     --pom-radius: 0.625rem;
@@ -105,7 +127,7 @@ h6,
 
 .app-navbar .navbar-brand,
 .app-navbar .nav-link {
-    color: #f5f7fa;
+    color: #fff;
 }
 
 .app-navbar .navbar-brand {
@@ -115,29 +137,30 @@ h6,
 
 .app-brand-logo {
     display: block;
-    width: 205px;
+    width: 225px;
     height: auto;
     max-width: 100%;
 }
 
 .app-footer-logo {
     display: block;
-    width: 175px;
+    width: 86px;
     height: auto;
 }
 
 .app-navbar .nav-link {
+    font-family: var(--pom-font-heading);
     font-size: 1.4rem;
 }
 
 .app-navbar .nav-link {
-    border-bottom: 2px solid transparent;
+    border-bottom: 1px solid transparent;
 }
 
 .app-navbar .nav-link:hover,
 .app-navbar .nav-link:focus,
 .app-navbar .nav-link.show {
-    color: #f5f7fa;
+    color: #fff;
     border-bottom-color: var(--pom-sage);
 }
 
@@ -153,9 +176,9 @@ h6,
 
 .app-navbar .nav-link[aria-current="page"],
 .app-navbar .my-work-menu-toggle.is-active-group {
-    border-bottom-color: #f5f7fa;
+    border-bottom-color: #fff;
     color: #fff;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .app-navbar .dropdown-item[aria-current="page"] {
@@ -167,7 +190,7 @@ h6,
 .app-navbar .dropdown-item:hover,
 .app-navbar .dropdown-item:focus-visible {
     color: var(--pom-text);
-    background: var(--pom-selected);
+    background: var(--pom-menu-hover);
 }
 
 .app-navbar .dropdown-menu {
@@ -175,19 +198,19 @@ h6,
 }
 
 .app-navbar .account-menu-button.is-active-group {
-    box-shadow: 0 0 0 2px #f5f7fa;
+    box-shadow: 0 0 0 2px #fff;
 }
 
 .app-navbar .navbar-toggler,
 .app-navbar .navbar-toggler:hover,
 .app-navbar .navbar-toggler[aria-expanded="true"] {
-    border: 1px solid #f5f7fa;
-    color: #f5f7fa;
+    border: 1px solid #fff;
+    color: #fff;
     opacity: 1;
 }
 
 .app-navbar .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23f5f7fa' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
     opacity: 1;
     filter: none;
 }
@@ -226,7 +249,7 @@ h6,
 
     .app-navbar .app-mobile-menu .nav-link[aria-current="page"] {
         background: rgba(255, 255, 255, 0.18);
-        border-left: 3px solid #f5f7fa;
+        border-left: 3px solid #fff;
         padding-left: calc(0.75rem - 3px);
     }
 
@@ -294,6 +317,7 @@ h6,
 }
 
 .profile-danger-card {
+    background: var(--bs-danger-bg-subtle);
     border-color: var(--bs-danger-border-subtle) !important;
 }
 
@@ -337,6 +361,21 @@ h6,
 
 .account-content {
     max-width: 760px;
+}
+
+/* Account actions keep their own column through tablet widths; the generic
+   profile form's 700px layout change would otherwise push them below values. */
+@media (min-width: 576px) {
+    .profile-account-card .profile-setting-row {
+        grid-template-columns: 6rem minmax(0, 1fr) 9.5rem;
+        gap: 1rem;
+    }
+
+    .profile-account-card .profile-setting-row > :nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+        width: 100%;
+    }
 }
 
 .profile-email-value {

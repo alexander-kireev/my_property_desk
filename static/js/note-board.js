@@ -75,6 +75,10 @@ if (noteUndoToast) {
             if (!response.ok) throw new Error("This note can no longer be undone.");
             window.location.reload();
         } catch (error) {
+            noteUndoToast.classList.add("app-feedback-toast--error");
+            noteUndoToast.setAttribute("role", "alert");
+            noteUndoToast.setAttribute("aria-live", "assertive");
+            noteUndoToast.querySelector(".app-feedback-icon").textContent = "!";
             noteUndoToast.querySelector("[data-note-undo-message]").textContent = error.message;
             button.hidden = true;
             start();

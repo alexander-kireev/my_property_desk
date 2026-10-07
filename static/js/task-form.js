@@ -97,6 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
             propertySelect.disabled = relationshipType !== "property";
             issueSelect.disabled = relationshipType !== "issue";
 
+            relationshipFieldset.querySelectorAll?.("[data-relationship-help]").forEach((help) => {
+                help.hidden = relationshipType !== "standalone";
+            });
             window.SearchableSelect?.refresh(propertySelect);
             window.SearchableSelect?.refresh(issueSelect);
         }

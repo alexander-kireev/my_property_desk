@@ -106,6 +106,7 @@
             <label class="form-label" for="{{ task_form.property.id_for_label }}">Property</label>
             <div>
                 <div data-searchable-select>{{ task_form.property }}</div>
+                <small class="text-body-secondary" data-relationship-help hidden>Choose Property under Related to to enable this field.</small>
                 {% include "includes/field_feedback.html" with field=task_form.property only %}
             </div>
         </div>
@@ -114,6 +115,7 @@
             <label class="form-label" for="{{ task_form.issue.id_for_label }}">Issue</label>
             <div>
                 <div data-searchable-select>{{ task_form.issue }}</div>
+                <small class="text-body-secondary" data-relationship-help hidden>Choose Issue under Related to to enable this field.</small>
                 {% include "includes/field_feedback.html" with field=task_form.issue only %}
             </div>
         </div>

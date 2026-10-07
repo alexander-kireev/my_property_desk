@@ -32,10 +32,10 @@
                                     data-bs-target="#reactivateEventModal">Reactivate</button>
                         {% endif %}
                         <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle event-menu-button"
+                            <button class="app-kebab-button btn btn-outline-secondary dropdown-toggle event-menu-button"
                                     type="button"
                                     data-bs-toggle="dropdown"
-                                    aria-label="Event actions">⋮</button>
+                                    aria-label="Event actions">{% include "includes/kebab_icon.html" %}</button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if selected_event.state == "scheduled" %}<li><button class="dropdown-item"
         type="button"

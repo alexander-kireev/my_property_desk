@@ -186,7 +186,8 @@
 }
 
 .property-menu-button {
-    min-width: 2.7rem;
+    width: 2.75rem;
+    min-width: 2.75rem;
     min-height: 2.75rem;
 }
 
@@ -879,6 +880,9 @@ summary.property-record-link::-webkit-details-marker {
     }
 
     .property-inline-open {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         flex: none;
         margin-left: auto;
     }
@@ -1056,8 +1060,8 @@ summary.property-record-link::-webkit-details-marker {
     }
 
     .property-inline-preview .property-menu-button {
-        width: 2.25rem;
-        min-height: 2rem;
+        width: 2.75rem;
+        min-height: 2.75rem;
     }
 }
 
