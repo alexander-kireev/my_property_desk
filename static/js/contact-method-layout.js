@@ -1,4 +1,4 @@
-// Match the method cards' bottom edge to the contact list's pagination divider.
+// Cap growing method cards at the contact list's pagination divider.
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = document.querySelector(".contact-workspace");
     const pagination = document.querySelector(".contact-pagination");
