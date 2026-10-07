@@ -138,7 +138,7 @@
     position: absolute;
     inset: 0 auto 0 0;
     width: 0.25rem;
-    background: var(--pom-accent);
+    background: var(--pom-brand-blue);
     content: "";
 }
 
@@ -187,7 +187,7 @@
     color: var(--bs-emphasis-color);
     font-weight: 600;
     background: transparent;
-    border-bottom-color: var(--pom-accent);
+    border-bottom-color: var(--pom-brand-blue);
 }
 
 /* Calendar and detail panel containers */
@@ -416,7 +416,7 @@ a.event-participant-name:focus-visible {
 
 .event-calendar-day.outside {
     color: #a4a6a8;
-    background: var(--pom-surface-subtle);
+    background: #fafafa;
 }
 
 .event-calendar-day.today {
@@ -721,7 +721,7 @@ a.event-participant-name:focus-visible {
     }
 
     .event-calendar-day.outside {
-        background: var(--pom-surface-subtle);
+        background: #fafbfc;
     }
 
     .event-calendar-day.today {
@@ -729,7 +729,7 @@ a.event-participant-name:focus-visible {
     }
 
     .event-calendar-day.agenda-selected {
-        background: var(--pom-selected);
+        background: #e5edf5;
         box-shadow: inset 0 0 0 2px var(--bs-emphasis-color);
     }
 
@@ -752,7 +752,7 @@ a.event-participant-name:focus-visible {
         width: 0.4rem;
         height: 0.4rem;
         border-radius: 50%;
-        background: var(--pom-accent);
+        background: var(--pom-brand-blue);
     }
 
     .event-calendar-day-number.is-selected,
@@ -772,11 +772,11 @@ a.event-participant-name:focus-visible {
         max-width: 100%;
         overflow: hidden;
         padding: 0.1rem 0.2rem;
-        border: 1px solid var(--pom-border);
-        border-left: 2px solid var(--pom-text-muted);
+        border: 1px solid #cbd3d8;
+        border-left: 2px solid #596a75;
         border-radius: 0.25rem;
-        color: var(--pom-text-muted);
-        background: var(--pom-surface-subtle);
+        color: #48555e;
+        background: #f8fafb;
         font-size: 0.67rem;
         font-weight: 500;
         line-height: 1.2;
@@ -827,7 +827,7 @@ a.event-participant-name:focus-visible {
         inset: 0 auto 0 0;
         z-index: 1;
         width: 0.25rem;
-        background: var(--pom-accent);
+        background: var(--pom-brand-blue);
         content: "";
     }
 
@@ -1171,7 +1171,7 @@ a.event-participant-name:focus-visible {
     }
 
     .event-mobile-view-button.active {
-        border-bottom-color: var(--pom-accent);
+        border-bottom-color: var(--pom-brand-blue);
         color: var(--bs-emphasis-color);
         font-weight: 600;
     }
@@ -1215,8 +1215,8 @@ a.event-participant-name:focus-visible {
         place-self: center;
         width: 27px;
         height: 27px;
-        border-color: var(--pom-border-strong);
-        color: var(--pom-text-muted);
+        border-color: #c2cbd2;
+        color: #394750;
     }
 
     .event-command-row .work-mobile-chevron svg {

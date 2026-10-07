@@ -42,7 +42,7 @@
     margin: 0;
     color: var(--bs-emphasis-color);
     font-size: clamp(1.35rem, 2.2vw, 2rem);
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.2;
 }
 
@@ -153,7 +153,7 @@
     border-radius: 0;
     padding: 0;
     background: transparent;
-    color: var(--pom-text-muted);
+    color: #445663;
     font-size: clamp(7px, 2.12cqw, 14px);
     line-height: 1;
     letter-spacing: normal;
@@ -161,7 +161,7 @@
 }
 
 .dashboard-page .dashboard-day-category:hover {
-    outline: 1px solid var(--pom-text-muted);
+    outline: 1px solid #506779;
     filter: none;
 }
 

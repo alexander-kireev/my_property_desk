@@ -36,8 +36,8 @@
 
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--pom-text-muted);
-    box-shadow: 0 0 0 0.18rem rgba(74, 109, 60, 0.18);
+    border-color: #6f7379;
+    box-shadow: 0 0 0 0.18rem rgba(28, 29, 31, 0.12);
 }
 
 .theme-action {
@@ -64,7 +64,7 @@
     font-weight: 600;
     line-height: 1.2;
     text-decoration: none;
-    background: var(--pom-selected);
+    background: #eceeef;
     border: var(--bs-border-width) solid var(--pom-border-strong);
     border-radius: 999px;
 }
@@ -81,7 +81,7 @@
     color: var(--bs-emphasis-color);
     text-decoration: none;
     background: var(--pom-hover);
-    border-color: var(--pom-text-muted);
+    border-color: #8d9298;
 }
 
 .command-pagination {
@@ -135,8 +135,8 @@
 }
 
 .form-check-input:focus {
-    border-color: var(--pom-text-muted);
-    box-shadow: 0 0 0 0.18rem rgba(74, 109, 60, 0.18);
+    border-color: #6f7379;
+    box-shadow: 0 0 0 0.18rem rgba(28, 29, 31, 0.14);
 }
 
 .footer-link {
@@ -201,7 +201,7 @@
 }
 
 .expandable-text-toggle:focus-visible {
-    outline: 2px solid var(--pom-accent);
+    outline: 2px solid var(--pom-brand-blue);
     outline-offset: 2px;
 }
 
@@ -770,7 +770,7 @@
     bottom: 0;
     left: 0;
     width: 4px;
-    background: var(--pom-accent);
+    background: var(--pom-brand-blue);
     content: "";
     pointer-events: none;
 }
@@ -780,7 +780,7 @@
 }
 
 .issue-task-summary:focus-visible {
-    outline: 3px solid var(--pom-focus);
+    outline: 3px solid #80b7ff;
     outline-offset: -3px;
 }
 
@@ -1378,16 +1378,16 @@
 }
 
 .btn-outline-secondary {
-    --bs-btn-color: var(--pom-text);
-    --bs-btn-border-color: var(--pom-text-muted);
+    --bs-btn-color: #26313a;
+    --bs-btn-border-color: #56616d;
     --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: var(--pom-text);
-    --bs-btn-hover-border-color: var(--pom-text);
+    --bs-btn-hover-bg: #27313a;
+    --bs-btn-hover-border-color: #27313a;
     --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: var(--pom-text);
-    --bs-btn-active-border-color: var(--pom-text);
-    --bs-btn-disabled-color: var(--pom-text-muted);
-    --bs-btn-disabled-border-color: var(--pom-border-strong);
+    --bs-btn-active-bg: #27313a;
+    --bs-btn-active-border-color: #27313a;
+    --bs-btn-disabled-color: #56616d;
+    --bs-btn-disabled-border-color: #8b949d;
     font-weight: 600;
 }
 
@@ -1405,16 +1405,16 @@
 }
 
 .pom-quiet {
-    --bs-btn-color: var(--pom-text);
+    --bs-btn-color: #2b3741;
     --bs-btn-bg: transparent;
     --bs-btn-border-color: transparent;
-    --bs-btn-hover-color: var(--pom-text);
-    --bs-btn-hover-bg: var(--pom-selected);
+    --bs-btn-hover-color: #1f2932;
+    --bs-btn-hover-bg: #e9edf1;
     --bs-btn-hover-border-color: transparent;
-    --bs-btn-active-color: var(--pom-text);
-    --bs-btn-active-bg: var(--pom-selected-hover);
+    --bs-btn-active-color: #1f2932;
+    --bs-btn-active-bg: #dfe5ea;
     --bs-btn-active-border-color: transparent;
-    --bs-btn-disabled-color: var(--pom-text-muted);
+    --bs-btn-disabled-color: #69747e;
     font-weight: 600;
     text-decoration: none;
 }
@@ -1439,7 +1439,7 @@
 ):focus-visible,
 :is(.my-work-section-nav, .issue-detail-tabs, .event-right-tabs) .nav-link:focus-visible,
 .event-duration-choice:focus-within {
-    outline: 3px solid var(--pom-accent);
+    outline: 3px solid var(--pom-brand-blue);
     outline-offset: 2px;
     box-shadow: none;
 }
@@ -1498,7 +1498,7 @@
 .contact-detail-tab.active,
 :is(.event-command-page, .dashboard-page) .event-form-tab.is-active {
     color: var(--bs-emphasis-color);
-    border-bottom-color: var(--pom-accent);
+    border-bottom-color: var(--pom-brand-blue);
     font-weight: 600;
     background: transparent;
 }
@@ -1510,7 +1510,7 @@
 /* One chip vocabulary; event chips are labels, not interactive filters. */
 .task-filter-chip,
 .command-filter-clear {
-    color: var(--pom-text);
+    color: #26313a;
     background: var(--bs-tertiary-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 999px;
@@ -1520,9 +1520,9 @@
 
 .task-filter-chip:hover,
 .command-filter-clear:hover {
-    color: var(--pom-text);
+    color: #1f2932;
     background: var(--pom-hover);
-    border-color: var(--pom-border-strong);
+    border-color: #a9b4be;
 }
 
 .event-command-page .event-filter-chip {
@@ -1696,9 +1696,9 @@
     resize: vertical;
 }
 
-/* Keyboard focus is olive on app surfaces and white in the dark navigation. */
+/* Keyboard focus is blue on app surfaces and white in the dark navigation. */
 body :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-    outline: 3px solid var(--pom-accent);
+    outline: 3px solid var(--pom-brand-blue);
     outline-offset: 2px;
     box-shadow: none;
 }
@@ -1773,35 +1773,4 @@ body :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible 
     white-space: normal;
     overflow-wrap: anywhere;
     user-select: text;
-}
-
-/* Bootstrap components consume the same olive tokens as custom controls. */
-.btn-primary {
-    --bs-btn-bg: var(--pom-night);
-    --bs-btn-border-color: var(--pom-night);
-    --bs-btn-hover-bg: var(--pom-night-hover);
-    --bs-btn-hover-border-color: var(--pom-night-hover);
-    --bs-btn-active-bg: var(--pom-night-hover);
-    --bs-btn-active-border-color: var(--pom-night-hover);
-    --bs-btn-disabled-bg: var(--pom-night);
-    --bs-btn-disabled-border-color: var(--pom-night);
-    --bs-btn-focus-shadow-rgb: 74, 109, 60;
-}
-
-.badge {
-    border-radius: 999px;
-}
-
-.dropdown-menu {
-    --bs-dropdown-link-active-bg: var(--pom-accent);
-}
-
-.pagination {
-    --bs-pagination-active-bg: var(--pom-accent);
-    --bs-pagination-active-border-color: var(--pom-accent);
-    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(74, 109, 60, 0.2);
-}
-
-.form-range {
-    accent-color: var(--pom-accent);
 }

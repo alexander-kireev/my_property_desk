@@ -3,51 +3,32 @@
 /* Design tokens and page foundations */
 :root,
 [data-bs-theme="light"] {
-    --pom-canvas: #f3f5f4;
+    --pom-canvas: #f3f3f4;
     --pom-surface: #fff;
-    --pom-surface-subtle: #f7f9f8;
-    --pom-border: #d4d9d5;
-    --pom-border-strong: #adb5af;
-    --pom-text: #202820;
-    --pom-text-muted: #656e67;
-    --pom-accent: #4a6d3c;
-    --pom-sage: #91a96f;
-    --pom-selected: #e9eee7;
-    --pom-selected-hover: #dce5d6;
-    --pom-focus: #4a6d3c;
-    --pom-font-heading: georgia, "Times New Roman", serif;
-    --pom-font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
-    --bs-body-font-family: var(--pom-font-body);
-    --bs-focus-ring-color: rgba(74, 109, 60, 0.25);
-    --bs-secondary-bg: #e9eee7;
-    --bs-secondary-bg-rgb: 233, 238, 231;
-    --bs-primary: #4a6d3c;
-    --bs-primary-rgb: 74, 109, 60;
-    --bs-primary-text-emphasis: #39572e;
-    --bs-primary-bg-subtle: #e9eee7;
-    --bs-primary-border-subtle: #adbda3;
-    --bs-secondary: #656e67;
-    --bs-secondary-rgb: 101, 110, 103;
-    --bs-link-color-rgb: 69, 102, 58;
-    --bs-link-hover-color-rgb: 57, 87, 46;
+    --pom-surface-subtle: #f7f7f8;
+    --pom-border: #d5d6d8;
+    --pom-border-strong: #bfc2c6;
+    --pom-text: #1c1d1f;
+    --pom-text-muted: #666a70;
+    --pom-brand-blue: #338be6;
     --pom-hover: var(--pom-surface-subtle);
-    --pom-night: #243d26;
-    --pom-night-hover: #192c1b;
+    --pom-night: #151b22;
+    --pom-night-hover: #30353a;
     --pom-shadow-sm: 0 1px 2px rgba(22, 24, 27, 0.05);
     --pom-shadow-md: 0 8px 22px rgba(22, 24, 27, 0.07);
     --pom-radius: 0.625rem;
     --bs-body-bg: var(--pom-surface);
     --bs-body-bg-rgb: 255, 255, 255;
     --bs-body-color: var(--pom-text);
-    --bs-body-color-rgb: 32, 40, 32;
+    --bs-body-color-rgb: 28, 29, 31;
     --bs-tertiary-bg: var(--pom-surface-subtle);
-    --bs-tertiary-bg-rgb: 247, 249, 248;
+    --bs-tertiary-bg-rgb: 247, 247, 248;
     --bs-border-color: var(--pom-border);
     --bs-emphasis-color: var(--pom-text);
-    --bs-emphasis-color-rgb: 32, 40, 32;
+    --bs-emphasis-color-rgb: 28, 29, 31;
     --bs-secondary-color: var(--pom-text-muted);
-    --bs-link-color: #45663a;
-    --bs-link-hover-color: #39572e;
+    --bs-link-color: #30343a;
+    --bs-link-hover-color: #000;
 }
 
 .page-shell {
@@ -72,25 +53,6 @@ body {
     color: var(--pom-text);
 }
 
-/* Broad serif headings pair with the system sans used for controls and data. */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.h1,
-.h2,
-.h3,
-.h4,
-.h5,
-.h6,
-.dashboard-greeting {
-    font-family: var(--pom-font-heading);
-    font-weight: 500;
-    letter-spacing: -0.025em;
-}
-
 /* Application navigation and responsive menus */
 .app-navbar {
     position: sticky;
@@ -99,7 +61,7 @@ h6,
     flex-shrink: 0;
     min-height: 4.9rem;
     background: var(--pom-night);
-    border-bottom: 1px solid #192c1b;
+    border-bottom: 1px solid #30353a;
     box-shadow: var(--pom-shadow-sm);
 }
 
@@ -138,7 +100,7 @@ h6,
 .app-navbar .nav-link:focus,
 .app-navbar .nav-link.show {
     color: #f5f7fa;
-    border-bottom-color: var(--pom-sage);
+    border-bottom-color: #aeb8c2;
 }
 
 .app-navbar .my-work-menu-toggle:hover,
@@ -160,14 +122,8 @@ h6,
 
 .app-navbar .dropdown-item[aria-current="page"] {
     background: var(--pom-hover);
-    color: var(--pom-text);
+    color: #24313b;
     font-weight: 700;
-}
-
-.app-navbar .dropdown-item:hover,
-.app-navbar .dropdown-item:focus-visible {
-    color: var(--pom-text);
-    background: var(--pom-selected);
 }
 
 .app-navbar .dropdown-menu {

@@ -202,7 +202,7 @@
     min-height: 1.7rem;
     padding: 0.1rem 0.45rem;
     border: 1px solid;
-    border-radius: 999px;
+    border-radius: 0.3rem;
     font-size: 0.73rem;
     font-weight: 650;
     line-height: 1.25;
@@ -252,15 +252,15 @@
 
 .work-pill--priority-1,
 .work-pill--terminal {
-    color: #59625b;
-    background: #f1f3f1;
-    border-color: #d4d9d5;
+    color: #515b64;
+    background: #f1f3f5;
+    border-color: #d1d6da;
 }
 
 .work-pill--priority-2 {
-    color: #4c5f4b;
-    background: #edf1e9;
-    border-color: #cbd5c4;
+    color: #185a8b;
+    background: #e8f3ff;
+    border-color: #bcd7ee;
 }
 
 .work-pill--priority-3 {
@@ -276,17 +276,17 @@
 }
 
 .work-pill--active {
-    color: #2d7049;
-    background: #e6f2e9;
+    color: #176949;
+    background: #eaf7ef;
     border-color: #badcc8;
 }
 
 .work-status-strip {
     margin: 0.85rem 0 0.9rem;
     padding: 0.5rem 0.65rem;
-    border-left: 3px solid var(--pom-border-strong);
+    border-left: 3px solid #aab5bc;
     border-radius: 0.2rem;
-    background: var(--pom-surface-subtle);
+    background: #f4f6f7;
     font-size: 0.82rem;
 }
 
@@ -369,8 +369,8 @@
         flex-basis: 27px;
         width: 27px;
         height: 27px;
-        border-color: var(--pom-border-strong);
-        color: var(--pom-text-muted);
+        border-color: #c2cbd2;
+        color: #394750;
     }
 
     .task-command-row .work-mobile-chevron svg {
@@ -933,8 +933,8 @@
     }
 
     .issue-list-row .work-mobile-chevron {
-        color: var(--pom-text-muted);
-        border-color: var(--pom-border-strong);
+        color: #394750;
+        border-color: #c2cbd2;
         width: 27px;
         height: 27px;
         flex-basis: 27px;
@@ -1092,10 +1092,10 @@
     place-self: center;
     width: 27px;
     height: 27px;
-    border: 1px solid var(--pom-border-strong);
+    border: 1px solid #c2cbd2;
     border-radius: 50%;
     background: var(--bs-body-bg);
-    color: var(--pom-text-muted);
+    color: #394750;
 }
 
 .issue-linked-task-grid .issue-task-chevron svg {
