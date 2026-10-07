@@ -99,7 +99,7 @@
 }
 
 .event-form-tab.is-active {
-    border-bottom-color: var(--pom-brand-blue);
+    border-bottom-color: var(--pom-accent);
     color: var(--bs-body-color);
     font-weight: 600;
 }
