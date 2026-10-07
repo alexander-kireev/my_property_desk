@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         task: [
             ["all", "All active"],
             ["unscheduled", "Unscheduled"],
-            ["today", "Scheduled for today"],
+            ["today", "Today"],
             ["other", "Other scheduled"],
         ],
         issue: [
@@ -45,7 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const priorities = [
         ["any", "Any priority"],
-        ["high", "High or urgent"],
+        ["priority-urgent", "Urgent"],
+        ["priority-high", "High"],
+        ["priority-medium", "Medium"],
+        ["priority-low", "Low"],
     ];
     // Page data and the user's current view
     let data = {
@@ -77,7 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
         kind = returning.kind;
         filter = returning.filter;
-        secondaryFilter = returning.secondaryFilter;
+        // Old "high" meant High or Urgent; reset it rather than silently changing its meaning.
+        secondaryFilter = priorities.some(([value]) => value === returning.secondaryFilter)
+            ? returning.secondaryFilter
+            : "any";
         shown = returning.shown;
         expanded = returning.expanded;
     }
@@ -292,8 +298,15 @@ document.addEventListener("DOMContentLoaded", () => {
             get("dashboard").querySelector(`[data-calendar-filter="${kind}"]`).checked;
         const scheduledTasks = countByDate(show("tasks") ? data.records.task : [], "date");
         const scheduledEvents = countByDate(show("events") ? data.records.event : [], "date");
-        const taskDeadlines = countByDate(show("tasks") ? data.records.task : [], "due");
-        const issueDeadlines = countByDate(show("issues") ? data.records.issue : [], "due");
+        const showDeadlines = show("deadlines");
+        const taskDeadlines = countByDate(showDeadlines ? data.records.task : [], "due");
+        const issueDeadlines = countByDate(showDeadlines ? data.records.issue : [], "due");
+        const grid = get("calendarGrid");
+        const calendarIcons = {
+            tasks: escapeHtml(grid.dataset.taskIcon),
+            events: escapeHtml(grid.dataset.eventIcon),
+            deadlines: escapeHtml(grid.dataset.deadlineIcon),
+        };
         const cells = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
             (day) => `<span class="dashboard-weekday">${day}</span>`,
         );
@@ -320,27 +333,29 @@ document.addEventListener("DOMContentLoaded", () => {
             let eventButton = "";
             let dueButton = "";
             if (tasks) {
-                taskButton = `<button type="button" class="dashboard-day-count dashboard-day-category"
-                    data-category="tasks" aria-label="${tasks} scheduled ${taskNoun} on ${dateLabel}; show Tasks">${tasks}<span class="dashboard-count-label"> ${taskNoun}</span></button>`;
+                taskButton = `<button type="button" class="dashboard-day-category"
+                    data-category="tasks" aria-label="${tasks} scheduled ${taskNoun} on ${dateLabel}; show Tasks"><img src="${calendarIcons.tasks}" alt="" aria-hidden="true"><span aria-hidden="true">${tasks}</span></button>`;
             }
             if (events) {
-                eventButton = `<button type="button" class="dashboard-event-count dashboard-day-category"
-                    data-category="events" aria-label="${events} ${eventNoun} on ${dateLabel}; show Events">${events}<span class="dashboard-count-label"> ${eventNoun}</span></button>`;
+                eventButton = `<button type="button" class="dashboard-day-category"
+                    data-category="events" aria-label="${events} ${eventNoun} on ${dateLabel}; show Events"><img src="${calendarIcons.events}" alt="" aria-hidden="true"><span aria-hidden="true">${events}</span></button>`;
             }
             if (due) {
-                dueButton = `<button type="button" class="dashboard-due-count dashboard-day-category"
-                    data-category="deadlines" aria-label="${due} ${deadlineNoun} on ${dateLabel}; show Deadlines">${due}<span class="dashboard-count-label"> due</span></button>`;
+                dueButton = `<button type="button" class="dashboard-day-category"
+                    data-category="deadlines" aria-label="${due} ${deadlineNoun} on ${dateLabel}; show Deadlines"><img src="${calendarIcons.deadlines}" alt="" aria-hidden="true"><span aria-hidden="true">${due}</span></button>`;
             }
+            const categories = `<div class="dashboard-calendar-metrics">
+                ${taskButton || '<span class="dashboard-calendar-slot" aria-hidden="true"></span>'}
+                ${eventButton || '<span class="dashboard-calendar-slot" aria-hidden="true"></span>'}
+                ${dueButton || '<span class="dashboard-calendar-slot" aria-hidden="true"></span>'}
+            </div>`;
             cells.push(`<div class="dashboard-day ${otherClass} ${selectedClass} ${todayClass}" data-day="${value}">
                 <button type="button" class="dashboard-date-button" aria-label="Select ${dateLabel}" ${todayAttribute}>
                     <strong>${date.getUTCDate()}${todayDot}</strong>
                 </button>
-                ${taskButton}
-                ${eventButton}
-                ${dueButton}
+                ${categories}
             </div>`);
         }
-        const grid = get("calendarGrid");
         grid.innerHTML = cells.join("");
     }
     function renderDay() {
@@ -350,8 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const dueTasks = data.records.task.filter((item) => item.due === selected);
         const dueIssues = data.records.issue.filter((item) => item.due === selected);
         const due = [...dueTasks, ...dueIssues];
-        get("selectedDayCount").textContent =
-            `${tasks.length} task${tasks.length === 1 ? "" : "s"} · ${events.length} event${events.length === 1 ? "" : "s"} · ${due.length} deadline${due.length === 1 ? "" : "s"}`;
         const groups = { tasks, deadlines: due, events };
         for (const tab of get("dashboard").querySelectorAll("[data-day-tab]")) {
             const selectedTab = tab.dataset.dayTab === dayTab;

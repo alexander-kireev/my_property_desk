@@ -170,12 +170,6 @@
     box-shadow: none;
 }
 
-.dashboard-add-plus {
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1;
-}
-
 .dashboard-add-menu {
     position: absolute;
     z-index: 30;
@@ -394,7 +388,7 @@
     max-width: 100%;
     overflow: hidden;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -489,7 +483,7 @@
     min-width: 0;
     overflow: hidden;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 400;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -541,10 +535,12 @@
 
     .dashboard-event-side {
         flex-wrap: wrap;
+        justify-content: flex-start;
     }
 
     .dashboard-event-side .dashboard-row-timing {
-        margin-left: auto;
+        justify-content: flex-start;
+        text-align: left;
     }
 
     .dashboard-row-timing {
@@ -555,6 +551,38 @@
         grid-column: 2;
         grid-row: 1 / 3;
     }
+}
+
+/* Selected-day summaries use only a badge and, for Events, a time. */
+@media (min-width: 600px) {
+    .dashboard-day-row .dashboard-row-toggle,
+    .dashboard-day-row[data-kind="event"] .dashboard-row-toggle {
+        grid-template-columns: minmax(0, 1fr) max-content 27px;
+    }
+}
+
+.dashboard-day-row .dashboard-event-side .work-pill {
+    inline-size: auto;
+    min-width: 0;
+    padding-inline: 0.5rem;
+}
+
+/* Empty Event context should not reserve an extra line on narrow rows. */
+@media (max-width: 599.98px) {
+    .dashboard-work-row[data-kind="event"] .dashboard-row-toggle,
+    .dashboard-day-row[data-kind="event"] .dashboard-row-toggle {
+        min-height: 0;
+    }
+
+    .dashboard-work-row[data-kind="event"] .dashboard-row-context:empty,
+    .dashboard-day-row[data-kind="event"] .dashboard-row-context:empty {
+        display: none;
+    }
+}
+
+/* Match the second header row without fixing heights for wrapped dates or zoom. */
+.dashboard-operations > .dashboard-tabs {
+    min-height: 3.25rem;
 }
 
 /* Expanded record details and row actions */
@@ -746,7 +774,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    min-height: 49px;
+    min-height: 3.25rem;
     padding: 7px 10px;
     border-bottom: 1px solid #dbe1e6;
 }
@@ -806,9 +834,11 @@
     flex: none;
 }
 
+/* Six-week months may exceed the fixed desktop panel height. */
 .dashboard-calendar-body {
-    flex: none;
+    flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
 }
 
 .dashboard-calendar-grid {
@@ -831,6 +861,7 @@
     font-weight: 650;
 }
 
+/* Three category targets and the date must fit even in narrow desktop columns. */
 .dashboard-day {
     position: relative;
     display: flex;
@@ -838,8 +869,7 @@
     align-items: stretch;
     gap: 1px;
     min-width: 0;
-    min-height: 3rem;
-    aspect-ratio: 1 / 1.08;
+    min-height: 6.5rem;
     overflow: hidden;
     border: 0;
     border-right: 1px solid #dbe1e6;
@@ -916,29 +946,11 @@
     box-shadow: inset 0 0 0 2px var(--bs-border-color);
 }
 
-.dashboard-day-count,
-.dashboard-event-count,
-.dashboard-due-count {
-    box-sizing: border-box;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 0.67rem;
-    line-height: 1.2;
-}
-
 .dashboard-day-category {
     position: relative;
     z-index: 1;
-    display: block;
-    width: 100%;
-    min-height: 15px;
     border: 0;
     cursor: pointer;
-    text-align: left;
 }
 
 .dashboard-day-category:hover {
@@ -951,33 +963,12 @@
     outline-offset: 1px;
 }
 
-.dashboard-day-count {
-    border: 1px solid #b9d4ea;
-    border-left: 2px solid #377cad;
-    background: #eef6fc;
-    color: #285a7c;
-}
-
-.dashboard-event-count {
-    border: 1px solid #bcd8ca;
-    border-left: 2px solid #367b59;
-    background: #eff8f3;
-    color: #2e684c;
-}
-
-.dashboard-due-count {
-    border: 1px solid #e0c382;
-    border-left: 2px solid #946715;
-    background: #fff4dc;
-    color: #775414;
-}
-
 /* Selected-day summary and agenda */
 .dashboard-day-heading {
     display: flex;
     align-items: center;
     flex: none;
-    min-height: 64px;
+    min-height: 3.25rem;
     padding: 10px 12px;
     border-bottom: 1px solid #dbe1e6;
     background: #fff;
@@ -990,20 +981,9 @@
     min-height: 0;
 }
 
-.dashboard-day-heading-copy {
-    display: grid;
-    gap: 3px;
-    min-width: 0;
-}
-
-.dashboard-day-heading-copy strong {
+.dashboard-day-heading strong {
     font-size: 1.05rem;
     line-height: 1.25;
-}
-
-.dashboard-day-heading-copy > span {
-    color: var(--bs-secondary-color);
-    font-size: 0.875rem;
 }
 
 .dashboard-day-tabs .nav-link {
@@ -1306,6 +1286,26 @@
     min-height: 0;
 }
 
+#workDialog:has(#workEventTabs:not([hidden])) .modal-content {
+    height: min(42rem, calc(100dvh - 2rem));
+}
+
+#workDialog:has(#workEventTabs:not([hidden])) .modal-content > form,
+#workDialog:has(#workEventTabs:not([hidden])) .event-form-body,
+#workDialog:has(#workEventTabs:not([hidden])) [data-event-panel="participants"]:not([hidden]),
+#workDialog:has(#workEventTabs:not([hidden])) .event-contact-picker {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#workDialog:has(#workEventTabs:not([hidden])) .event-contact-choices {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 0;
+}
+
 .dashboard-dialog .modal-content {
     overflow: hidden;
 }
@@ -1561,13 +1561,6 @@
         font-size: 0.67rem;
     }
 
-    .dashboard-day-count,
-    .dashboard-event-count,
-    .dashboard-due-count {
-        font-size: 0.65rem;
-        padding: 1px 2px;
-    }
-
     .dashboard-panel-nav:not([hidden]) {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1661,11 +1654,6 @@
         grid-column: 1;
         grid-row: 1;
     }
-
-    .dashboard-calendar-body {
-        flex: 1 1 auto;
-        overflow-y: auto;
-    }
 }
 
 @media (max-width: 860px) {
@@ -1702,44 +1690,6 @@
 
     .dashboard-calendar-jump .app-select:first-of-type {
         width: 105px;
-    }
-
-    .dashboard-day {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        align-content: end;
-        gap: 1px;
-        padding: 25px 1px 2px;
-        font-size: 0.67rem;
-    }
-
-    .dashboard-day-category {
-        min-height: 20px;
-        text-align: center;
-    }
-
-    .dashboard-day-category[data-category="tasks"] {
-        grid-column: 1;
-    }
-
-    .dashboard-day-category[data-category="events"] {
-        grid-column: 2;
-    }
-
-    .dashboard-day-category[data-category="deadlines"] {
-        grid-column: 3;
-    }
-
-    .dashboard-day-count,
-    .dashboard-event-count,
-    .dashboard-due-count {
-        font-size: 0.65rem;
-        line-height: 1.1;
-        padding: 1px;
-    }
-
-    .dashboard-count-label {
-        display: none;
     }
 
     .dashboard-toast {

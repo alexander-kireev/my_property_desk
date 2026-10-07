@@ -36,7 +36,7 @@
                                 {% if selected_contact.state == "active" %}<li><button class="dropdown-item"
         type="button"
         data-bs-toggle="modal"
-        data-bs-target="#deactivateContactModal">Deactivate contact</button></li><li><hr class="dropdown-divider"></li>{% endif %}
+        data-bs-target="#deactivateContactModal">Deactivate contact</button></li>{% endif %}
                                 <li>
                                     <button class="dropdown-item text-danger"
                                             type="button"
@@ -67,10 +67,10 @@
                                  aria-labelledby="contact-methods-heading">
                             <div class="contact-methods-heading d-flex align-items-center justify-content-between gap-3 mb-3">
                                 <h3 class="h5 mb-0" id="contact-methods-heading">Contact methods</h3>
-                                {% if selected_contact.state == "active" %}<button class="btn btn-sm theme-action"
+                                {% if selected_contact.state == "active" %}<button class="btn btn-sm theme-action app-add-control"
         type="button"
         data-bs-toggle="modal"
-        data-bs-target="#addContactMethodModal">+ Add detail</button>{% endif %}
+        data-bs-target="#addContactMethodModal">{% include "includes/action_icon.html" with icon="plus" only %} Add detail</button>{% endif %}
                             </div>
                             {% if contact_methods %}
                                 <div class="contact-methods-grid">

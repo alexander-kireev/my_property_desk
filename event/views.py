@@ -209,7 +209,9 @@ def add_event_contacts_to_event_view(request, event_id):
         added = EventContact.objects.filter(event=event).count() - before_count
         if added:
             messages.success(request, f"{added} participant{'s' if added != 1 else ''} added.")
-        return redirect(_event_workspace_url(request, event_id=event.pk))
+        return redirect(
+            _event_workspace_url(request, event_id=event.pk, preserve_participant_origin=True)
+        )
     return _redirect_with_event_form_state(
         request,
         action="add_event_contacts",
@@ -230,4 +232,6 @@ def delete_event_contact_from_event_view(request, event_id, event_contact_id):
     )
     remove_contact_from_event(event_contact=event_contact)
     messages.success(request, "Participant removed.")
-    return redirect(_event_workspace_url(request, event_id=event.pk))
+    return redirect(
+        _event_workspace_url(request, event_id=event.pk, preserve_participant_origin=True)
+    )

@@ -3,6 +3,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const workspace = document.getElementById("eventWorkspace");
     const parameters = new URLSearchParams(window.location.search);
 
+    // The view can change without navigation; submit the current view with participants.
+    const participantsModal = document.getElementById("addEventContactsModal");
+    participantsModal?.addEventListener("show.bs.modal", () => {
+        const form = participantsModal.querySelector("[data-participant-origin]");
+        if (!form) return;
+        const action = new URL(form.action);
+        const current = new URL(window.location.href);
+        for (const name of ["view", "agenda_day", "tab", "open"]) {
+            action.searchParams.delete(name);
+            if (current.searchParams.has(name)) {
+                action.searchParams.set(name, current.searchParams.get(name));
+            }
+        }
+        form.action = action.href;
+    });
+
+    if (parameters.get("focus") === "participants") {
+        const controls = document.querySelectorAll('[data-bs-target="#addEventContactsModal"]');
+        requestAnimationFrame(() => {
+            const visibleControl = [...controls].find((control) => control.getClientRects().length);
+            visibleControl?.focus();
+        });
+    }
+
     // Switch between the phone list and calendar without leaving the page.
     document.querySelectorAll("[data-event-mobile-view]").forEach((button) => {
         button.addEventListener("click", () => {
@@ -34,6 +58,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (listTab)
                     listTab.value =
                         tab.dataset.bsTarget === "#eventCalendarPanel" ? "calendar" : "details";
+                const url = new URL(window.location.href);
+                url.searchParams.set(
+                    "tab",
+                    tab.dataset.bsTarget === "#eventCalendarPanel" ? "calendar" : "details",
+                );
+                window.history.replaceState(window.history.state, "", url);
             });
         });
 

@@ -1,0 +1,11 @@
+{# Decorative strokes shared by Add controls; the button supplies the accessible name. #}
+<svg class="app-action-icon"
+     viewBox="0 0 24 24"
+     aria-hidden="true"
+     focusable="false">
+    {% if icon == "plus" %}
+        <path d="M12 5v14M5 12h14" />
+    {% else %}
+        <path d="m6 9 6 6 6-6" />
+    {% endif %}
+</svg>

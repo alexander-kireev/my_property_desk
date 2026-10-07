@@ -1,10 +1,11 @@
 """Owner-scoped Dashboard queries and the JSON shapes consumed by the browser."""
 
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import JsonResponse
 from django.utils import timezone
 
-from event.models import Event
+from contact.models import Contact
+from event.models import Event, EventContact
 from issue.models import Issue
 from note.selectors import general_notes_for_user
 from property.models import Property
@@ -57,6 +58,10 @@ def record_data(record, kind):
             end_time=record.end_time.strftime("%H:%M") if record.end_time else "",
             user_participation_required=record.user_participation_required,
             user_presence_required=record.user_presence_required,
+            contact_ids=[
+                link.contact_id
+                for link in getattr(record, "active_event_contacts", ())
+            ],
         )
     return data
 
@@ -88,6 +93,17 @@ def dashboard_data(request):
             if kind == "task"
             else queryset.select_related("property")
         )
+        if kind == "event":
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "event_contacts",
+                    queryset=EventContact.objects.filter(
+                        contact__state=Contact.State.ACTIVE,
+                        contact__deleted_at__isnull=True,
+                    ),
+                    to_attr="active_event_contacts",
+                )
+            )
         records[kind] = [record_data(item, kind) for item in queryset.order_by("pk")]
     notes = [
         {

@@ -14,11 +14,11 @@
             <input type="hidden" name="tab" value="{{ active_tab }}" data-event-list-tab>
             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
                 <h1 class="h5 mb-0">Events</h1>
-                <button class="btn btn-sm theme-action work-add-button"
+                <button class="btn btn-sm theme-action work-add-button app-add-control"
                         type="button"
                         data-bs-toggle="modal"
                         data-bs-target="#addEventModal"
-                        {% if not add_event_form %} disabled{% endif %}>+ Add event</button>
+                        {% if not add_event_form %} disabled{% endif %}>{% include "includes/action_icon.html" with icon="plus" only %} Add event</button>
             </div>
             <div class="event-control-row">
                 <label class="visually-hidden" for="eventSearch">Search events</label>

@@ -8,12 +8,13 @@ from django.http import JsonResponse
 
 from config.feedback import form_values_changed, snapshot_form_values
 from event.forms import EventContactForm, EventForm
-from event.models import Event
+from event.models import Event, EventContact
 from event.services import (
     cancel_event,
     create_event,
     delete_event,
     mark_event_occurred,
+    set_event_contacts,
     update_event,
 )
 from issue.forms import IssueForm
@@ -233,11 +234,29 @@ def _save_record(request, action, kind, record):
     if not form.is_valid():
         return JsonResponse({"errors": form.errors}, status=400)
     contacts_form = None
-    if kind == "event" and action == "add":
-        contacts_form = EventContactForm(request.POST, user=request.user)
+    managing_contacts = kind == "event" and (
+        action == "add" or request.POST.get("manage_contacts") == "1"
+    )
+    if managing_contacts:
+        contacts_form = EventContactForm(
+            request.POST, user=request.user, event=record, include_existing=action == "edit"
+        )
         if not contacts_form.is_valid():
             return JsonResponse({"errors": contacts_form.errors}, status=400)
-    if record is not None and not form_values_changed(before, form):
+    details_changed = record is None or form_values_changed(before, form)
+    participants_changed = False
+    if kind == "event" and record is not None and managing_contacts:
+        editable_ids = set(
+            contacts_form.fields["contacts"].queryset.values_list("pk", flat=True)
+        )
+        current_ids = set(
+            EventContact.objects.filter(event=record, contact_id__in=editable_ids).values_list(
+                "contact_id", flat=True
+            )
+        )
+        chosen_ids = {contact.pk for contact in contacts_form.cleaned_data["contacts"]}
+        participants_changed = chosen_ids != current_ids
+    if record is not None and not details_changed and not participants_changed:
         return JsonResponse({"ok": True, "id": record.pk, "changed": False})
 
     values = form.cleaned_data
@@ -257,5 +276,9 @@ def _save_record(request, action, kind, record):
                 user=request.user, contacts=contacts_form.cleaned_data["contacts"], **values
             )
         else:
-            record = update_event(event=record, **values)
+            with transaction.atomic():
+                if details_changed:
+                    record = update_event(event=record, **values)
+                if participants_changed:
+                    set_event_contacts(event=record, contacts=contacts_form.cleaned_data["contacts"])
     return JsonResponse({"ok": True, "id": record.pk, "changed": True})

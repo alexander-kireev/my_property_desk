@@ -97,7 +97,7 @@ test("relationship details keep a single-line box without deleted badges or unli
         "issue/templates/issue/includes/issue_detail_panel.html", "issue/templates/issue/includes/mobile_issue_details.html",
         "event/templates/event/includes/event_detail_panel.html", "event/templates/event/includes/mobile_event_details.html",
     ];
-    const templates = paths.map(read).join("\n");
+    const templates = [...paths, "templates/includes/related_record_link.html"].map(read).join("\n");
     assert.match(siteCss, /\.task-related-copy \{[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap/s);
     assert.match(siteCss, /\.task-related-deleted \{[^}]*border: 1px solid/s);
     assert.doesNotMatch(templates, /Deleted property|Deleted issue|>Not linked</);
@@ -158,7 +158,7 @@ test("compact tabs and linked-task rows retain readable layouts", () => {
 });
 
 test("Issue Tasks uses its tab row for Add task and starts the pane with task rows", () => {
-    assert.match(issuePage, /class="issue-detail-tabs[^\"]*">[\s\S]*?data-bs-target="#issueTasksPanel"[\s\S]*?class="btn btn-sm theme-action issue-add-task-button"/);
+    assert.match(issuePage, /class="issue-detail-tabs[^\"]*">[\s\S]*?data-bs-target="#issueTasksPanel"[\s\S]*?class="btn btn-sm theme-action issue-add-task-button app-add-control"/);
     assert.match(issuePage, /class="issue-linked-tasks-card">\s*<div class="issue-task-list">/);
     assert.doesNotMatch(issuePage, /issue-task-toolbar|Work linked to this issue/);
     assert.match(siteCss, /\.issue-detail-tabs:has\(\[data-bs-target="#issueTasksPanel"\]\.active\) \.issue-add-task-button \{ display: inline-flex; \}/);
@@ -230,7 +230,8 @@ test("Events share work cards and disclosure while retaining a mobile calendar",
 
 test("Event Add and Apply controls share the same compact button footprint", () => {
     const events = eventPage;
-    assert.match(events, /class="btn btn-sm theme-action work-add-button"[^>]*>\+ Add event<\/button>/);
+    assert.match(events, /class="btn btn-sm theme-action work-add-button app-add-control"/);
+    assert.match(events, /icon="plus" only %} Add event<\/button>/);
     assert.match(events, /class="event-control-row">[\s\S]*?class="btn btn-sm theme-action" type="submit">Apply<\/button>/);
     assert.match(siteCss, /\.event-list-controls :is\(\.work-add-button, \.event-control-row \.theme-action\) \{\s*width: 6\.5rem;\s*height: 2rem;/);
 });

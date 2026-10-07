@@ -71,13 +71,15 @@ def _list_query_parameters(values):
     return parameters
 
 
-def _property_list_url(request, *, form_state=None):
+def _property_list_url(request, *, form_state=None, selected=None):
     parameters = _list_query_parameters(_normalised_list_values(request))
     page = request.GET.get("page", "")
     if page.isdigit() and int(page) > 1:
         parameters["page"] = page
     if form_state is not None:
         parameters["form_state"] = form_state
+    if selected is not None:
+        parameters["selected"] = selected
 
     url = reverse("property:properties")
     return f"{url}?{urlencode(parameters)}" if parameters else url
@@ -116,4 +118,10 @@ def _redirect_with_property_form_state(
     )
     if property_record is not None and request.GET.get("return_to") != "list":
         return redirect(_property_detail_url(property_record, form_state=token))
-    return redirect(_property_list_url(request, form_state=token))
+    return redirect(
+        _property_list_url(
+            request,
+            form_state=token,
+            selected=property_record.pk if property_record else None,
+        )
+    )

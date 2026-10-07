@@ -237,8 +237,8 @@
     border-bottom: var(--bs-border-width) solid var(--bs-border-color);
 }
 
-.issue-detail-description-column,
 /* Issue facts and deadline display */
+.issue-detail-description-column,
 .issue-detail-facts-column {
     width: 100%;
 }
@@ -413,4 +413,18 @@
 
 .issue-task-row + .issue-task-row {
     border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.issue-deadline-value {
+    display: block;
+}
+
+.issue-deadline-date {
+    white-space: nowrap;
+}
+
+.issue-command-page .issue-deadline-value .work-date-relative {
+    display: block;
+    margin-inline-start: 0;
+    white-space: normal;
 }

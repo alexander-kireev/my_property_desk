@@ -53,6 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             popup.className = "app-select-popup";
+            if (select.hasAttribute("data-wrap-options"))
+                popup.classList.add("app-select-popup--wrap");
             popup.hidden = true;
             results.id = `${select.id}_options`;
             results.className = "app-select-results";

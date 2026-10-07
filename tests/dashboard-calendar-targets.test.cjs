@@ -22,3 +22,19 @@ test('row rendering escapes user text and preserves full record navigation', () 
     assert.ok(!html.includes('<script>'));
     assert.ok(html.includes('/tasks/?selected=7&amp;open=detail'));
 });
+
+test('each priority matches exactly for tasks and issues alongside schedule and search', () => {
+    for (const kind of ['task', 'issue']) {
+        const records = ['Urgent', 'High', 'Medium', 'Low'].map((priority, index) => ({
+            id: index, priority, title: 'Boiler inspection', description: '', property: '',
+            date: '2026-10-06', due: '2026-10-06',
+        }));
+        for (const priority of ['Urgent', 'High', 'Medium', 'Low']) {
+            const options = {kind, filter: kind === 'task' ? 'today' : 'week',
+                secondaryFilter: 'priority-' + priority.toLowerCase(), search: 'boiler', today: '2026-10-06'};
+            assert.deepEqual(Array.from(display.visibleRecords({[kind]: records}, options), item => item.priority), [priority]);
+            assert.equal(display.visibleRecords({[kind]: records}, {...options, search: 'unmatched'}).length, 0);
+        }
+        assert.equal(display.visibleRecords({[kind]: records}, {kind, filter: 'all', secondaryFilter: 'any', search: '', today: '2026-10-06'}).length, 4);
+    }
+});

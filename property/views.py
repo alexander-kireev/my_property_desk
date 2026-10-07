@@ -68,6 +68,8 @@ def properties_view(request):
         edit_property_form=edit_property_form,
         edit_property_record=edit_property_record,
     )
+    if context["selection_redirect"]:
+        return redirect(context["selection_redirect"])
     if context["selected_property"] is not None:
         context = _property_detail_context(
             request, context["selected_property"], list_context=context
@@ -228,6 +230,8 @@ def edit_property_view(request, property_id):
         if form_values_changed(before, form):
             update_property(property_record=property_record, **form.cleaned_data)
             messages.success(request, "Property updated.")
+        if request.GET.get("return_to") == "list":
+            return redirect(_property_list_url(request, selected=property_record.pk))
         return redirect(_selected_property_url(request, property_record))
 
     return _redirect_with_property_form_state(
@@ -259,6 +263,8 @@ def deactivate_property_view(request, property_id):
         messages.success(
             request, f"Property deactivated.{(' Also updated ' + detail + '.') if detail else ''}"
         )
+    if request.GET.get("return_to") == "list":
+        return redirect(_property_list_url(request, selected=property_record.pk))
     return redirect(_selected_property_url(request, property_record))
 
 
@@ -272,6 +278,8 @@ def reactivate_property_view(request, property_id):
     )
     reactivate_property(property_record=property_record)
     messages.success(request, "Property reactivated.")
+    if request.GET.get("return_to") == "list":
+        return redirect(_property_list_url(request, selected=property_record.pk))
     return redirect(_selected_property_url(request, property_record))
 
 

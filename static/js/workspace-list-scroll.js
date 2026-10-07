@@ -20,7 +20,7 @@
         );
     }
     const storageKey = `pom:workspace-list-scroll:${root.dataset.workspaceScrollRoot}`;
-    const secondary = root.querySelector(".property-related-scroll, .issue-task-scroll");
+    const secondary = root.querySelector(".property-detail-column, .issue-task-scroll");
     const secondaryKey = `${storageKey}:secondary:${selection}`;
     const intentKey = `${storageKey}:navigation-intent`;
     const workspace = root.dataset.workspaceScrollRoot;
@@ -42,7 +42,7 @@
     // Match the CSS sizes where the whole page scrolls instead of an individual list.
     const workPageScroll = "(max-width: 860px), (max-width: 1199.98px) and (max-height: 700px)";
     const pageScrollQueries = {
-        properties: "(max-width: 1199.98px), (max-width: 1299.98px) and (max-height: 750px)",
+        properties: "(max-width: 991.98px)",
         contacts: "(max-width: 991.98px), (max-width: 1199.98px) and (max-height: 700px)",
         tasks: workPageScroll,
         issues: workPageScroll,
@@ -148,7 +148,7 @@
         }
         if (!shouldRestore || restorePosition?.selection !== selection) {
             root.querySelectorAll(
-                ".task-detail-scroll, .issue-detail-scroll, .event-detail-scroll, .contact-detail-scroll, .property-panel-area",
+                ".task-detail-scroll, .issue-detail-scroll, .event-detail-scroll, .contact-detail-scroll, .property-detail-column",
             ).forEach((pane) => {
                 pane.scrollTop = 0;
             });

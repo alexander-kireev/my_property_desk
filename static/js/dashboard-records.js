@@ -56,12 +56,14 @@
                     .includes(search)
             )
                 return false;
+            if (kind !== "event" && secondaryFilter?.startsWith("priority-")) {
+                const priority = secondaryFilter.slice("priority-".length);
+                if (item.priority.toLowerCase() !== priority) return false;
+            }
             if (kind === "task") {
                 if (filter === "unscheduled" && item.date) return false;
                 if (filter === "today" && item.date !== today) return false;
                 if (filter === "other" && (!item.date || item.date === today)) return false;
-                if (secondaryFilter === "high" && !["High", "Urgent"].includes(item.priority))
-                    return false;
             } else if (kind === "issue") {
                 if (filter === "overdue" && (!item.due || item.due >= today)) return false;
                 if (
@@ -72,8 +74,6 @@
                 )
                     return false;
                 if (filter === "undated" && item.due) return false;
-                if (secondaryFilter === "high" && !["High", "Urgent"].includes(item.priority))
-                    return false;
             } else {
                 if (
                     filter === "week" &&
@@ -133,11 +133,14 @@
         return text;
     }
 
-    function rowTiming(item, today) {
+    function rowTiming(item, today, area) {
         if (item.kind === "event") {
             const time = item.all_day ? "All day" : eventTime(item);
+            if (area !== "queue") return `<span>${time}</span>`;
             return `<span>${prettyDate(item.date)} ·</span><span>${time}</span>`;
         }
+        // The selected date supplies schedule/deadline context; expanded facts keep full dates.
+        if (area !== "queue") return "";
         if (item.due) {
             const days = Math.round((parseDate(item.due) - parseDate(today)) / 86400000);
             let label = item.kind === "issue" ? "Resolve by" : "Due";
@@ -163,19 +166,19 @@
             typeCue = `<span class="dashboard-type-cue"><span aria-hidden="true">${symbol}</span> ${label}</span>`;
         }
         const overdueClass = item.due && item.due < today ? " is-overdue" : "";
-        const timing = rowTiming(item, today);
+        const timing = rowTiming(item, today, area);
         if (item.kind === "task") {
             const context = item.issue_id ? item.issue_title : item.property;
-            const contextAttribute = context
-                ? `title="${escapeHtml(context)}"`
-                : 'aria-hidden="true"';
+            let contextAttribute = "";
+            if (context) contextAttribute = `title="${escapeHtml(context)}"`;
+            else if (!typeCue) contextAttribute = 'aria-hidden="true"';
             return `<span class="dashboard-task-copy">
                 <strong class="dashboard-task-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong>
                 <small class="dashboard-task-context" ${contextAttribute}>${typeCue}${escapeHtml(context)}</small>
             </span>
             <span class="dashboard-task-meta">
                 ${badge(item)}
-                <span class="dashboard-task-timing${overdueClass}">${timing}</span>
+                ${timing ? `<span class="dashboard-task-timing${overdueClass}">${timing}</span>` : ""}
             </span>
             ${chevron}`;
         }
@@ -189,7 +192,7 @@
         </span>
         <span class="dashboard-row-side${eventClass}">
             ${badge(item)}
-            <span class="dashboard-row-timing${overdueClass}">${timing}</span>
+            ${timing ? `<span class="dashboard-row-timing${overdueClass}">${timing}</span>` : ""}
         </span>
         ${chevron}`;
     }

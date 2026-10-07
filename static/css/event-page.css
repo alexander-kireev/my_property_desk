@@ -315,7 +315,10 @@ a.event-participant-name:focus-visible {
     margin-top: 0.3rem;
 }
 
-.event-participant-email,
+.event-participant-email {
+    min-width: 0;
+}
+
 .event-participant-phone {
     min-width: 0;
     overflow: hidden;

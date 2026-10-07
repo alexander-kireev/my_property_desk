@@ -95,6 +95,21 @@ def _selected_day(request):
     return _date_parameter(request, "day")
 
 
+def _participant_origin_parameters(request):
+    """Keep only known Event view state; never accept a caller-supplied return URL."""
+    parameters = {}
+    if request.GET.get("tab") == "calendar":
+        parameters["tab"] = "calendar"
+    if request.GET.get("view") == "calendar":
+        parameters["view"] = "calendar"
+    if request.GET.get("open") == "detail":
+        parameters["open"] = "detail"
+    agenda_day = _date_parameter(request, "agenda_day")
+    if agenda_day is not None:
+        parameters["agenda_day"] = agenda_day.isoformat()
+    return parameters
+
+
 def _event_workspace_url(
     request,
     *,
@@ -103,6 +118,7 @@ def _event_workspace_url(
     form_state=None,
     state=None,
     clear_filters=False,
+    preserve_participant_origin=False,
 ):
     parameters = _list_query_parameters(_normalised_list_values(request))
     if clear_filters:
@@ -129,6 +145,10 @@ def _event_workspace_url(
         parameters["selected"] = event_id
     if tab == "calendar":
         parameters["tab"] = "calendar"
+    if preserve_participant_origin:
+        parameters.update(_participant_origin_parameters(request))
+        if form_state is None:
+            parameters["focus"] = "participants"
     if form_state is not None:
         parameters["form_state"] = form_state
     url = reverse("event:events")
@@ -154,5 +174,6 @@ def _redirect_with_event_form_state(
             request,
             event_id=event_id,
             form_state=token,
+            preserve_participant_origin=action == "add_event_contacts",
         )
     )

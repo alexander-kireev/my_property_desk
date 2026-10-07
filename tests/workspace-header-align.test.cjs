@@ -51,7 +51,7 @@ function openWorkspace({ width, minimumWidth, listHeight, detailHeight, kind }) 
     return { list, detail, browser, flush, resize: () => handlers.resize() };
 }
 
-for (const [name, kind, minimumWidth] of [["Properties", "properties", 992], ["Contacts", "contacts", 992]]) {
+for (const [name, kind, minimumWidth] of [["Contacts", "contacts", 992]]) {
     test(`${name} separators align using border-box height in the roomy desktop layout`, () => {
         const page = openWorkspace({ width: 1280, minimumWidth, listHeight: 120, detailHeight: 225.4, kind });
         page.flush();

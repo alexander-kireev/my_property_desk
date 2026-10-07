@@ -1,4 +1,4 @@
-// Align the Contact and Property header dividers when the desktop layout has enough space.
+// Align Contact header dividers when the desktop layout has enough space.
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("[data-align-headers]").forEach((workspace) => {
         const listHeader = workspace.querySelector("[data-list-header]");
@@ -13,14 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Measure natural heights again so a previously taller header can shrink.
             listHeader.style.minHeight = "";
             detailHeader.style.minHeight = "";
-            const compactQuery = workspace.closest('[data-workspace-scroll-root="properties"]')
-                ? "(max-width: 1299.98px) and (max-height: 750px)"
-                : "(max-width: 1199.98px) and (max-height: 700px)";
             // At smaller sizes, each header uses only the height its own content needs.
             if (
                 window.innerWidth < minimumWidth ||
-                !window.matchMedia("(min-width: 1200px)").matches ||
-                window.matchMedia(compactQuery).matches
+                !window.matchMedia("(min-width: 1200px)").matches
             )
                 return;
 

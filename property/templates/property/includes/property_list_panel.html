@@ -2,15 +2,14 @@
 <aside class="property-list-column" aria-label="Property results">
     {# Search and filter submission #}
     <form class="property-list-controls workspace-list-controls border-bottom p-3"
-          data-list-header
           method="get"
           autocomplete="off">
         <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
             <h1 class="h5 mb-0">Properties</h1>
-            <button class="btn btn-sm theme-action work-add-button"
+            <button class="btn btn-sm theme-action work-add-button app-add-control"
                     type="button"
                     data-bs-toggle="modal"
-                    data-bs-target="#addPropertyModal">+ Add property</button>
+                    data-bs-target="#addPropertyModal">{% include "includes/action_icon.html" with icon="plus" only %} Add property</button>
         </div>
         <div class="workspace-control-row">
             <label class="visually-hidden" for="propertySearch">Search properties</label>
@@ -46,15 +45,76 @@
     href="{% url 'property:property_detail' selected_property.pk %}">Show all</a></div>{% endif %}
         {# Property names, addresses, state badges and linked-work counts #}
         {% for record in page_obj %}
-            <a class="property-command-row workspace-compact-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}"
-               href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-               data-workspace-scroll-row{% if selected_property.pk == record.pk %}
-               aria-current="true"
-               {% endif %}>
-                <span class="property-command-heading workspace-compact-heading"><strong title="{{ record.name }}">{{ record.name }}</strong>{% include "includes/work_state_badge.html" with item=record only %}</span>
-                <span class="property-command-bottom"><small class="property-command-address"
+            <div class="property-list-entry" data-property-list-entry>
+                <div class="property-list-summary">
+                    <a class="property-command-row workspace-compact-row list-group-item list-group-item-action{% if selected_property.pk == record.pk %} is-selected{% endif %}"
+                       href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ record.pk }}"
+                       data-workspace-scroll-row
+                       {% if mobile_expanded_property_id == record.pk %}aria-expanded="true" aria-controls="property-preview-{{ record.pk }}"{% endif %}
+                       {% if selected_property.pk == record.pk %}aria-current="true"{% endif %}>
+                        <span class="property-command-heading workspace-compact-heading"><strong title="{{ record.name }}">{{ record.name }}</strong>{% include "includes/work_state_badge.html" with item=record only %}</span>
+                        <span class="property-command-bottom"><small class="property-command-address"
        title="{{ record.address|default:'No address provided' }}">{{ record.address|default:"No address provided" }}</small><small class="property-command-counts">{% if record.state == "deactivated" %}No active work{% else %}{{ record.open_issues }} issue{{ record.open_issues|pluralize }} · {{ record.open_direct_tasks|add:record.open_issue_tasks }} task{{ record.open_direct_tasks|add:record.open_issue_tasks|pluralize }}{% endif %}</small></span>
-            </a>
+                        <span class="property-list-chevron property-related-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                    </a>
+                </div>
+                {% if mobile_expanded_property_id == record.pk %}
+                <div class="property-inline-preview"
+                     id="property-preview-{{ record.pk }}"
+                     data-property-preview>
+                    <section class="property-inline-description" aria-label="Property description">
+                        <h2>Description</h2>
+                        {% if record.description %}
+                            {% include "includes/expandable_text.html" with text=record.description text_id="property-preview-description-" record_id=record.pk inline_end_toggle=True only %}
+                        {% else %}
+                            <p class="text-body-secondary mb-0">No description provided.</p>
+                        {% endif %}
+                    </section>
+                    <div class="property-inline-preview-actions">
+                        <div class="property-inline-action-left">
+                            {% if record.state == "active" %}
+                                <button class="btn btn-sm theme-action"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#listEditPropertyModal">Edit</button>
+                                <button class="btn btn-sm btn-outline-secondary property-inline-secondary-action"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deactivatePropertyModal">Deactivate</button>
+                            {% else %}
+                                <button class="btn btn-sm theme-action"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reactivateListPropertyModal">Reactivate</button>
+                            {% endif %}
+                            <button class="btn btn-sm btn-outline-danger property-inline-secondary-action"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deletePropertyModal">Delete</button>
+                            <div class="dropdown property-inline-more">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle property-menu-button"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        aria-label="More actions for {{ record.name }}">⋮</button>
+                                <ul class="dropdown-menu">
+                                    <li class="property-inline-open-menu-item">
+                                        <a class="dropdown-item"
+                                           href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}">Open record</a>
+                                    </li>
+                                    {% if record.state == "active" %}
+                                        <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#deactivatePropertyModal">Deactivate property</button></li>
+                                    {% endif %}
+                                    <li><button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deletePropertyModal">Delete property</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <a class="btn btn-sm btn-outline-secondary property-inline-open"
+                           href="{% url 'property:property_detail' record.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}">Open record →</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         {% empty %}
             <div class="p-4 text-center text-body-secondary">
                 {% if has_filters %}<strong class="d-block text-body mb-1">No matching properties</strong><span class="d-block small mb-2">Try changing your search or state filter.</span>{% if not selected_outside_filters %}<a class="btn btn-sm btn-outline-secondary"

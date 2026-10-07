@@ -9,11 +9,15 @@ for (const navigationType of ["navigate", "reload"]) {
         const workspace = {
             addEventListener: (name, callback) => { listeners[name] = callback; },
             querySelectorAll: () => [],
+            querySelector: (selector) => selector === ".property-workspace"
+                ? {classList: {contains: () => true, add() {}}}
+                : selector === ".property-detail-column" ? {before() {}} : null,
         };
         const deny = () => { throw new Error("Storage disabled"); };
         const context = {
-            document: {querySelector: () => workspace, addEventListener: (_name, callback) => callback()},
+            document: {querySelector: () => workspace, addEventListener: (_name, callback) => callback(), createComment: () => ({after() {}})},
             window: {location: {pathname: "/properties/1/", search: ""},
+                history: {state: null}, matchMedia: () => ({matches: false, addEventListener() {}}),
                 performance: {getEntriesByType: () => [{type: navigationType}]}, addEventListener() {}},
             sessionStorage: {getItem: deny, setItem: deny, removeItem: deny}, URL,
         };

@@ -18,6 +18,34 @@ from .support import PropertyViewFixture
 
 
 class PropertyViewWorkspaceTests(PropertyViewFixture, TestCase):
+    def test_list_rows_offer_short_previews_and_record_actions(self):
+        first = self.create_property(name="Alpha House")
+        second = self.create_property(name="Beta House")
+        first.description = "A compact property preview."
+        second.description = "Another preview."
+        first.save(update_fields=["description"])
+        second.save(update_fields=["description"])
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:properties"))
+
+        self.assertNotContains(response, 'class="property-inline-preview"')
+        self.assertContains(response, f'selected={first.pk}')
+        self.assertContains(response, f'selected={second.pk}')
+        response = self.client.get(reverse("property:properties"), {"selected": second.pk})
+        self.assertEqual(response.context["selected_property"], second)
+        self.assertContains(response, 'aria-expanded="true"')
+        self.assertNotContains(response, f'id="property-preview-{first.pk}"')
+        self.assertContains(response, f'id="property-preview-{second.pk}"')
+        self.assertContains(response, "Another preview.")
+        self.assertNotContains(response, "A compact property preview.")
+        self.assertContains(response, 'data-bs-target="#listEditPropertyModal"')
+        self.assertContains(response, 'data-bs-target="#deactivatePropertyModal"')
+        self.assertContains(response, 'class="property-inline-description"', count=1)
+        self.assertContains(
+            response, f'href="{reverse("property:property_detail", args=[second.pk])}">Open record →</a>'
+        )
+
     def test_list_summary_uses_real_counts_without_join_multiplication(self):
         property_record = self.create_property()
         issue = Issue.objects.create(user=self.user, property=property_record, title="Open issue")
@@ -46,6 +74,27 @@ class PropertyViewWorkspaceTests(PropertyViewFixture, TestCase):
         self.assertEqual(listed.open_direct_tasks + listed.open_issue_tasks, 2)
         self.assertContains(response, "1 issue · 2 tasks")
         self.assertNotContains(response, "Contacts</div>")
+
+    def test_deactivated_list_preview_offers_reactivation_without_edit(self):
+        record = self.create_property(name="Closed House", state=Property.State.DEACTIVATED)
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:properties"), {"selected": record.pk})
+
+        self.assertContains(response, f'id="property-preview-{record.pk}"')
+        self.assertContains(response, 'data-bs-target="#reactivateListPropertyModal"')
+        self.assertContains(response, 'data-bs-target="#deletePropertyModal"')
+        self.assertNotContains(response, 'data-bs-target="#listEditPropertyModal"')
+        self.assertNotContains(response, 'data-bs-target="#deactivatePropertyModal"')
+
+    def test_list_does_not_select_another_users_property(self):
+        self.create_property(name="My property")
+        other = self.create_property(user=self.other_user, name="Private property")
+        self.client.force_login(self.user)
+
+        response = self.client.get(reverse("property:properties"), {"selected": other.pk})
+
+        self.assertRedirects(response, reverse("property:properties"), fetch_redirect_response=False)
 
     def test_list_summary_handles_zero_and_several_issues(self):
         empty = self.create_property(name="Empty")

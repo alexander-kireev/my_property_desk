@@ -42,18 +42,21 @@ test("collapsed subtitles omit absent relationships without leading separators i
     for (const area of ["queue", "day"]) {
         const task = recordRow({...base, kind: "task", due: "2026-10-01"}, area);
         assert.match(task, /<strong class="dashboard-task-title" title="Record">Record<\/strong>\s*<small class="dashboard-task-context" aria-hidden="true"><\/small>/);
-        assert.match(task, /dashboard-task-timing">Due soon 1 Oct 2026<\/span>[\s\S]*<span class="dashboard-row-chevron">/);
+        if (area === "queue") assert.match(task, /dashboard-task-timing">Due soon 1 Oct 2026/);
+        else assert.doesNotMatch(task, /dashboard-task-timing/);
         assert.doesNotMatch(task, /Unscheduled · Due/);
         assert.doesNotMatch(task, /Standalone|No property/);
 
         const issue = recordRow({...base, kind: "issue", due: "2026-10-02"}, area);
         assert.match(issue, /<strong title="Record">Record<\/strong>\s*<small class="dashboard-row-context" aria-hidden="true"><\/small>/);
-        assert.match(issue, /dashboard-row-timing">Due soon 2 Oct 2026<\/span>/);
+        if (area === "queue") assert.match(issue, /dashboard-row-timing">Due soon 2 Oct 2026/);
+        else assert.doesNotMatch(issue, /dashboard-row-timing/);
         assert.doesNotMatch(issue, /No property|<small> ·/);
 
         const event = recordRow({...base, kind: "event", date: "2026-10-03"}, area);
         assert.match(event, /<strong title="Record">Record<\/strong>\s*<small class="dashboard-row-context" aria-hidden="true"><\/small>/);
-        assert.match(event, /dashboard-row-timing"><span>3 Oct 2026 ·<\/span><span>All day<\/span><\/span>/);
+        if (area === "queue") assert.match(event, /dashboard-row-timing"><span>3 Oct 2026/);
+        else assert.match(event, /dashboard-row-timing"><span>All day<\/span><\/span>/);
         assert.doesNotMatch(event, /No property|<small> ·/);
     }
 });
@@ -61,9 +64,10 @@ test("collapsed subtitles omit absent relationships without leading separators i
 test("collapsed linked subtitles retain direct names and dates without deleted labels", () => {
     for (const area of ["queue", "day"]) {
         const propertyTask = recordRow({...base, kind: "task", property: "Canal View", property_deleted: true}, area);
-        assert.match(propertyTask, /dashboard-task-context[^>]*>Canal View<\/small>[\s\S]*dashboard-task-timing">No date/);
+        assert.match(propertyTask, /dashboard-task-context[^>]*>Canal View<\/small>/);
         assert.doesNotMatch(propertyTask, /Deleted property/);
-        assert.match(propertyTask, /No date/);
+        if (area === "queue") assert.match(propertyTask, /No date/);
+        else assert.doesNotMatch(propertyTask, /No date/);
 
         const issueTask = recordRow({...base, kind: "task", issue_id: 5, issue_title: "Roof leak", issue_deleted: true,
             property: "Inherited property", date: "2026-10-04"}, area);
@@ -88,4 +92,29 @@ test("Operations tasks prioritise due dates and highlight overdue timing", () =>
     assert.match(task, /dashboard-task-timing is-overdue">Overdue 28 Sep 2026<\/span>/);
     assert.doesNotMatch(task.slice(0, task.indexOf("dashboard-row-detail")), /Scheduled 29 Sep 2026/);
     assert.match(task, /<span>Scheduled 29 Sep 2026<\/span>/);
+});
+
+test("Selected day deadlines retain their type and full expanded dates", () => {
+    for (const kind of ["task", "issue"]) {
+        const html = recordRow({...base, kind, due: "2026-09-29"}, "due");
+        const summary = html.slice(0, html.indexOf("dashboard-row-detail"));
+        assert.doesNotMatch(summary, /dashboard-(task|row)-timing/);
+        assert.match(summary, /dashboard-type-cue/);
+        assert.doesNotMatch(summary, /aria-hidden="true"><span class="dashboard-type-cue"/);
+        assert.match(html, /29 Sep 2026/);
+    }
+});
+
+test("Selected day Event times retain start-only, range and all-day meaning", () => {
+    for (const [start_time, end_time, all_day, expected] of [
+        ["09:00", "", false, "09:00"],
+        ["09:00", "10:00", false, "09:00–10:00"],
+        ["", "", true, "All day"],
+    ]) {
+        const html = recordRow({...base, kind: "event", date: "2026-10-03", start_time, end_time, all_day}, "day");
+        const summary = html.slice(0, html.indexOf("dashboard-row-detail"));
+        assert.ok(summary.includes(expected));
+        assert.doesNotMatch(summary, /3 Oct 2026/);
+        assert.match(html, /Date 3 Oct 2026/);
+    }
 });
