@@ -496,9 +496,8 @@
     }
 }
 
-/* Fill the desktop detail viewport and align with the list footer when space
-   permits. Minimum card heights let the outer panel scroll with tall headings
-   or stacked cards, instead of crushing the method lists to zero height. */
+/* Grow equal-height cards with their contents, up to the list footer.
+   Keep one usable row when tall headings or stacked cards require outer scrolling. */
 @media (min-width: 992px) and (min-height: 701px) {
     .contact-detail-scroll {
         display: flex;
@@ -509,7 +508,7 @@
     .contact-methods-section {
         display: flex;
         flex: 1 1 0;
-        min-height: min-content;
+        min-height: 0;
         flex-direction: column;
     }
 
@@ -519,9 +518,9 @@
     }
 
     .contact-methods-grid {
-        flex: 1 1 0;
-        min-height: min-content;
-        grid-auto-rows: minmax(11rem, 1fr);
+        flex: 0 1 auto;
+        min-height: 0;
+        grid-auto-rows: minmax(6.5rem, 1fr);
     }
 
     .contact-method-group {
@@ -529,7 +528,7 @@
     }
 
     .contact-method-list {
-        flex: 1 1 0;
+        flex: 1 1 auto;
         min-height: 0;
         max-height: none;
 
