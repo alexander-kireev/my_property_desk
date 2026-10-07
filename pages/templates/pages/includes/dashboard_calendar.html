@@ -1,3 +1,4 @@
+{% load static %}
 {# Month calendar #}
 <section class="dashboard-panel dashboard-calendar" aria-label="Calendar">
     <h2 class="dashboard-panel-heading">Calendar</h2>
@@ -42,26 +43,32 @@
                    type="checkbox"
                    data-calendar-filter="tasks"
                    checked>
+            <img src="{% static 'icons/dashboard-calendar-task.svg' %}" alt="" aria-hidden="true">
             Tasks
-        </label>
-        <label>
-            <input class="form-check-input"
-                   type="checkbox"
-                   data-calendar-filter="issues"
-                   checked>
-            Issue deadlines
         </label>
         <label>
             <input class="form-check-input"
                    type="checkbox"
                    data-calendar-filter="events"
                    checked>
+            <img src="{% static 'icons/dashboard-calendar-event.svg' %}" alt="" aria-hidden="true">
             Events
+        </label>
+        <label>
+            <input class="form-check-input"
+                   type="checkbox"
+                   data-calendar-filter="deadlines"
+                   checked>
+            <img src="{% static 'icons/dashboard-calendar-deadline.svg' %}" alt="" aria-hidden="true">
+            Deadlines
         </label>
     </fieldset>
     <div class="dashboard-calendar-body">
         <div class="dashboard-calendar-grid"
              id="calendarGrid"
+             data-task-icon="{% static 'icons/dashboard-calendar-task.svg' %}"
+             data-event-icon="{% static 'icons/dashboard-calendar-event.svg' %}"
+             data-deadline-icon="{% static 'icons/dashboard-calendar-deadline.svg' %}"
              aria-label="Calendar dates"></div>
     </div>
 </section>

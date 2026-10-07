@@ -6,15 +6,26 @@
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form id="workForm">
+            <form id="workForm" class="event-tabbed-form" data-event-tabs>
                 <header class="modal-header">
                     <h2 class="modal-title" id="workDialogHeading">Work item</h2>
                     <button class="btn-close" type="button" data-close-dialog aria-label="Close"></button>
                 </header>
-                <div class="modal-body">
-                    <div id="workFormFields" class="dashboard-dialog-fields"></div>
-                    <p class="dashboard-form-errors" id="workFormErrors" role="alert"></p>
+                <div class="event-form-tabs" role="tablist" aria-label="Edit event sections" id="workEventTabs" hidden>
+                    <button class="event-form-tab is-active" id="workDetailsTab" type="button" role="tab" aria-selected="true" aria-controls="workDetailsPanel" data-event-tab="details">Details</button>
+                    <button class="event-form-tab" id="workParticipantsTab" type="button" role="tab" aria-selected="false" aria-controls="workParticipantsPanel" data-event-tab="participants">Participants <span class="event-form-tab-count" data-contact-tab-count>0</span></button>
                 </div>
+                <div class="modal-body event-form-body">
+                    <div id="workDetailsPanel" data-event-panel="details" role="tabpanel" aria-labelledby="workDetailsTab">
+                        <div id="workFormFields" class="dashboard-dialog-fields"></div>
+                        <p class="dashboard-form-errors" id="workFormErrors" role="alert"></p>
+                    </div>
+                    <div id="workParticipantsPanel" data-event-panel="participants" role="tabpanel" aria-labelledby="workParticipantsTab" hidden>
+                        <p class="dashboard-form-errors" id="workContactsErrors" role="alert"></p>
+                        {% include "event/includes/contact_picker.html" with picker_field=edit_contacts_form.contacts picker_id="dashboardWorkContacts" picker_mode="edit" only %}
+                    </div>
+                </div>
+                <input id="workManageContacts" type="hidden" name="manage_contacts" value="1" disabled>
                 <footer class="modal-footer">
                     <button class="btn btn-outline-secondary" type="button" data-close-dialog>Cancel</button><button type="submit" class="btn theme-action dashboard-solid-button">Save</button>
                 </footer>

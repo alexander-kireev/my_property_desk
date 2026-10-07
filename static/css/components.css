@@ -1713,3 +1713,64 @@ body :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible 
     ):focus-visible {
     outline-color: #fff;
 }
+
+/* Filter menus can opt into full labels without changing other selects. */
+.app-select-popup--wrap .app-select-option {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Add actions use matching strokes, including dropdowns with a custom chevron. */
+.app-add-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.app-action-icon {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.app-add-control.dropdown-toggle::after {
+    display: none;
+}
+
+/* Email previews keep both ends; Contacts can also reveal the full address. */
+.email-preview {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.email-preview.is-measured {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.email-reveal {
+    min-width: 0;
+    font-size: 0.8rem;
+    text-align: left;
+}
+
+.email-reveal summary {
+    cursor: pointer;
+    width: fit-content;
+    color: var(--bs-secondary-color);
+}
+
+.email-full {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    user-select: text;
+}

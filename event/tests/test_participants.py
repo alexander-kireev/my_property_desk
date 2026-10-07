@@ -7,12 +7,11 @@ from django.utils import timezone
 from contact.models import Contact, ContactMethod
 
 from ..models import Event, EventContact
-from ..templatetags.event_display import compact_email
 from .support import EventViewFixture
 
 
 class EventViewParticipantsTests(EventViewFixture, TestCase):
-    def test_participant_rows_show_compact_email_with_full_hover_text(self):
+    def test_participant_rows_keep_full_email_in_native_title(self):
         event = self.create_event(self.user)
         contact = self.create_contact(self.user, first_name="A" * 50, last_name="B" * 50)
         email = "abcdefghijklmnopqrstuvwx@example-domain.com"
@@ -26,8 +25,9 @@ class EventViewParticipantsTests(EventViewFixture, TestCase):
 
         response = self.client.get(reverse("event:events"), {"selected": event.pk})
 
-        self.assertContains(response, f'title="{email}"', count=2)
-        self.assertContains(response, compact_email(email), count=2)
+        self.assertContains(response, f'data-email-preview="{email}"')
+        self.assertContains(response, f'title="{email}"')
+        self.assertNotContains(response, "Show full email")
         self.assertContains(response, 'class="event-participant-email"', count=2)
         self.assertContains(response, 'class="event-participant-phone"', count=2)
         self.assertContains(response, f'title="{contact}"')
@@ -357,3 +357,57 @@ class EventViewParticipantsTests(EventViewFixture, TestCase):
             {"contacts": []},
         )
         self.assertEqual(response.status_code, 404)
+
+
+class ParticipantOriginTests(EventViewFixture, TestCase):
+    def test_add_and_invalid_retry_preserve_calendar_agenda_origin(self):
+        from urllib.parse import parse_qs, urlencode, urlsplit
+
+        event = self.create_event(self.user)
+        contact = self.create_contact(self.user)
+        origin = {
+            "view": "calendar",
+            "tab": "calendar",
+            "agenda_day": "2026-10-06",
+            "month": "10",
+            "year": "2026",
+            "search": "Inspection",
+        }
+        endpoint = reverse("event:add_event_contacts_to_event", args=[event.pk])
+        response = self.client.post(f"{endpoint}?{urlencode(origin)}", {"contacts": [contact.pk]})
+        result = parse_qs(urlsplit(response.url).query)
+        for key, value in origin.items():
+            self.assertEqual(result[key], [value])
+        self.assertEqual(result["selected"], [str(event.pk)])
+        self.assertEqual(result["focus"], ["participants"])
+
+        invalid = self.client.post(f"{endpoint}?{urlencode(origin)}", {"contacts": [999999]})
+        retry = parse_qs(urlsplit(invalid.url).query)
+        for key in ("view", "tab", "agenda_day"):
+            self.assertEqual(retry[key], [origin[key]])
+        page = self.client.get(invalid.url)
+        self.assertEqual(page.context["open_modal"], "addEventContactsModal")
+        self.assertTrue(page.context["mobile_calendar_view"])
+        self.assertEqual(page.context["active_tab"], "calendar")
+
+    def test_list_origin_stays_list_and_untrusted_origin_is_not_reflected(self):
+        from urllib.parse import parse_qs, urlsplit
+
+        event = self.create_event(self.user)
+        contact = self.create_contact(self.user)
+        endpoint = reverse("event:add_event_contacts_to_event", args=[event.pk])
+        response = self.client.post(
+            endpoint + "?view=other&tab=other&agenda_day=bad&next=https://example.com",
+            {"contacts": [contact.pk]},
+        )
+        result = parse_qs(urlsplit(response.url).query)
+        for key in ("view", "tab", "agenda_day", "next"):
+            self.assertNotIn(key, result)
+        self.assertEqual(result["selected"], [str(event.pk)])
+
+    def test_explicit_detail_origin_remains_explicit_after_add(self):
+        event = self.create_event(self.user)
+        contact = self.create_contact(self.user)
+        endpoint = reverse("event:add_event_contacts_to_event", args=[event.pk])
+        response = self.client.post(endpoint + "?open=detail", {"contacts": [contact.pk]})
+        self.assertIn("open=detail", response.url)

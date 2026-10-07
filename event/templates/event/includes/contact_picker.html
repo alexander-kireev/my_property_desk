@@ -22,18 +22,20 @@
          aria-label="Contacts">
         {% for choice in picker_field %}
             {% with contact=choice.data.value.instance %}
-                <label class="event-contact-option"
-                       data-contact-option
-                       data-search-text="{{ contact.first_name }} {{ contact.last_name }} {{ contact.first_email }} {{ contact.first_telephone }}"
-                       title="{{ contact }}">
-                    <span class="event-contact-avatar"
-                          aria-hidden="true">{{ contact.first_name|first|upper }}{{ contact.last_name|first|upper }}</span>
-                    <span class="event-contact-copy">
-                        <span class="event-contact-name">{{ contact }}</span>
-                        <span class="event-contact-meta">{% if contact.first_email %}{{ contact.first_email }}{% elif contact.first_telephone %}{{ contact.first_telephone }}{% else %}No contact details{% endif %}</span>
-                    </span>
-                    {{ choice.tag }}
-                </label>
+                <div class="event-contact-option"
+                     data-contact-option
+                     data-search-text="{{ contact.first_name }} {{ contact.last_name }} {{ contact.first_email }} {{ contact.first_telephone }}"
+                     title="{{ contact }}">
+                    <label class="event-contact-choice">
+                        <span class="event-contact-avatar"
+                              aria-hidden="true">{{ contact.first_name|first|upper }}{{ contact.last_name|first|upper }}</span>
+                        <span class="event-contact-copy">
+                            <span class="event-contact-name">{{ contact }}</span>
+                            <span class="event-contact-meta">{% if contact.first_email %}{% include "includes/email_preview.html" with email=contact.first_email only %}{% elif contact.first_telephone %}{{ contact.first_telephone }}{% else %}No contact details{% endif %}</span>
+                        </span>
+                        {{ choice.tag }}
+                    </label>
+                </div>
             {% endwith %}
         {% empty %}
             <p class="small text-body-secondary m-0 p-3 event-contact-empty-state">No active contacts available.</p>

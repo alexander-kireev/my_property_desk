@@ -1,8 +1,7 @@
 {% load work_status %}
-{# Reuse the caller's urgency result; date_class preserves the desktop date styling. #}
-{# Keep the inline date and relative label adjacent so source formatting cannot change phone wrapping. #}
-{% spaceless %}
-    <span {% if date_class or status.kind == 'overdue' %}class="{{ date_class }}{% if status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}"{% endif %}>{{ issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>
+{# The date is one unbroken unit; the relative label has its own line. #}
+<span class="issue-deadline-value">
+    <span class="issue-deadline-date {{ date_class }}{% if status.kind == 'overdue' %} issue-detail-overdue-date{% endif %}">{{ issue.resolution_deadline|date:"j M Y"|default:"No target date" }}</span>
     {% if issue.resolution_deadline %}
         {% if status.kind == "overdue" %}
             <span class="work-date-relative work-date-relative--overdue">{{ status.headline }}</span>
@@ -10,4 +9,4 @@
             <span class="work-date-relative">{{ issue.resolution_deadline|relative_day:today }}</span>
         {% endif %}
     {% endif %}
-{% endspaceless %}
+</span>

@@ -326,38 +326,44 @@ test("selected record to full detail and Back restores its own page or list entr
     }
 });
 
-test("Property 749/750 list to detail and Back restores document row position", () => {
-    for (const height of [749, 750]) {
+test("Property short tablet panes retain independent list position on Back", () => {
+    for (const height of [650, 749, 750, 751]) {
         const storage = new Map();
         const listEntry = {state: null};
-        const detailEntry = {state: null};
         const list = openWorkspace(storage, {
             workspace: "properties", viewportWidth: 1100, viewportHeight: height,
             historyEntry: listEntry,
         });
-        list.flush(); list.scrollPage(520); list.flush();
+        list.flush(); list.scrollList(520); list.flush();
         list.clickLink("/properties/24/"); list.pageHide();
         const detail = openWorkspace(storage, {
             workspace: "properties", detailId: 24, viewportWidth: 1100,
-            viewportHeight: height, listVisible: false, historyEntry: detailEntry,
+            viewportHeight: height,
         });
-        detail.flush(); detail.scrollPage(0); detail.pageHide();
+        detail.flush(); detail.pageHide();
         const back = openWorkspace(storage, {
             workspace: "properties", viewportWidth: 1100, viewportHeight: height,
             historyEntry: listEntry, navigationType: "back_forward",
         });
         back.flush();
-        assert.equal(back.browser.scrollY, 520, `1100x${height}`);
+        assert.equal(back.list.scrollTop, 520, `1100x${height}`);
     }
 });
 
-test("Property 1100x800 uses document scroll matching its authored CSS", () => {
-    const storage = new Map();
-    const page = openWorkspace(storage, {
-        workspace: "properties", viewportWidth: 1100, viewportHeight: 800,
-    });
-    page.flush(); page.scrollPage(480); page.flush();
-    assert.equal(JSON.parse(storage.get("pom:workspace-list-scroll:properties")).pageScrollY, 480);
+test("Property switches saved scroll owner at its 992px layout boundary", () => {
+    for (const width of [991, 992, 993, 1100, 1199, 1200]) {
+        const storage = new Map();
+        const page = openWorkspace(storage, {
+            workspace: "properties", viewportWidth: width, viewportHeight: 800,
+        });
+        page.flush();
+        if (width < 992) page.scrollPage(480);
+        else page.scrollList(360);
+        page.flush();
+        const saved = JSON.parse(storage.get("pom:workspace-list-scroll:properties"));
+        assert.equal(width < 992 ? saved.pageScrollY : saved.listScrollTop,
+            width < 992 ? 480 : 360, `${width}px`);
+    }
 });
 
 test("Property related-record Back restores hidden-detail page; ordinary detail and Contacts still reset", () => {

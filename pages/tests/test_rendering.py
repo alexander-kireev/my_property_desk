@@ -61,7 +61,7 @@ class DashboardRenderingTests(DashboardFixture, TestCase):
         for tab in ("tasks", "deadlines", "events"):
             self.assertContains(response, f'data-day-tab="{tab}"')
         self.assertContains(response, 'id="dashboardToast"')
-        for kind in ("tasks", "issues", "events"):
+        for kind in ("tasks", "events", "deadlines"):
             self.assertRegex(
                 response.content.decode(),
                 re.escape(f'data-calendar-filter="{kind}" checked').replace(r"\ ", r"\s+"),

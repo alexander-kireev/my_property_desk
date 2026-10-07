@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from config.form_state import (
     deserialise_form_data,
 )
-from pages.workspace_selection import amended_query_url, page_for_record
+from pages.workspace_selection import amended_query_url, page_for_record, resolve_selection
 
 from .forms import PropertyForm
 from .models import Property
@@ -99,9 +99,15 @@ def _property_list_context(
         user=request.user,
         **{**values, "state": values["state"] or "all"},
     )
+    requested_property, selected_page, outside_filters, selection_redirect = resolve_selection(
+        request,
+        filtered=properties,
+        owned=properties_for_user(user=request.user),
+        page_size=PROPERTIES_PER_PAGE,
+    )
 
     paginator = Paginator(with_work_summary(properties), PROPERTIES_PER_PAGE)
-    page_obj = paginator.get_page(page_override or request.GET.get("page"))
+    page_obj = paginator.get_page(page_override or selected_page or request.GET.get("page"))
 
     query_parameters = _list_query_parameters(values)
     return_parameters = query_parameters.copy()
@@ -112,7 +118,8 @@ def _property_list_context(
     if page_obj.number > 1:
         navigation_parameters["page"] = page_obj.number
 
-    selected_property = edit_property_record
+    selected_property = edit_property_record or requested_property
+    requested_id = request.GET.get("selected", "")
     if selected_property is None and page_obj.object_list:
         selected_property = page_obj.object_list[0]
     return {
@@ -133,7 +140,16 @@ def _property_list_context(
         "has_filters": bool(values["search"] or values["state"] not in ("", "all")),
         "property_count": properties_for_user(user=request.user).count(),
         "selected_property": selected_property,
-        "selected_in_page": True,
+        "mobile_expanded_property_id": (
+            selected_property.pk
+            if selected_property is not None
+            and requested_id == str(selected_property.pk)
+            and not outside_filters
+            else None
+        ),
+        "selected_in_page": selected_page is not None or requested_property is None,
+        "selected_outside_filters": outside_filters,
+        "selection_redirect": None if request.GET.get("form_state") else selection_redirect,
         "is_detail_route": False,
     }
 
@@ -174,7 +190,11 @@ def _property_detail_context(
             "selected_in_page": any(
                 item.pk == property_record.pk for item in context["page_obj"].object_list
             ),
-            "selected_outside_filters": list_context is None and natural_page is None,
+            "selected_outside_filters": (
+                natural_page is None
+                if list_context is None
+                else context["selected_outside_filters"]
+            ),
             "selection_redirect": selection_redirect,
             "is_detail_route": list_context is None,
             **related_context,

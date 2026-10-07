@@ -42,6 +42,37 @@
     min-height: 0;
 }
 
+/* The contact list owns scrolling while the Participants tab is open. */
+.event-tabbed-form:has([data-event-panel="participants"]:not([hidden])) > .event-form-body {
+    overflow-y: hidden;
+}
+
+#addEventContactsModal .modal-content {
+    max-height: calc(100dvh - 2rem);
+    overflow: hidden;
+}
+
+#addEventContactsModal .modal-content > form,
+#addEventContactsModal .modal-body,
+#addEventContactsModal .event-contact-picker {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#addEventContactsModal .modal-content > form {
+    flex: 0 1 auto;
+}
+
+#addEventContactsModal .modal-body {
+    overflow-y: hidden;
+}
+
+#addEventContactsModal .event-contact-choices {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 /* Event form tabs and shared field layout */
 .event-form-tabs {
     display: flex;
@@ -144,15 +175,20 @@
 }
 
 .event-contact-option {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.55rem;
+    display: block;
     min-width: 0;
     margin: 0;
     padding: 0.6rem;
     border: var(--bs-border-width) solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
+    cursor: pointer;
+}
+
+.event-contact-choice {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
     cursor: pointer;
 }
 

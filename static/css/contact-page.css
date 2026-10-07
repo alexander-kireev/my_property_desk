@@ -118,7 +118,7 @@
     white-space: nowrap;
 }
 
-/* Phone and compressed email summary */
+/* Phone and width-fitted email summary */
 .contact-command-methods {
     display: grid;
     grid-template-columns: 16ch minmax(0, 1fr);
@@ -219,6 +219,7 @@
 }
 
 .contact-method-copy {
+    flex: 1;
     min-width: 0;
 }
 
@@ -274,12 +275,6 @@
     display: block;
     max-width: 100%;
     overflow-wrap: anywhere;
-}
-
-.contact-method-value--email {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .contact-method-value--telephone {

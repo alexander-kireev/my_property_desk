@@ -22,6 +22,7 @@ from .navigation import (
     _date_parameter,
     _list_query_parameters,
     _normalised_list_values,
+    _participant_origin_parameters,
     _selected_day,
 )
 from .selectors import (
@@ -100,7 +101,7 @@ def _restore_add_event_contacts_form(request, state):
             event=event,
             auto_id="event_contacts_%s",
         ),
-        "active_tab": "details",
+        "active_tab": _participant_origin_parameters(request).get("tab", "details"),
         "open_modal": "addEventContactsModal",
     }
 
@@ -288,6 +289,9 @@ def _event_list_context(
         "day_query_base": urlencode(day_query_parameters),
         "clear_day_query": urlencode(day_query_parameters),
         "navigation_query": urlencode(navigation_parameters),
+        "participant_navigation_query": urlencode(
+            {**navigation_parameters, **_participant_origin_parameters(request)}
+        ),
         "calendar_month_label": displayed_month.strftime("%B %Y"),
         "calendar_month_number": displayed_month.month,
         "calendar_year": displayed_month.year,

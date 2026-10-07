@@ -66,7 +66,7 @@
             <div class="event-mobile-participant-row{% if event.state == 'scheduled' %} is-removable{% endif %}">
                 <div class="event-participant-copy">{% include "event/includes/participant_identity.html" %}</div>
                 {% if event.state == "scheduled" %}
-                    <form action="{% url 'event:delete_event_contact_from_event' event.pk event_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                    <form action="{% url 'event:delete_event_contact_from_event' event.pk event_contact.pk %}{% if participant_navigation_query %}?{{ participant_navigation_query }}{% endif %}"
                           method="post">
                         {% csrf_token %}
                         <button class="event-participant-remove"

@@ -1,9 +1,9 @@
-{% load event_display %}
 <div class="contact-method-row{% if selected_contact.state == 'active' %} contact-method-row--editable{% endif %}">
     <div class="contact-method-copy">
         {% if method.type == "email" %}
-            <span class="contact-method-value contact-method-value--email"
-                  title="{{ method.value }}">{{ method.value|compact_email }}</span>
+            <div class="contact-method-value contact-method-value--email">
+                {% include "includes/email_preview.html" with email=method.value reveal=True only %}
+            </div>
         {% else %}
             <span class="contact-method-value contact-method-value--telephone"
                   title="{{ method.value }}">{{ method.value }}</span>

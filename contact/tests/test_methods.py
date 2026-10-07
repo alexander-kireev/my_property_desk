@@ -55,11 +55,9 @@ class ContactViewMethodsTests(ContactViewFixture, TestCase):
         response = self.client.get(reverse("contact:contacts"))
 
         self.assertContains(response, "contact-method-value--email")
-        self.assertContains(
-            response,
-            f'<span class="contact-method-value contact-method-value--email" title="{email}">{email[:16]}...{email[-16:]}</span>',
-            html=True,
-        )
+        self.assertContains(response, f'data-email-preview="{email}"')
+        self.assertContains(response, f'<span class="email-full">{email}</span>', html=True)
+        self.assertContains(response, "Show full email")
         self.assertContains(response, f'title="{email}"')
         self.assertNotContains(response, 'href="mailto:')
         self.assertNotContains(response, 'href="tel:')
@@ -109,7 +107,7 @@ class ContactViewMethodsTests(ContactViewFixture, TestCase):
         self.assertContains(response, "+447700900088")
         self.assertNotContains(response, "+0 more")
 
-    def test_contact_list_reserves_phone_and_keeps_both_ends_of_long_email(self):
+    def test_contact_list_keeps_full_email_for_width_fitted_preview(self):
         contact = self.create_contact(self.user, "Long methods")
         phone = "+447700900123456"
         email = "averylongcontactemailaddress@example.com"
@@ -122,9 +120,9 @@ class ContactViewMethodsTests(ContactViewFixture, TestCase):
 
         self.assertIn(f'title="{phone}">{phone}</span>', list_html)
         self.assertIn(f'title="{email}"', list_html)
-        self.assertIn(f">{email[:9]}...{email[-16:]}</span>", list_html)
+        self.assertIn(f'data-email-preview="{email}"', list_html)
         self.assertNotIn("contact-command-methods--long-email", list_html)
-        self.assertNotIn(f">{email}</span>", list_html)
+        self.assertIn(f">{email}</span>", list_html)
 
     def test_deactivated_contact_list_shows_state_and_primary_method(self):
         contact = self.create_contact(

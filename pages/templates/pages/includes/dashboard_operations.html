@@ -5,10 +5,10 @@
         <h2 id="operationsHeading">Operations</h2>
         <div class="dashboard-add-wrap">
             <button id="dashboardAddToggle"
-                    class="dashboard-add-toggle btn theme-action btn-sm dropdown-toggle"
+                    class="dashboard-add-toggle btn theme-action btn-sm dropdown-toggle app-add-control"
                     type="button"
                     aria-expanded="false"
-                    aria-controls="dashboardAddMenu"><span class="dashboard-add-plus" aria-hidden="true">+</span> Add</button>
+                    aria-controls="dashboardAddMenu">{% include "includes/action_icon.html" with icon="plus" only %} Add {% include "includes/action_icon.html" with icon="chevron" only %}</button>
             <div id="dashboardAddMenu"
                  class="dashboard-add-menu dropdown-menu dropdown-menu-end"
                  aria-label="Add work item"
@@ -55,7 +55,7 @@
                placeholder="Search tasks">
         <div class="dashboard-filter-controls">
             <label class="visually-hidden" id="workFilterLabel" for="workFilter">Filter tasks by schedule</label>
-            <select class="form-select form-select-sm" id="workFilter"></select>
+            <select class="form-select form-select-sm" id="workFilter" data-wrap-options></select>
             <div id="workSecondaryWrap">
                 <label class="visually-hidden" for="workSecondaryFilter">Filter by priority</label>
                 <select class="form-select form-select-sm"

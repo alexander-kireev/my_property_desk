@@ -1,8 +1,35 @@
-// Reopen a Property's related record and restore focus after browser Back or reload.
+// Expand narrow Property previews and restore related-record focus after Back or reload.
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = document.querySelector(".property-command-centre");
     if (!workspace) return;
 
+    // A different row loads its selected details from the server. The open row
+    // can still be collapsed and reopened without another request.
+    const narrow = window.matchMedia("(max-width: 991.98px)");
+    workspace.querySelectorAll(".property-command-row[aria-expanded]").forEach((row) => {
+        row.addEventListener("click", (event) => {
+            if (
+                !narrow.matches ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.shiftKey ||
+                event.altKey
+            )
+                return;
+            const preview = row
+                .closest("[data-property-list-entry]")
+                ?.querySelector("[data-property-preview]");
+            if (!preview) return;
+            event.preventDefault();
+            preview.hidden = !preview.hidden;
+            row.setAttribute("aria-expanded", String(!preview.hidden));
+            if (!preview.hidden)
+                window.WorkspaceReveal?.queueRange(row, preview, () =>
+                    window.ExpandableText?.refresh(preview),
+                );
+        });
+    });
     const returnStateKey = "pomPropertyRelatedReturn";
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     const reloadFocusKey = `pomPropertyReloadFocus:${currentUrl}`;
@@ -69,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
         saveReloadFocus(key);
     });
 
-    // Scroll the link into view without hiding it behind the fixed navigation or sticky Property header.
+    // Scroll the link into view inside the whole detail pane or below mobile navigation.
     const revealReturnedLink = (link) => {
         const owner = window.WorkspaceReveal?.scrollOwner(link) || window;
         const bounds = link.getBoundingClientRect();
@@ -77,11 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let bottom;
         if (owner === window) {
             const navbar = document.querySelector(".app-navbar");
-            const header = workspace.querySelector(".property-command-header");
             top = Math.max(8, navbar?.getBoundingClientRect().bottom || 0);
-            if (header && getComputedStyle(header).position === "sticky") {
-                top = Math.max(top, header.getBoundingClientRect().bottom);
-            }
             top += 8;
             bottom = window.innerHeight - 8;
         } else {

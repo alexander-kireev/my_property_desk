@@ -13,6 +13,20 @@ from .support import DashboardFixture
 
 
 class DashboardWorkspaceTests(DashboardFixture, TestCase):
+    def test_dashboard_uses_three_panel_layout_and_calendar_icons(self):
+        dashboard = self.client.get(reverse("pages:dashboard"))
+
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertContains(dashboard, "dashboard-layout.css")
+        self.assertContains(dashboard, "dashboard-greeting-header")
+        self.assertContains(dashboard, 'data-calendar-filter="deadlines"')
+        self.assertContains(dashboard, "icons/dashboard-calendar-task.svg")
+        self.assertNotContains(dashboard, "Current dashboard")
+
+    def test_old_layout_preview_link_redirects_to_dashboard(self):
+        response = self.client.get("/dashboard/layout-preview/")
+        self.assertRedirects(response, reverse("pages:dashboard"), fetch_redirect_response=False)
+
     def test_same_day_drop_returns_no_change(self):
         self.task.scheduled_date = self.today
         self.task.save(update_fields=["scheduled_date"])

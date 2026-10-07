@@ -1,5 +1,4 @@
 {# Inactive contacts need state=all in the destination list; deleted contacts remain readable without a link. #}
-{% load event_display %}
 <div class="event-participant-heading">
     {% if event_contact.contact.deleted_at %}
         <span class="event-participant-name fw-semibold"
@@ -17,8 +16,9 @@
 </div>
 <div class="event-participant-methods small text-body-secondary">
     {% if event_contact.contact_email %}
-        <span class="event-participant-email"
-              title="{{ event_contact.contact_email }}">{{ event_contact.contact_email|compact_email }}</span>
+        <div class="event-participant-email">
+            {% include "includes/email_preview.html" with email=event_contact.contact_email only %}
+        </div>
     {% endif %}
     {% if event_contact.contact_telephone %}
         <span class="event-participant-phone"

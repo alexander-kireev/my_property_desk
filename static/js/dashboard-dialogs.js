@@ -156,9 +156,25 @@ window.DashboardDialogs = {
             window.SearchableSelect?.destroyWithin(get("workFormFields"));
             get("workFormFields").innerHTML = workFields(type, item);
             window.SearchableSelect?.init(get("workFormFields"));
+            const editingEvent = type === "event";
+            get("workEventTabs").hidden = !editingEvent;
+            get("workManageContacts").disabled = !editingEvent;
+            if (editingEvent) {
+                const selectedContacts = new Set((item?.contact_ids || []).map(String));
+                get("workForm")
+                    .querySelectorAll('[name="contacts"]')
+                    .forEach((checkbox) => {
+                        checkbox.checked = selectedContacts.has(checkbox.value);
+                    });
+                get("dashboardWorkContactsSearch").value = "";
+                window.EventForm.init(get("workForm"));
+                get("dashboardWorkContactsSearch").dispatchEvent(new Event("input"));
+            }
+            get("workEventTabs").querySelector('[data-event-tab="details"]').click();
             if (proposedDate)
                 get("workForm").elements.namedItem("scheduled_date").value = proposedDate;
             get("workFormErrors").textContent = "";
+            get("workContactsErrors").textContent = "";
             updateRelationshipFields();
             updateEventTimeFields();
             get("workDialog")._dashboardReturnFocus =
@@ -258,13 +274,20 @@ window.DashboardDialogs = {
         function showWorkErrors(error) {
             const errors = error.fieldErrors;
             if (!errors) {
+                get("workEventTabs").querySelector('[data-event-tab="details"]').click();
                 get("workFormErrors").textContent = error.message;
                 return;
             }
             const summary = [...(errors.__all__ || [])];
             let firstInvalid = null;
+            let contactError = false;
             for (const [name, messages] of Object.entries(errors)) {
                 if (name === "__all__") continue;
+                if (name === "contacts" && recordTarget.type === "event") {
+                    get("workContactsErrors").textContent = messages.join(" ");
+                    contactError = true;
+                    continue;
+                }
                 const field = get("workForm").elements.namedItem(name);
                 const slot = [...get("workFormFields").querySelectorAll("[data-error-for]")].find(
                     (element) => element.dataset.errorFor === name,
@@ -286,14 +309,20 @@ window.DashboardDialogs = {
                 firstInvalid ||= field;
             }
             get("workFormErrors").textContent = summary.join(" ");
-            if (firstInvalid)
+            if (firstInvalid) {
+                get("workEventTabs").querySelector('[data-event-tab="details"]').click();
                 (
                     firstInvalid.closest(".app-select")?.querySelector(".app-select-trigger") ||
                     firstInvalid
                 ).focus();
+            } else if (contactError) {
+                get("workEventTabs").querySelector('[data-event-tab="participants"]').click();
+                get("dashboardWorkContactsSearch").focus();
+            }
         }
         function clearWorkErrors() {
             get("workFormErrors").textContent = "";
+            get("workContactsErrors").textContent = "";
             get("workFormFields").querySelectorAll("[name]").forEach(clearFieldError);
         }
         function updateRelationshipFields() {

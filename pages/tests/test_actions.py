@@ -576,3 +576,70 @@ class DashboardActionsTests(DashboardFixture, TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("contacts", response.json()["errors"])
         self.assertFalse(Event.objects.filter(user=self.user, title="Invalid participant").exists())
+
+    def test_dashboard_edit_event_participants_without_changing_details(self):
+        previous = Contact.objects.create(user=self.user, first_name="Previous")
+        replacement = Contact.objects.create(user=self.user, first_name="Replacement")
+        historical = Contact.objects.create(
+            user=self.user, first_name="Historical", state=Contact.State.DEACTIVATED
+        )
+        event = Event.objects.create(
+            user=self.user, title="Inspection", scheduled_date=self.today, all_day=True
+        )
+        EventContact.objects.bulk_create(
+            [EventContact(event=event, contact=contact) for contact in (previous, historical)]
+        )
+        page = self.client.get(reverse("pages:dashboard"))
+        self.assertContains(page, 'id="workParticipantsTab"')
+        data = self.client.get(reverse("pages:dashboard_data")).json()
+        record = next(item for item in data["records"]["event"] if item["id"] == event.pk)
+        self.assertEqual(record["contact_ids"], [previous.pk])
+
+        response = self.client.post(
+            reverse("pages:dashboard_action"),
+            {
+                "action": "edit",
+                "kind": "event",
+                "id": event.pk,
+                "title": event.title,
+                "description": event.description,
+                "property": "",
+                "scheduled_date": self.today.isoformat(),
+                "all_day": "on",
+                "start_time": "",
+                "end_time": "",
+                "manage_contacts": "1",
+                "contacts": [replacement.pk],
+            },
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(response.json()["changed"])
+        self.assertEqual(
+            set(event.event_contacts.values_list("contact_id", flat=True)),
+            {replacement.pk, historical.pk},
+        )
+
+    def test_dashboard_edit_event_rejects_private_participant(self):
+        private = Contact.objects.create(user=self.other, first_name="Private")
+        event = Event.objects.create(
+            user=self.user, title="Inspection", scheduled_date=self.today, all_day=True
+        )
+        response = self.client.post(
+            reverse("pages:dashboard_action"),
+            {
+                "action": "edit",
+                "kind": "event",
+                "id": event.pk,
+                "title": event.title,
+                "description": event.description,
+                "property": "",
+                "scheduled_date": self.today.isoformat(),
+                "all_day": "on",
+                "start_time": "",
+                "end_time": "",
+                "manage_contacts": "1",
+                "contacts": [private.pk],
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("contacts", response.json()["errors"])

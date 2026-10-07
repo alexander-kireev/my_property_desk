@@ -20,7 +20,10 @@ class PropertyViewActionsTests(PropertyViewFixture, TestCase):
         property_record = self.create_property(name="Oak House")
         self.client.force_login(self.user)
         query = "?return_to=list&search=Oak&state=all&sort=-name&page=2"
-        expected = f"{reverse('property:property_detail', args=[property_record.pk])}?search=Oak&state=all&sort=-name"
+        expected = (
+            f"{reverse('property:properties')}?search=Oak&state=all&sort=-name"
+            f"&page=2&selected={property_record.pk}"
+        )
 
         response = self.client.post(
             reverse("property:edit_property", args=[property_record.pk]) + query,

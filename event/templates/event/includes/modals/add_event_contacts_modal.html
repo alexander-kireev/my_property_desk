@@ -13,8 +13,9 @@
                         data-bs-dismiss="modal"
                         aria-label="Close"></button>
             </div>
-            <form action="{% url 'event:add_event_contacts_to_event' selected_event.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                  method="post">
+            <form action="{% url 'event:add_event_contacts_to_event' selected_event.pk %}{% if participant_navigation_query %}?{{ participant_navigation_query }}{% endif %}"
+                  method="post"
+                  data-participant-origin>
                 <div class="modal-body">
                     {% csrf_token %}
                     {% include "event/includes/contact_picker.html" with picker_field=add_contacts_form.contacts picker_id="eventContacts" %}

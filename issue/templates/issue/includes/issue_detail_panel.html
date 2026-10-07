@@ -66,10 +66,10 @@
         data-bs-target="#issueTasksPanel"
         type="button">Tasks <span class="badge text-bg-secondary ms-1">{{ linked_task_count }}</span></button></li>
                 </ul>
-                {% if selected_issue.state == "active" %}<button class="btn btn-sm theme-action issue-add-task-button"
+                {% if selected_issue.state == "active" %}<button class="btn btn-sm theme-action issue-add-task-button app-add-control"
         type="button"
         data-bs-toggle="modal"
-        data-bs-target="#addIssueTaskModal">+ Add task</button>{% endif %}
+        data-bs-target="#addIssueTaskModal">{% include "includes/action_icon.html" with icon="plus" only %} Add task</button>{% endif %}
             </div>
 
             <div class="issue-detail-body tab-content">

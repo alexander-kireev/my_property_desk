@@ -1,8 +1,7 @@
 {# Selected property summary and related records #}
-<div class="property-detail-column">
+<div class="property-detail-column" tabindex="0" aria-label="Property details">
     {% if selected_property %}
-        <div class="property-command-header workspace-detail-header"
-             data-detail-header>
+        <div class="property-command-header workspace-detail-header">
             <a class="workspace-mobile-back btn btn-sm pom-quiet mb-3"
                href="{% url 'property:properties' %}{% if navigation_query %}?{{ navigation_query }}{% endif %}">← Back to properties</a>
             <div class="property-heading-row workspace-detail-header-layout">
@@ -77,10 +76,10 @@
             </div>
             {% if selected_property.state == "active" %}
                 <div class="dropdown">
-                    <button class="btn btn-sm theme-action dropdown-toggle"
+                    <button class="btn btn-sm theme-action dropdown-toggle app-add-control"
                             type="button"
                             data-bs-toggle="dropdown"
-                            aria-expanded="false">+ Add</button>
+                            aria-expanded="false">{% include "includes/action_icon.html" with icon="plus" only %} Add {% include "includes/action_icon.html" with icon="chevron" only %}</button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <button class="dropdown-item"
@@ -122,9 +121,7 @@
         </form>
         <div class="property-related-results" aria-live="polite">
             <div class="property-related-result-heading">{{ related_page.paginator.count }} record{{ related_page.paginator.count|pluralize }}</div>
-            <div class="property-related-scroll"
-                 tabindex="0"
-                 aria-label="Related records list">
+            <div class="property-related-scroll">
                 {% for entry in related_page %}
                     {% include "property/includes/related_record.html" with entry=entry %}
     {% empty %}<div class="property-related-empty text-center text-body-secondary p-3">{% if related_has_filters %}<strong class="d-block text-body mb-1">No matching records</strong><span class="d-block small mb-2">Try changing the related-record filters.</span><a class="btn btn-sm btn-outline-secondary"

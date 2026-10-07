@@ -6,6 +6,7 @@
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'css/event-components.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard-layout.css' %}">
 {% endblock %}
 {% block content %}
     <div class="dashboard-shell"
@@ -16,6 +17,13 @@
          data-issue-url="{% url 'issue:issues' %}"
          data-event-url="{% url 'event:events' %}">
         <h1 class="visually-hidden">Dashboard</h1>
+
+        <header class="dashboard-greeting-header">
+            <div>
+                <p class="dashboard-greeting-date">{{ dashboard_date|date:"l, j F Y" }}</p>
+                <p class="dashboard-greeting">{{ dashboard_greeting }}, {{ request.user.first_name|default:"there" }}.</p>
+            </div>
+        </header>
 
         <nav class="dashboard-panel-nav" aria-label="Dashboard panels" hidden>
             <button class="active"
