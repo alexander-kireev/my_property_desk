@@ -77,12 +77,16 @@
                 data-bs-toggle="modal"
                 data-bs-target="#deleteIssueModal">Delete</button>
         <div class="dropdown issue-inline-more">
-            <button class="issue-menu-button btn btn-sm btn-outline-secondary dropdown-toggle"
+            <button class="app-kebab-button issue-menu-button btn btn-sm btn-outline-secondary dropdown-toggle"
                     type="button"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
-                    aria-label="More issue actions">⋮</button>
+                    aria-label="More issue actions">{% include "includes/kebab_icon.html" %}</button>
             <ul class="dropdown-menu dropdown-menu-end">
+                <li class="work-mobile-open-menu-item">
+                    <a class="dropdown-item"
+                       href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ issue.pk }}&amp;open=detail">Open record</a>
+                </li>
                 {% if issue.state == "active" %}
                     <li>
                         <button class="dropdown-item"
@@ -96,10 +100,6 @@
                             type="button"
                             data-bs-toggle="modal"
                             data-bs-target="#deleteIssueModal">Delete issue</button>
-                </li>
-                <li class="work-mobile-open-menu-item">
-                    <a class="dropdown-item"
-                       href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ issue.pk }}&amp;open=detail">Open record</a>
                 </li>
             </ul>
         </div>

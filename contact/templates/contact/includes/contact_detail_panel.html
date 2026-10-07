@@ -11,39 +11,43 @@
                     <div class="contact-detail-heading-copy workspace-detail-heading-copy">
                         <h2 class="contact-detail-title workspace-detail-title h3"
                             title="{{ selected_contact }}">{{ selected_contact }}</h2>
-                        <div class="contact-detail-meta workspace-detail-meta">
-                            <span class="work-pill {% if selected_contact.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_contact.get_state_display }}</span>
-                            <span class="small text-body-secondary">Added {{ selected_contact.created_at|date:"j M Y" }}</span>
-                        </div>
                     </div>
-                    <div class="contact-detail-actions workspace-detail-actions">
-                        {% if selected_contact.state == "active" %}
-                            <button class="btn btn-outline-secondary"
-                                    type="button"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#editContactModal">Edit contact</button>
-                        {% else %}
-                            <form action="{% url 'contact:reactivate_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
-                                  method="post">{% csrf_token %}<button class="btn theme-action" type="submit">Reactivate</button></form>
-                        {% endif %}
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle contact-menu-button"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                    aria-label="Open contact actions">⋮</button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                {% if selected_contact.state == "active" %}<li><button class="dropdown-item"
-        type="button"
-        data-bs-toggle="modal"
-        data-bs-target="#deactivateContactModal">Deactivate contact</button></li>{% endif %}
-                                <li>
-                                    <button class="dropdown-item text-danger"
-                                            type="button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteContactModal">Delete contact</button>
-                                </li>
-                            </ul>
+                    <div class="contact-detail-action-group">
+                        <div class="contact-detail-actions workspace-detail-actions">
+                            {% if selected_contact.state == "active" %}
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editContactModal">Edit contact</button>
+                            {% else %}
+                                <form action="{% url 'contact:reactivate_contact' selected_contact.pk %}{% if navigation_query %}?{{ navigation_query }}{% endif %}"
+                                      method="post">{% csrf_token %}<button class="btn theme-action" type="submit">Reactivate</button></form>
+                            {% endif %}
+                            <div class="dropdown">
+                                <button class="app-kebab-button btn btn-outline-secondary dropdown-toggle contact-menu-button"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        aria-label="Open contact actions">
+                                    {% include "includes/kebab_icon.html" %}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if selected_contact.state == "active" %}
+                                        <li>
+                                            <button class="dropdown-item"
+                                                    type="button"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deactivateContactModal">Deactivate contact</button>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <button class="dropdown-item text-danger"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteContactModal">Delete contact</button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -56,6 +60,8 @@
                 <a class="contact-detail-tab{% if active_tab == 'notes' %} active{% endif %}"
                    href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ selected_contact.pk }}&amp;tab=notes"
                    {% if active_tab == "notes" %}aria-current="page"{% endif %}>Notes</a>
+                <span data-state="{{ selected_contact.state }}"
+                      class="work-pill {% if selected_contact.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_contact.get_state_display }}</span>
             </nav>
 
             <div class="contact-detail-body">

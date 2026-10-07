@@ -92,9 +92,16 @@
     background: var(--bs-secondary-bg);
 }
 
+/* Note deletion retains immediate removal and the existing Undo notification. */
 .notes-board-shell__action--delete:hover,
 .notes-board-shell__action--delete:focus-visible {
-    color: var(--bs-danger);
+    color: var(--pom-danger);
+    background: var(--pom-danger-note-hover);
+}
+
+.notes-board-shell__action--delete:active {
+    color: #fff;
+    background: var(--pom-danger);
 }
 
 .notes-board-shell__action svg {

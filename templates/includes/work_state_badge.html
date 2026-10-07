@@ -1,1 +1,1 @@
-<span class="work-pill work-pill--{% if item.state == 'active' or item.state == 'scheduled' %}active{% else %}terminal{% endif %}">{{ item.get_state_display }}</span>
+<span data-state="{{ item.state }}" class="work-pill work-pill--{% if item.state == 'active' or item.state == 'scheduled' %}active{% else %}terminal{% endif %}">{{ item.get_state_display }}</span>

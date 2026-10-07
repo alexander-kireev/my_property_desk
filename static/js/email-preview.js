@@ -39,8 +39,6 @@
         const visual = preview.querySelector("[data-email-visual]");
         if (visual.textContent !== fitted) visual.textContent = fitted;
         preview.classList.add("is-measured");
-        const reveal = preview.parentElement.querySelector(".email-reveal");
-        if (reveal && !reveal.open) reveal.hidden = fitted === full;
     }
 
     const observer = new ResizeObserver((entries) => {

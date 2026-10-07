@@ -136,9 +136,6 @@
                                    {% if request.resolver_match.namespace == 'accounts' %} aria-current="page"{% endif %}>Profile</a>
                             </li>
                             <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
                                 <form method="post" action="{% url 'accounts:logout' %}" autocomplete="off">
                                     {% csrf_token %}
                                     <button class="dropdown-item" type="submit">Log out</button>

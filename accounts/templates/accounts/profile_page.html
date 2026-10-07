@@ -43,11 +43,11 @@
         </section>
 
         {# Email, password and session controls #}
-        <section class="card shadow-sm mb-4" aria-labelledby="account-heading">
+        <section class="card shadow-sm mb-4 profile-account-card" aria-labelledby="account-heading">
             <div class="card-body profile-card-body">
                 <h2 class="h5 mb-3" id="account-heading">Account</h2>
                 <div class="profile-setting-row profile-setting-row-first">
-                    <span class="fw-medium">Email</span>
+                    <span>Email</span>
                     <div class="profile-setting-value">
                         <span class="profile-email-value">{{ request.user.email }}</span>
                         {% if pending_email_change %}
@@ -60,7 +60,7 @@
                             data-bs-target="#changeEmailModal">Change email</button>
                 </div>
                 <div class="profile-setting-row">
-                    <span class="fw-medium">Password</span>
+                    <span>Password</span>
                     <span class="profile-setting-value text-body-secondary">Keep your account secure.</span>
                     <button class="btn btn-outline-secondary profile-setting-action"
                             type="button"
@@ -68,7 +68,7 @@
                             data-bs-target="#changePasswordModal">Change password</button>
                 </div>
                 <div class="profile-setting-row profile-setting-row-last">
-                    <span class="fw-medium">Session</span>
+                    <span>Session</span>
                     <span class="profile-setting-value text-body-secondary">Signed in on this device.</span>
                     <form method="post" action="{% url 'accounts:logout' %}">
                         {% csrf_token %}
@@ -85,12 +85,12 @@
             <div class="card-body profile-card-body">
                 <h2 class="h5 mb-3 text-danger" id="danger-heading">Danger zone</h2>
                 <div class="profile-setting-row profile-setting-row-first profile-setting-row-last">
-                    <span class="fw-medium">Delete account</span>
+                    <span>Delete account</span>
                     <span class="profile-setting-value text-body-secondary">
                         Permanently delete your account and its properties, contacts, work items and notes.
                         This cannot be undone.
                     </span>
-                    <button class="btn btn-outline-danger profile-setting-action"
+                    <button class="btn btn-danger profile-setting-action"
                             type="button"
                             id="deleteAccountTrigger"
                             data-bs-toggle="modal"

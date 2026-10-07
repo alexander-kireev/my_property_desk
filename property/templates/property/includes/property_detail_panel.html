@@ -8,7 +8,7 @@
                 <div class="property-heading-copy workspace-detail-heading-copy">
                     <h2 class="property-heading-title workspace-detail-title h3">{{ selected_property.name }}</h2>
                     <div class="property-heading-meta workspace-detail-meta">
-                        <span class="work-pill {% if selected_property.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_property.get_state_display }}</span>
+                        <span data-state="{{ selected_property.state }}" class="work-pill {% if selected_property.state == 'active' %}work-pill--active{% else %}work-pill--terminal{% endif %}">{{ selected_property.get_state_display }}</span>
                         <span class="small text-body-secondary">Added {{ selected_property.created_at|date:"j M Y" }}</span>
                     </div>
                     <div class="expandable-text expandable-text--single-line property-heading-address"
@@ -35,11 +35,11 @@
                               method="post">{% csrf_token %}<button class="btn theme-action" type="submit">Reactivate</button></form>
                     {% endif %}
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary property-menu-button"
+                        <button class="app-kebab-button btn btn-outline-secondary property-menu-button"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
-                                aria-label="Property actions">⋮</button>
+                                aria-label="Property actions">{% include "includes/kebab_icon.html" %}</button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             {% if selected_property.state == "active" %}<li><button class="dropdown-item"
         type="button"

@@ -92,11 +92,11 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#deletePropertyModal">Delete</button>
                             <div class="dropdown property-inline-more">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle property-menu-button"
+                                <button class="app-kebab-button btn btn-sm btn-outline-secondary dropdown-toggle property-menu-button"
                                         type="button"
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false"
-                                        aria-label="More actions for {{ record.name }}">⋮</button>
+                                        aria-label="More actions for {{ record.name }}">{% include "includes/kebab_icon.html" %}</button>
                                 <ul class="dropdown-menu">
                                     <li class="property-inline-open-menu-item">
                                         <a class="dropdown-item"

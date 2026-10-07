@@ -42,7 +42,7 @@
     margin: 0;
     color: var(--bs-emphasis-color);
     font-size: clamp(1.35rem, 2.2vw, 2rem);
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.2;
 }
 
@@ -125,11 +125,6 @@
     font-size: clamp(9px, 2.2cqw, 15px);
 }
 
-.dashboard-page .dashboard-today-dot {
-    width: clamp(5px, 1.1cqw, 8px);
-    height: clamp(5px, 1.1cqw, 8px);
-}
-
 .dashboard-page .dashboard-calendar-metrics {
     position: absolute;
     z-index: 1;
@@ -146,14 +141,15 @@
     display: flex;
     align-items: center;
     gap: clamp(1px, 0.35cqw, 3px);
-    width: 100%;
+    width: max-content;
+    max-width: 100%;
     height: clamp(9px, 2.6cqw, 18px);
     min-height: clamp(9px, 2.6cqw, 18px);
     border: 0;
-    border-radius: 0;
-    padding: 0;
+    border-radius: 999px;
+    padding: 0 2px;
     background: transparent;
-    color: #445663;
+    color: var(--pom-text-muted);
     font-size: clamp(7px, 2.12cqw, 14px);
     line-height: 1;
     letter-spacing: normal;
@@ -161,7 +157,8 @@
 }
 
 .dashboard-page .dashboard-day-category:hover {
-    outline: 1px solid #506779;
+    background: var(--category-hover, #e6eedc);
+    box-shadow: inset 0 0 0 1px var(--category-ink, #365e3c);
     filter: none;
 }
 
@@ -224,4 +221,27 @@
         top: 1px;
         right: 1px;
     }
+}
+
+.dashboard-day-category[data-category="events"] {
+    --category-hover: #e5eff9;
+    --category-ink: #2865a0;
+}
+
+.dashboard-day-category[data-category="deadlines"] {
+    --category-hover: #fff1d0;
+    --category-ink: #93620f;
+}
+
+/* Today has a filled date marker; every numeral keeps the same anchor. */
+.dashboard-page .dashboard-date-button strong {
+    width: clamp(18px, 3.4cqw, 26px);
+    height: clamp(18px, 3.4cqw, 26px);
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.dashboard-page .dashboard-day.today .dashboard-date-button strong {
+    background: var(--pom-night);
+    color: #fff;
 }

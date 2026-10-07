@@ -21,7 +21,7 @@
         <header class="dashboard-greeting-header">
             <div>
                 <p class="dashboard-greeting-date">{{ dashboard_date|date:"l, j F Y" }}</p>
-                <p class="dashboard-greeting">{{ dashboard_greeting }}, {{ request.user.first_name|default:"there" }}.</p>
+                <p class="dashboard-greeting"><span data-dashboard-greeting>{{ dashboard_greeting }}</span>, {{ request.user.first_name|default:"there" }}.</p>
             </div>
         </header>
 
@@ -55,7 +55,7 @@
                             role="tab"
                             aria-selected="false"
                             tabindex="-1"
-                            aria-controls="notesView">My notes <span class="dashboard-notes-count badge text-bg-secondary" id="notesCount">0</span></button>
+                            aria-controls="notesView">My notes <span class="dashboard-notes-count badge dashboard-counter" id="notesCount">0</span></button>
                 </div>
                 {% include "pages/includes/dashboard_day_plan.html" %}
                 {% include "pages/includes/dashboard_notes.html" %}
@@ -94,5 +94,6 @@
     <script src="{% static 'js/dashboard-feedback.js' %}"></script>
     <script src="{% static 'js/dashboard-notes.js' %}"></script>
     <script src="{% static 'js/dashboard-dialogs.js' %}" defer></script>
+    <script src="{% static 'js/dashboard-greeting.js' %}" defer></script>
     <script src="{% static 'js/dashboard.js' %}" defer></script>
 {% endblock %}

@@ -90,7 +90,7 @@
         if (item.priority)
             return `<span class="work-pill work-pill--priority-${item.priority_id}" aria-label="${escapeHtml(item.priority)} priority" title="${escapeHtml(item.priority)} priority">${escapeHtml(item.priority)}</span>`;
         if (item.kind === "event")
-            return `<span class="work-pill work-pill--${item.state === "scheduled" ? "active" : "terminal"}">${escapeHtml(item.state.charAt(0).toUpperCase() + item.state.slice(1))}</span>`;
+            return `<span data-state="${escapeHtml(item.state)}" class="work-pill work-pill--${item.state === "scheduled" ? "active" : "terminal"}">${escapeHtml(item.state.charAt(0).toUpperCase() + item.state.slice(1))}</span>`;
         return "";
     }
 
@@ -116,12 +116,12 @@
                 data-action="delete">Delete</button>
             <a class="dashboard-optional-action btn btn-outline-secondary btn-sm"
                 href="${escapeHtml(fullUrl)}">Open record</a>
-            <button type="button" class="dashboard-more-button btn btn-outline-secondary btn-sm"
+            <button type="button" class="app-kebab-button dashboard-more-button btn btn-outline-secondary btn-sm"
                 data-action="more" aria-label="More actions for ${escapeHtml(item.title)}"
-                aria-controls="${menuId}" aria-expanded="false">⋮</button>
+                aria-controls="${menuId}" aria-expanded="false"><svg class="app-kebab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
             <div class="dashboard-row-menu" id="${menuId}" popover="auto">
-                ${cancelMenuItem}
                 <a href="${escapeHtml(fullUrl)}">Open record</a>
+                ${cancelMenuItem}
                 <button type="button" class="dashboard-action-danger" data-action="delete">Delete</button>
             </div>
         </div>`;
@@ -139,7 +139,7 @@
             if (area !== "queue") return `<span>${time}</span>`;
             return `<span>${prettyDate(item.date)} ·</span><span>${time}</span>`;
         }
-        // The selected date supplies schedule/deadline context; expanded facts keep full dates.
+        // The selected date supplies schedule/deadline context.
         if (area !== "queue") return "";
         if (item.due) {
             const days = Math.round((parseDate(item.due) - parseDate(today)) / 86400000);
@@ -197,7 +197,8 @@
         ${chevron}`;
     }
 
-    function rowFacts(item) {
+    function rowFacts(item, area) {
+        const selectedDate = area === "queue" ? null : area === "due" ? item.due : item.date;
         const facts = [];
         if (item.property && !(item.kind === "task" && item.issue_id)) {
             facts.push(`<span class="dashboard-property-fact" title="${escapeHtml(item.property)}">
@@ -209,11 +210,11 @@
                 <span class="dashboard-issue-title">${escapeHtml(item.issue_title)}</span>
             </span>`);
         }
-        if (item.date) {
+        if (item.date && item.date !== selectedDate) {
             const label = item.kind === "event" ? "Date" : "Scheduled";
             facts.push(`<span>${label} ${prettyDate(item.date)}</span>`);
-        } else if (item.kind === "task") facts.push("<span>Unscheduled</span>");
-        if (item.due) {
+        } else if (!item.date && item.kind === "task") facts.push("<span>Unscheduled</span>");
+        if (item.due && item.due !== selectedDate) {
             const label = item.kind === "issue" ? "Resolve by" : "Due";
             facts.push(`<span>${label} ${prettyDate(item.due)}</span>`);
         }
@@ -255,7 +256,7 @@
             </button>
             <div class="dashboard-row-detail" ${isExpanded ? "" : "hidden"}>
                 ${rowDescription(item, key)}
-                <div class="dashboard-row-facts">${rowFacts(item)}</div>
+                <div class="dashboard-row-facts">${rowFacts(item, area)}</div>
                 ${rowActions(item, key, fullUrl)}
             </div>
         </article>`;

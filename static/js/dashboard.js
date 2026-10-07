@@ -173,6 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Older callers await the replacement refresh, including its failure, without rendering stale data.
         if (refresh !== latestRefresh) return latestRefresh.promise;
         data = freshData;
+        // The API's date is a server fallback; the visible dashboard uses the
+        // same local day as its greeting, including responses crossing midnight.
+        data.today = window.DashboardClock?.today() || data.today;
         if (!selected) selected = data.today;
         if (!month) month = parseDate(`${selected.slice(0, 7)}-01`);
         render();
@@ -323,9 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const isToday = value === data.today;
             const todayClass = isToday ? "today" : "";
             const todayAttribute = isToday ? 'aria-current="date"' : "";
-            const todayDot = isToday
-                ? '<span class="dashboard-today-dot" aria-hidden="true"></span>'
-                : "";
             const taskNoun = tasks === 1 ? "task" : "tasks";
             const eventNoun = events === 1 ? "event" : "events";
             const deadlineNoun = due === 1 ? "deadline" : "deadlines";
@@ -351,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`;
             cells.push(`<div class="dashboard-day ${otherClass} ${selectedClass} ${todayClass}" data-day="${value}">
                 <button type="button" class="dashboard-date-button" aria-label="Select ${dateLabel}" ${todayAttribute}>
-                    <strong>${date.getUTCDate()}${todayDot}</strong>
+                    <strong>${date.getUTCDate()}</strong>
                 </button>
                 ${categories}
             </div>`);
@@ -968,6 +968,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.key === "Escape" && !get("dashboardAddMenu").hidden)
             closeAddMenu({ restoreFocus: true });
     });
+    // Recompute date-relative views after midnight or returning to a sleeping
+    // tab. Keep the selected date, viewed month and scroll positions unchanged.
+    document.addEventListener("dashboard:date-change", ({ detail }) => {
+        if (!month || data.today === detail.today) return;
+        const queueScroll = get("workList").scrollTop;
+        const selectedScroll = get("dayList").scrollTop;
+        data.today = detail.today;
+        renderQueue();
+        renderCalendar();
+        renderDay();
+        get("workList").scrollTop = queueScroll;
+        get("dayList").scrollTop = selectedScroll;
+    });
+
     // Load the initial page after its controls and helper modules are ready.
     load().catch((error) => message(error.message, { error: true }));
 });

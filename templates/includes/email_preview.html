@@ -2,9 +2,3 @@
 <span class="email-preview"
       data-email-preview="{{ email }}"
       title="{{ email }}"><span data-email-visual aria-hidden="true">{{ email }}</span><span class="visually-hidden">{{ email }}</span></span>
-{% if reveal %}
-    <details class="email-reveal">
-        <summary>Show full email</summary>
-        <span class="email-full">{{ email }}</span>
-    </details>
-{% endif %}

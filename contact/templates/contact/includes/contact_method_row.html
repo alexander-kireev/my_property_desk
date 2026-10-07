@@ -2,7 +2,7 @@
     <div class="contact-method-copy">
         {% if method.type == "email" %}
             <div class="contact-method-value contact-method-value--email">
-                {% include "includes/email_preview.html" with email=method.value reveal=True only %}
+                {% include "includes/email_preview.html" with email=method.value only %}
             </div>
         {% else %}
             <span class="contact-method-value contact-method-value--telephone"

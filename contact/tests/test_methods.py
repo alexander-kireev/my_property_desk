@@ -56,8 +56,8 @@ class ContactViewMethodsTests(ContactViewFixture, TestCase):
 
         self.assertContains(response, "contact-method-value--email")
         self.assertContains(response, f'data-email-preview="{email}"')
-        self.assertContains(response, f'<span class="email-full">{email}</span>', html=True)
-        self.assertContains(response, "Show full email")
+        self.assertContains(response, f'<span class="visually-hidden">{email}</span>', html=True)
+        self.assertNotContains(response, "Show full email")
         self.assertContains(response, f'title="{email}"')
         self.assertNotContains(response, 'href="mailto:')
         self.assertNotContains(response, 'href="tel:')
