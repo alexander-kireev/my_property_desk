@@ -1,5 +1,6 @@
 """Task workspace behaviour."""
 
+import re
 from datetime import timedelta
 
 from django.test import TestCase
@@ -45,6 +46,23 @@ class TaskViewWorkspaceTests(TaskViewFixture, TestCase):
             with self.subTest(query=query):
                 response = self.client.get(reverse("task:tasks"), query)
                 self.assertCountEqual(response.context["page_obj"].object_list, expected)
+                if not query:
+                    html = response.content.decode()
+                    for task, label in ((completed, "Completed"), (dismissed, "Dismissed")):
+                        row = re.search(
+                            rf'<a class="task-command-row\b[^>]*selected={task.pk}[^>]*>.*?</a>',
+                            html,
+                            re.S,
+                        )
+                        self.assertIsNotNone(row)
+                        self.assertIn(f'data-state="{task.state}"', row.group())
+                        deadline = re.search(
+                            r'<span class="task-command-deadline[^\"]*">(.*?)</span>',
+                            row.group(),
+                            re.S,
+                        )
+                        self.assertIsNotNone(deadline)
+                        self.assertNotIn(label, deadline.group(1))
 
     def test_workspace_wires_shared_list_scroll_restoration(self):
         task = self.create_task()
@@ -234,7 +252,7 @@ class TaskViewWorkspaceTests(TaskViewFixture, TestCase):
         self.assertEqual(response.context["selected_task"], selected_task)
         self.assertContains(response, 'aria-current="true"')
         self.assertContains(
-            response, "task-command-row list-group-item list-group-item-action is-selected"
+            response, "task-command-row work-summary-row list-group-item list-group-item-action is-selected"
         )
 
     def test_selected_task_expands_inline_until_full_record_is_requested(self):

@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import (
     AuthenticationForm,
     PasswordChangeForm,
+    PasswordResetForm,
     SetPasswordForm,
     UserChangeForm,
     UserCreationForm,
@@ -82,8 +83,8 @@ class EmailAuthenticationForm(AuthenticationForm):
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
-        self.fields["username"].widget.attrs["autocomplete"] = "username"
-        self.fields["password"].widget.attrs["autocomplete"] = "current-password"
+        self.fields["username"].widget.attrs["autocomplete"] = "off"
+        self.fields["password"].widget.attrs["autocomplete"] = "off"
 
     def clean_username(self):
         email = self.cleaned_data["username"]
@@ -116,7 +117,7 @@ class EmailChangeForm(forms.Form):
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
         self.fields["new_email"].widget.attrs["autocomplete"] = "off"
-        self.fields["current_password"].widget.attrs["autocomplete"] = "current-password"
+        self.fields["current_password"].widget.attrs["autocomplete"] = "off"
 
     def clean_new_email(self):
         new_email = self.cleaned_data["new_email"].strip().lower()
@@ -153,7 +154,7 @@ class DeleteAccountForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.user = user
         self.fields["current_password"].widget.attrs.update(
-            {"class": "form-control", "autocomplete": "current-password"}
+            {"class": "form-control", "autocomplete": "off"}
         )
         self.fields["confirmation"].widget.attrs.update(
             {"class": "form-control", "autocomplete": "off"}
@@ -181,12 +182,18 @@ class PasswordResetConfirmForm(SetPasswordForm):
             field.widget.attrs["autocomplete"] = "off"
 
 
+class PublicPasswordResetRequestForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].widget.attrs.update({"class": "form-control", "autocomplete": "off"})
+
+
 class AccountPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
-        self.fields["old_password"].widget.attrs["autocomplete"] = "current-password"
-        self.fields["new_password1"].widget.attrs["autocomplete"] = "new-password"
-        self.fields["new_password2"].widget.attrs["autocomplete"] = "new-password"
+        self.fields["old_password"].widget.attrs["autocomplete"] = "off"
+        self.fields["new_password1"].widget.attrs["autocomplete"] = "off"
+        self.fields["new_password2"].widget.attrs["autocomplete"] = "off"

@@ -1,0 +1,27 @@
+{# The page supplies buttons with data-public-image and a nested image; this dialog cycles through them. #}
+<dialog class="media-viewer"
+        data-public-viewer
+        aria-label="Application screenshots">
+    <div class="viewer-bar">
+        <p data-viewer-count></p>
+        <button class="viewer-close"
+                type="button"
+                data-viewer-close
+                aria-label="Close enlarged image">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+        </button>
+    </div>
+    <div class="viewer-body">
+        <button class="viewer-arrow"
+                type="button"
+                data-viewer-prev
+                aria-label="Previous image">←</button>
+        <img data-viewer-image alt="">
+        <button class="viewer-arrow"
+                type="button"
+                data-viewer-next
+                aria-label="Next image">→</button>
+    </div>
+</dialog>

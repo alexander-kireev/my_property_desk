@@ -1,5 +1,6 @@
 """Issue workspace behaviour."""
 
+import re
 from datetime import timedelta
 
 from django.contrib.messages import get_messages
@@ -87,6 +88,23 @@ class IssueViewTests(IssueTestMixin, TestCase):
             with self.subTest(query=query):
                 response = self.client.get(reverse("issue:issues"), query)
                 self.assertCountEqual(response.context["page_obj"].object_list, expected)
+                if not query:
+                    html = response.content.decode()
+                    for issue, label in ((resolved, "Resolved"), (dismissed, "Dismissed")):
+                        row = re.search(
+                            rf'<a class="issue-list-row\b[^>]*selected={issue.pk}[^>]*>.*?</a>',
+                            html,
+                            re.S,
+                        )
+                        self.assertIsNotNone(row)
+                        self.assertIn(f'data-state="{issue.state}"', row.group())
+                        deadline = re.search(
+                            r'<span class="issue-command-deadline[^\"]*">(.*?)</span>',
+                            row.group(),
+                            re.S,
+                        )
+                        self.assertIsNotNone(deadline)
+                        self.assertNotIn(label, deadline.group(1))
 
     def test_terminal_only_issue_list_is_visible_by_default(self):
         self.issue.state = Issue.State.RESOLVED

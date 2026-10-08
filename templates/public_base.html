@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description"
+              content="{% block description %}Manage your properties and the work that comes with them.{% endblock %}">
+        <title>{% block title %}My Property Desk{% endblock %}</title>
+        <link rel="icon"
+              type="image/svg+xml"
+              href="{% static 'brand/mpd-favicon-light.svg' %}"
+              media="(prefers-color-scheme: light)">
+        <link rel="icon"
+              type="image/svg+xml"
+              href="{% static 'brand/mpd-favicon-dark.svg' %}"
+              media="(prefers-color-scheme: dark)">
+        <link rel="stylesheet" href="{% static 'css/navigation-shared.css' %}">
+        <link rel="stylesheet" href="{% static 'public/public-site.css' %}">
+        {% block extra_css %}{% endblock %}
+    </head>
+    <body>
+        <a class="skip" href="#main">Skip to content</a>
+        {% include "includes/public_navbar.html" %}
+        <main id="main">
+            {% block content %}{% endblock %}
+        </main>
+        {% include "includes/public_footer.html" %}
+        {% block extra_js %}{% endblock %}
+    </body>
+</html>

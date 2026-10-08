@@ -1,0 +1,16 @@
+{% load static %}
+<footer class="footer">
+    <div class="wrap footer-inner">
+        <a href="{% url 'pages:home' %}" aria-label="My Property Desk home">
+            <img src="{% static 'brand/mpd-compact-georgia-dark.svg' %}"
+                 alt="My Property Desk">
+        </a>
+        <nav class="footer-links" aria-label="Footer navigation">
+            <a href="{% url 'pages:home' %}">Home</a>
+            <a href="{% url 'pages:features' %}">Features</a>
+            <a href="{% url 'pages:faq' %}">FAQ</a>
+            <a href="{% url 'pages:contact_us' %}">Contact</a>
+            <a href="{% url 'pages:coming_soon' %}">Coming soon</a>
+        </nav>
+    </div>
+</footer>

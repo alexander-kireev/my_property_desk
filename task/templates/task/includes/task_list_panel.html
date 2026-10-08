@@ -138,22 +138,27 @@
                 {# Task summaries, priority or state badges, and scheduling #}
                 {% for task in page_obj %}
                     {% work_status task today as task_status %}
-                    <a class="task-command-row list-group-item list-group-item-action{% if task == selected_task %} is-selected{% endif %}{% if task.state != 'active' %} terminated{% endif %}"
+                    <a class="task-command-row work-summary-row list-group-item list-group-item-action{% if task == selected_task %} is-selected{% endif %}{% if task.state != 'active' %} terminated{% endif %}"
                        href="{% if navigation_query %}?{{ navigation_query }}&amp;{% else %}?{% endif %}selected={{ task.pk }}"
                        data-workspace-scroll-row
                        {% if mobile_expanded_task_id == task.pk %}aria-expanded="true" aria-controls="taskInlineDetails{{ task.pk }}"{% endif %}
                        {% if task == selected_task %}aria-current="true"{% endif %}>
-                        <span class="task-command-row-grid">
-                            <span class="task-command-copy">
-                                <span class="task-command-title" title="{{ task.title }}">{{ task.title }}</span>
-                                <span class="task-command-context mt-2"{% if task.issue or task.property %} title="{% if task.issue %}{{ task.issue.title }}{% else %}{{ task.property.name }}{% endif %}"{% else %} aria-hidden="true"{% endif %}>{% if task.issue %}{{ task.issue.title }}{% elif task.property %}{{ task.property.name }}{% endif %}</span>
+                        <span class="task-command-row-grid work-summary-grid">
+                            <span class="task-command-copy work-summary-copy">
+                                <span class="task-command-title work-summary-title" title="{{ task.title }}">{{ task.title }}</span>
+                                <span class="task-command-context work-summary-context"{% if task.issue or task.property %} title="{% if task.issue %}{{ task.issue.title }}{% else %}{{ task.property.name }}{% endif %}"{% else %} aria-hidden="true"{% endif %}>{% if task.issue %}{{ task.issue.title }}{% elif task.property %}{{ task.property.name }}{% endif %}</span>
                             </span>
-                            <span class="task-command-meta">
-                                {% if task.state == "active" %}
-                                    <span class="task-command-badges">{% include "task/includes/priority_badge.html" with task=task %}</span>
-                                {% endif %}
-                                <span class="task-command-deadline{% if task_status.kind == 'overdue' %} task-command-deadline--overdue{% elif task_status.kind == 'soon' %} task-command-deadline--soon{% endif %}">
-                                    {% if task.state != "active" %}{{ task.get_state_display }}{% if task.terminated_at %}<span class="task-command-date-separator"> ·</span> {{ task.terminated_at|date:"j M Y" }}{% endif %}
+                            <span class="task-command-meta work-summary-meta">
+                                <span class="task-command-badges work-summary-badges">
+                                    {% if task.state == "active" %}
+                                        {% include "task/includes/priority_badge.html" with task=task %}
+                                    {% else %}
+                                        {% include "includes/work_state_badge.html" with item=task only %}
+                                    {% endif %}
+                                </span>
+                                <span class="task-command-deadline work-summary-when{% if task_status.kind == 'overdue' %} task-command-deadline--overdue{% elif task_status.kind == 'soon' %} task-command-deadline--soon{% endif %}">
+                                    {% if task.state != "active" %}
+                                        {% if task.terminated_at %}{{ task.terminated_at|date:"j M Y" }}{% else %}Created {{ task.created_at|date:"j M Y" }}{% endif %}
                 {% elif task_status.kind == "overdue" %}Overdue<span class="task-command-date-separator"> ·</span> {{ task.completion_deadline|date:"j M Y" }}
                 {% elif task_status.kind == "soon" %}Due soon<span class="task-command-date-separator"> ·</span> {{ task.completion_deadline|date:"j M Y" }}
                 {% elif task.completion_deadline %}Due<span class="task-command-date-separator"> ·</span> {{ task.completion_deadline|date:"j M Y" }}

@@ -1,0 +1,181 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}Features · My Property Desk{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'public/features-page.css' %}">
+{% endblock %}
+
+{% block content %}
+    {# Five capabilities shown with real application screenshots. #}
+    <section class="story-hero wrap">
+        <span class="eyebrow">Features</span>
+        <h1>Property work, easier to keep on top of.</h1>
+        <p>
+            See how
+            <strong class="product-name">My Property Desk</strong>
+            helps you plan the week, follow work through and find the details again when you need them.
+        </p>
+        <div class="actions">
+            <a class="button primary" href="{% url 'accounts:register' %}">Create a free account</a>
+        </div>
+    </section>
+    <section class="story-section" id="plan" aria-labelledby="plan-title">
+        <div class="wrap story-layout">
+            <div class="story-copy">
+                <span class="eyebrow">Plan work</span>
+                <h2 id="plan-title">Move work into the right day.</h2>
+                <p>
+                    Drag work from your list onto the calendar to give it a date. If plans change,
+                    simply drag it to a better day. Planning stays quick, so you can get on with the work.
+                </p>
+                <p>
+                    The calendar keeps tasks, events and deadlines in view together, so you can see what
+                    a change means for the rest of the week.
+                </p>
+            </div>
+            <div class="story-media" data-story-media>
+                <div class="story-frame">
+                    <button class="story-still"
+                            type="button"
+                            data-public-image
+                            aria-label="Enlarge screenshot: Dashboard showing work beside an October calendar">
+                        <img src="{% static 'public/images/dashboard-preview.png' %}"
+                             alt="Dashboard showing work beside an October calendar" />
+                        <span class="zoom-cue" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="story-section" id="day" aria-labelledby="day-title">
+        <div class="wrap story-layout story-layout--reverse">
+            <div class="story-copy">
+                <span class="eyebrow">Daily view</span>
+                <h2 id="day-title">See the whole day before it begins.</h2>
+                <p>
+                    Pick a date and see the tasks, deadlines and events planned for it. Move between
+                    those views without losing your place in the calendar.
+                </p>
+                <p>
+                    It is a quick way to answer the practical question at the start of the day: what
+                    needs my attention, and what is coming up?
+                </p>
+            </div>
+            <div class="story-media" data-story-media>
+                <div class="story-frame">
+                    <button class="story-still"
+                            type="button"
+                            data-public-image
+                            aria-label="Enlarge screenshot: Dashboard with Friday 9 October selected and its planned work visible">
+                        <img src="{% static 'public/images/feature-day.png' %}"
+                             alt="Dashboard with Friday 9 October selected and its planned work visible" />
+                        <span class="zoom-cue" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="story-section" id="linked" aria-labelledby="linked-title">
+        <div class="wrap story-layout">
+            <div class="story-copy">
+                <span class="eyebrow">Linked work</span>
+                <h2 id="linked-title">Keep every step with the problem it belongs to.</h2>
+                <p>
+                    A repair rarely ends with one action. Keep the original problem and the steps that
+                    follow it together, so the work stays clear from first report to final check.
+                </p>
+                <p>
+                    When the next update comes in, you can quickly see what has been done and what
+                    still needs attention.
+                </p>
+            </div>
+            <div class="story-media" data-story-media>
+                <div class="story-frame">
+                    <button class="story-still"
+                            type="button"
+                            data-public-image
+                            aria-label="Enlarge screenshot: Shower leak issue with nine linked tasks">
+                        <img src="{% static 'public/images/feature-linked-work.png' %}"
+                             alt="Shower leak issue with nine linked tasks" />
+                        <span class="zoom-cue" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="story-section" id="history" aria-labelledby="history-title">
+        <div class="wrap story-layout story-layout--reverse">
+            <div class="story-copy">
+                <span class="eyebrow">Property history</span>
+                <h2 id="history-title">Find out what happened last time.</h2>
+                <p>
+                    Each property keeps a history of its work and visits, even after they are finished.
+                    Sign in from any of your devices to look back whenever you need to.
+                </p>
+                <p>
+                    Whether a problem returns or someone asks what happened before, the record is there
+                    to help you understand the work that was done.
+                </p>
+            </div>
+            <div class="story-media" data-story-media>
+                <div class="story-frame">
+                    <button class="story-still"
+                            type="button"
+                            data-public-image
+                            aria-label="Enlarge screenshot: 18 Rowan Terrace with previous tasks, issues and events listed">
+                        <img src="{% static 'public/images/feature-property-history.png' %}"
+                             alt="18 Rowan Terrace with previous tasks, issues and events listed" />
+                        <span class="zoom-cue" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="story-section" id="people" aria-labelledby="people-title">
+        <div class="wrap story-layout">
+            <div class="story-copy">
+                <span class="eyebrow">People and context</span>
+                <h2 id="people-title">Find the person and the detail you need.</h2>
+                <p>
+                    Keep the people connected to your properties in one searchable contact list. Add
+                    the details that matter to you, so the right person is easy to find when you need them.
+                </p>
+                <p>
+                    Add as much or as little detail as you need, with notes that help you remember the
+                    context. The next time you need to get in touch, it is all close at hand.
+                </p>
+            </div>
+            <div class="story-media" data-story-media>
+                <div class="story-frame">
+                    <button class="story-still"
+                            type="button"
+                            data-public-image
+                            aria-label="Enlarge screenshot: Contact record showing telephone numbers and email addresses">
+                        <img src="{% static 'public/images/feature-contacts.png' %}"
+                             alt="Contact record showing telephone numbers and email addresses" />
+                        <span class="zoom-cue" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="closing">
+        <div class="wrap closing-inner">
+            <div>
+                <h2>Put it to work for your properties.</h2>
+                <p>Create a free account and start organising what is on your plate today.</p>
+            </div>
+            <div class="actions">
+                <a class="button primary" href="{% url 'accounts:register' %}">Create a free account</a>
+                <a class="button secondary" href="{% url 'pages:faq' %}">Read the FAQ</a>
+            </div>
+        </div>
+    </section>
+    {% include "includes/public_image_viewer.html" %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'public/public-image-viewer.js' %}"></script>
+{% endblock %}

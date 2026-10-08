@@ -16,6 +16,7 @@ const siteCss = [
     "static/css/contact-page.css",
     "static/css/workspace.css",
 ].map(readCss).join(" ");
+const workRowCss = readCss("static/css/work-list-row.css");
 const eventComponentsCss = readCss("static/css/event-components.css");
 const eventCss = readCss("static/css/event-page.css");
 const eventJs = read("static/js/event-command-centre.js");
@@ -83,12 +84,10 @@ test("Task relationship labels say Not linked while retaining standalone values"
 
 test("My Work single-panel width cap and issue row sizing preserve responsive boundaries", () => {
     assert.match(siteCss, /@media \(min-width: 768px\) and \(max-width: 860px\) \{\s*:is\(\.task-command-centre, \.issue-command-centre, \.event-command-centre\) \{ max-width: 720px; margin-inline: auto; \}/);
-    assert.match(siteCss, /@media \(min-width: 700px\) and \(max-width: 860px\) \{\s*\.task-command-centre \{ max-width: 680px; margin-inline: auto; \}/);
     assert.match(siteCss, /\.task-list-column \{ border-right: 0 !important; \}/);
-    assert.match(siteCss, /\.task-command-row \.task-command-badges \{ justify-content: flex-start; \}/);
-    assert.match(siteCss, /\.work-pill \{[^}]*justify-content: center;[^}]*inline-size: var\(--pom-state-badge-width\);[^}]*min-height: 1\.7rem;/s);
-    assert.match(siteCss, /\.issue-list-row \{ min-height: 5\.65rem; padding: 1rem 1\.25rem; \}/);
-    assert.match(siteCss, /\.issue-command-row-grid \{ display: grid;/);
+    assert.match(workRowCss, /\.work-summary-row \{[^}]*min-height: 4\.375rem;[^}]*padding: 0\.625rem 1\.25rem;/);
+    assert.match(workRowCss, /\.work-summary-row \.work-summary-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\) var\(--pom-state-badge-width\);/);
+    assert.match(workRowCss, /@media \(max-width: 860px\) \{[^}]*\.work-summary-row \.work-summary-grid \{/);
 });
 
 test("relationship details keep a single-line box without deleted badges or unlinked placeholders", () => {
@@ -119,8 +118,8 @@ test("shared modal cleanup removes record boxes and footer dividers", () => {
 
 test("navbar toggler and links use the same pure-white color", () => {
     assert.match(siteCss, /\.app-navbar \{[^}]*flex-shrink: 0;/s);
-    assert.match(siteCss, /\.app-navbar \.navbar-collapse \{[^}]*max-height: calc\(100dvh - 4\.9rem\);[^}]*overflow-y: auto;/s);
-    assert.match(siteCss, /\.app-navbar \.nav-link \{\s*color: #fff;/);
+    assert.match(siteCss, /\.app-navbar \.navbar-collapse \{[^}]*max-height: calc\(100dvh - var\(--mpd-nav-height\)\);[^}]*overflow-y: auto;/s);
+    assert.match(siteCss, /\.app-navbar \.navbar-brand, \.app-navbar \.nav-link \{ color: #fff; \}/);
     assert.match(siteCss, /\.app-navbar \.navbar-toggler\[aria-expanded="true"\] \{[^}]*border: 1px solid #fff;[^}]*opacity: 1;/s);
     assert.match(siteCss, /\.app-navbar \.navbar-toggler-icon \{[^}]*background-image: url\([^;]*%23ffffff/s);
 });
@@ -163,7 +162,7 @@ test("Issue Tasks uses its tab row for Add task and starts the pane with task ro
     assert.doesNotMatch(issuePage, /issue-task-toolbar|Work linked to this issue/);
     assert.match(siteCss, /\.issue-detail-tabs:has\(\[data-bs-target="#issueTasksPanel"\]\.active\) \.issue-add-task-button \{ display: inline-flex; \}/);
     assert.match(siteCss, /\.issue-task-title \{[^}]*font-weight: 600;/);
-    assert.match(siteCss, /\.task-command-title \{[^}]*font-weight: 600;/);
+    assert.match(workRowCss, /\.work-summary-row \.work-summary-title \{[^}]*font-weight: 600;/);
 });
 
 test("narrow task actions keep the primary controls and move secondary actions into a kebab", () => {

@@ -119,9 +119,9 @@ h6,
     top: 0;
     z-index: 1030;
     flex-shrink: 0;
-    min-height: 4.9rem;
-    background: var(--pom-night);
-    border-bottom: 1px solid #192c1b;
+    min-height: var(--mpd-nav-height);
+    background: var(--mpd-nav-background);
+    border-bottom: 1px solid var(--mpd-nav-border);
     box-shadow: var(--pom-shadow-sm);
 }
 
@@ -137,7 +137,7 @@ h6,
 
 .app-brand-logo {
     display: block;
-    width: 225px;
+    width: var(--mpd-nav-logo-width);
     height: auto;
     max-width: 100%;
 }
@@ -149,11 +149,8 @@ h6,
 }
 
 .app-navbar .nav-link {
-    font-family: var(--pom-font-heading);
-    font-size: 1.4rem;
-}
-
-.app-navbar .nav-link {
+    font-family: var(--mpd-nav-font);
+    font-size: var(--mpd-nav-link-size);
     border-bottom: 1px solid transparent;
 }
 
@@ -161,13 +158,7 @@ h6,
 .app-navbar .nav-link:focus,
 .app-navbar .nav-link.show {
     color: #fff;
-    border-bottom-color: var(--pom-sage);
-}
-
-.app-navbar .my-work-menu-toggle:hover,
-.app-navbar .my-work-menu-toggle:focus,
-.app-navbar .my-work-menu-toggle.show {
-    border-bottom-color: transparent;
+    border-bottom-color: var(--mpd-nav-hover);
 }
 
 .app-navbar .my-work-menu-toggle {
@@ -217,7 +208,7 @@ h6,
 
 @media (max-width: 991.98px) {
     .app-navbar .navbar-collapse {
-        max-height: calc(100dvh - 4.9rem);
+        max-height: calc(100dvh - var(--mpd-nav-height));
         overflow-y: auto;
     }
 
@@ -266,6 +257,12 @@ h6,
         margin-top: 0.75rem;
         border: 1px solid rgba(255, 255, 255, 0.38);
         border-radius: 0.5rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .app-brand-logo {
+        width: 188px;
     }
 }
 

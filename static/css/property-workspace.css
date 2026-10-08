@@ -496,14 +496,8 @@
     gap: 0.25rem;
 }
 
-.property-related-record[data-kind="event"] .property-related-record-badges .work-pill {
+.property-related-record-badges .work-pill {
     min-height: 1.375rem;
-}
-
-@media (max-width: 1199.98px) {
-    .property-related-record[data-kind="task"] .property-related-record-badges .work-pill {
-        min-height: 1.375rem;
-    }
 }
 
 .property-related-chevron {

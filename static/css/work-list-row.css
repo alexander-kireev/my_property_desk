@@ -1,0 +1,233 @@
+/* Collapsed My Work rows. Task, Issue, and Event templates share this layout;
+   their own classes remain available for state colours and page behaviour. */
+.work-summary-row {
+    position: relative;
+    flex: 0 0 auto;
+    display: block;
+    min-height: 4.375rem;
+    padding: 0.625rem 1.25rem;
+    color: inherit !important;
+    background: var(--bs-body-bg) !important;
+    border: 0;
+    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.work-summary-row:hover {
+    background: var(--pom-hover) !important;
+}
+
+.work-summary-row.is-selected {
+    background: var(--bs-tertiary-bg) !important;
+}
+
+.work-summary-row.is-selected::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0.25rem;
+    background: var(--pom-accent);
+    content: "";
+}
+
+.work-summary-row.terminated {
+    color: var(--bs-secondary-color) !important;
+}
+
+.work-summary-row .work-summary-grid {
+    --work-summary-date-width: 10.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--pom-state-badge-width);
+    gap: 0.25rem 0.5rem;
+    align-items: center;
+    min-height: 3rem;
+}
+
+.work-summary-row.event-command-row .work-summary-grid {
+    --work-summary-date-width: 11.75rem;
+}
+
+.work-summary-row .work-summary-copy,
+.work-summary-row .work-summary-meta {
+    display: contents;
+}
+
+.work-summary-row .work-summary-title {
+    display: block;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.work-summary-row.terminated .work-summary-title {
+    font-weight: 500;
+}
+
+.work-summary-row .work-summary-context {
+    display: block;
+    grid-column: 1;
+    grid-row: 2;
+    min-width: 0;
+    min-height: 1.25rem;
+    overflow: hidden;
+    margin-top: 0 !important;
+    padding-right: calc(var(--work-summary-date-width) - var(--pom-state-badge-width));
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.work-summary-row .work-summary-badges {
+    display: inline-flex;
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    justify-content: flex-end;
+}
+
+.work-summary-row .work-summary-badges .work-pill {
+    min-height: 1.375rem;
+}
+
+.work-summary-row .work-summary-when {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    width: max-content;
+    max-width: var(--work-summary-date-width);
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.25rem;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.work-summary-row :is(.task-command-deadline--overdue, .issue-command-deadline--overdue) {
+    color: #a23229;
+}
+
+.work-summary-row :is(.task-command-deadline--soon, .issue-command-deadline--soon) {
+    color: #805600;
+}
+
+.work-summary-row .event-command-when {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0 0.2rem;
+}
+
+@media (min-width: 861px) and (max-width: 1199.98px) {
+    .work-summary-row .work-summary-grid {
+        --work-summary-date-width: 9rem;
+    }
+
+    .work-summary-row.event-command-row .work-summary-grid {
+        --work-summary-date-width: 11rem;
+    }
+
+    .work-summary-row .work-summary-when {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .work-summary-row .task-command-date-separator {
+        display: none;
+    }
+}
+
+@media (max-width: 860px) {
+    .work-summary-row .work-summary-grid {
+        --work-summary-date-width: 9rem;
+        grid-template-columns: minmax(0, 1fr) var(--pom-state-badge-width) 27px;
+        column-gap: 0.75rem;
+    }
+
+    .work-summary-row.event-command-row .work-summary-grid {
+        --work-summary-date-width: 11rem;
+    }
+
+    .work-summary-row .work-summary-when {
+        font-size: 0.8rem;
+    }
+
+    .work-summary-row .work-mobile-chevron {
+        position: static;
+        display: grid;
+        grid-column: 3;
+        grid-row: 1 / 3;
+        place-self: center;
+        flex-basis: 27px;
+        width: 27px;
+        height: 27px;
+        border-color: var(--pom-border-strong);
+        color: var(--pom-text-muted);
+    }
+
+    .work-summary-row .work-mobile-chevron svg {
+        stroke-width: 2;
+    }
+}
+
+@media (max-width: 599.98px) {
+    .work-summary-row {
+        min-height: 6rem;
+    }
+
+    .work-summary-row .work-summary-grid {
+        grid-template-columns: minmax(0, 1fr) 27px;
+        gap: 0.25rem 0.75rem;
+        align-content: space-between;
+        min-height: 4.4rem;
+    }
+
+    .work-summary-row .work-summary-copy {
+        display: flex;
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        flex-direction: column;
+    }
+
+    .work-summary-row .work-summary-meta {
+        display: flex;
+        grid-column: 1;
+        grid-row: 2;
+        min-width: 0;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.25rem 0.5rem;
+    }
+
+    .work-summary-row .work-summary-context {
+        margin-top: 0.25rem !important;
+        padding-right: 0;
+    }
+
+    .work-summary-row .work-summary-badges,
+    .work-summary-row .work-summary-when {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .work-summary-row .work-summary-when {
+        flex: 0 1 auto;
+        max-width: calc(100% - var(--pom-state-badge-width) - 0.5rem);
+    }
+
+    .work-summary-row .work-mobile-chevron {
+        grid-column: 2;
+        grid-row: 1 / 3;
+    }
+}

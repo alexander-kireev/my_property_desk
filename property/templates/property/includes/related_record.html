@@ -13,7 +13,9 @@
             <span class="property-related-record-badges">
                 {% if entry.kind == "event" %}
                     {% include "includes/work_state_badge.html" with item=entry.item only %}
-                {% elif entry.current %}
+                {% elif not entry.current %}
+                    {% include "includes/work_state_badge.html" with item=entry.item only %}
+                {% else %}
                     {% if entry.kind == "task" %}
                         {% include "task/includes/priority_badge.html" with task=entry.item %}
                     {% else %}

@@ -108,7 +108,7 @@ class DashboardRenderingTests(DashboardFixture, TestCase):
         self.assertRegex(
             anonymous_response.content.decode(),
             re.escape(
-                f'class="navbar-brand" href="{reverse("pages:home")}" aria-label="My Property Desk home"'
+                f'class="logo" href="{reverse("pages:home")}" aria-label="My Property Desk home"'
             ).replace(r"\ ", r"\s+"),
         )
 

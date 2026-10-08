@@ -143,7 +143,7 @@
         if (area !== "queue") return "";
         if (item.due) {
             const days = Math.round((parseDate(item.due) - parseDate(today)) / 86400000);
-            let label = item.kind === "issue" ? "Resolve by" : "Due";
+            let label = item.kind === "issue" ? "Due by" : "Due";
             if (days < 0) label = "Overdue";
             else if (days <= 3) label = "Due soon";
             return `${label} ${prettyDate(item.due)}`;
@@ -186,12 +186,13 @@
         if (item.property) contextAttribute = `title="${escapeHtml(item.property)}"`;
         else if (!typeCue) contextAttribute = 'aria-hidden="true"';
         const eventClass = item.kind === "event" ? " dashboard-event-side" : "";
+        const stateBadge = item.kind === "event" && area === "queue" ? "" : badge(item);
         return `<span class="dashboard-row-main">
             <strong title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</strong>
             <small class="dashboard-row-context" ${contextAttribute}>${typeCue}${escapeHtml(item.property)}</small>
         </span>
         <span class="dashboard-row-side${eventClass}">
-            ${badge(item)}
+            ${stateBadge}
             ${timing ? `<span class="dashboard-row-timing${overdueClass}">${timing}</span>` : ""}
         </span>
         ${chevron}`;

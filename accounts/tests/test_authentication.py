@@ -56,7 +56,10 @@ class UserAuthenticationTests(TestCase):
 
         form = response.context["form"]
         self.assertTrue(form.non_field_errors())
+        self.assertIsNone(form["username"].value())
         self.assertIsNone(form["password"].value())
+        self.assertEqual(form.fields["username"].widget.attrs["autocomplete"], "off")
+        self.assertEqual(form.fields["password"].widget.attrs["autocomplete"], "off")
 
     def test_post_request_logs_user_out(self):
         self.client.login(

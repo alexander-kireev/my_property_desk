@@ -159,4 +159,5 @@ class DeadlinePartialTests(SimpleTestCase):
                 )
                 self.assertIn(expected, rendered)
                 if task.state != Task.State.ACTIVE:
+                    self.assertEqual(rendered.count(expected), 1)
                     self.assertNotIn("task-command-deadline--overdue", rendered)

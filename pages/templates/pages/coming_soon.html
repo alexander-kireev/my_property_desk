@@ -1,0 +1,93 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}Coming soon · My Property Desk{% endblock %}
+
+{% block content %}
+    {# Public page introduction. #}
+    <section class="page-intro wrap">
+        <span class="eyebrow">Coming soon</span>
+        <h1>More ways to stay on top of the work.</h1>
+        <p>
+            <strong class="product-name">My Property Desk</strong>
+            is available now. We are planning additions that make it easier to keep evidence, stay ahead
+            of repeat work and act on the messages that come in.
+        </p>
+    </section>
+    <section class="roadmap wrap">
+        <div class="roadmap-grid">
+            <article class="roadmap-card">
+                <span>Property records</span>
+                <h3>Photos and documents with the work</h3>
+                <p>
+                    Keep photographs, quotes and other files with the property or repair they belong to,
+                    so the evidence is there when you need it.
+                </p>
+            </article>
+            <article class="roadmap-card">
+                <span>Planning</span>
+                <h3>Reminders for repeat work</h3>
+                <p>
+                    Set work to come round again and get a reminder before the next inspection, service
+                    or follow-up is due.
+                </p>
+            </article>
+            <article class="roadmap-card">
+                <span>Incoming requests</span>
+                <h3>Turn a message into work</h3>
+                <p>
+                    Capture a request without retyping everything, then track the next steps beside the
+                    relevant property.
+                </p>
+            </article>
+            <article class="roadmap-card">
+                <span>Out on a visit</span>
+                <h3>Inspection checklists</h3>
+                <p>
+                    Work through a checklist on your phone, add photographs and leave yourself clear
+                    follow-up items.
+                </p>
+            </article>
+            <article class="roadmap-card">
+                <span>Communication</span>
+                <h3>Connect your email</h3>
+                <p>
+                    See relevant conversations and reply from the workspace, with each thread close to
+                    the property or repair it concerns.
+                </p>
+            </article>
+            <article class="roadmap-card">
+                <span>AI assistance</span>
+                <h3>Help with the details</h3>
+                <p>
+                    Ask for a summary, find an earlier answer or review suggested next steps. You stay
+                    in control of what gets updated or sent.
+                </p>
+            </article>
+        </div>
+        <p class="roadmap-note">
+            These are planned directions, with no release dates yet. We will share more as each
+            feature takes shape.
+        </p>
+        <div class="roadmap-feedback">
+            <div>
+                <h2>What would help you most?</h2>
+                <p>Tell us what gets in your way now or suggest a feature you would find useful.</p>
+            </div>
+            <a class="button secondary"
+               href="{% url 'pages:contact_us' %}?topic=suggestion">Suggest an improvement</a>
+        </div>
+    </section>
+    <section class="closing">
+        <div class="wrap closing-inner">
+            <div>
+                <h2>There is already plenty you can use.</h2>
+                <p>Explore the current features or create a free account.</p>
+            </div>
+            <div class="actions">
+                <a class="button primary" href="{% url 'accounts:register' %}">Create a free account</a>
+                <a class="button secondary" href="{% url 'pages:features' %}">Explore features</a>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

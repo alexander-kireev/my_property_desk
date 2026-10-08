@@ -33,6 +33,18 @@ urlpatterns = [
         name="reset_password_protected",
     ),
     path(
+        "password/reset/",
+        views.password_reset_request_view,
+        name="password_reset_request",
+    ),
+    path(
+        "password/reset/sent/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="accounts/password_reset_sent.html",
+        ),
+        name="password_reset_sent",
+    ),
+    path(
         "password/reset/<uidb64>/<token>/",
         views.PasswordResetConfirmPRGView.as_view(
             template_name="accounts/password_reset_confirm.html",
