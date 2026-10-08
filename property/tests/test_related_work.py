@@ -207,10 +207,9 @@ class PropertyViewRelatedWorkTests(PropertyViewFixture, TestCase):
             ["Completed visit", "Finished job", "Fixed leak"],
         )
         self.assertContains(response, 'class="property-related-record is-terminal"', count=3)
-        self.assertContains(response, "Resolved · ")
-        self.assertContains(response, "Completed · ")
-        self.assertContains(response, "Occurred · ")
-        self.assertContains(response, 'work-pill--terminal">Occurred')
+        for state in ("Resolved", "Completed", "Occurred"):
+            self.assertContains(response, f'work-pill--terminal">{state}')
+            self.assertNotContains(response, f"{state} · ")
         self.assertNotContains(response, "Hidden issue")
         self.assertNotContains(response, "Other user issue")
 

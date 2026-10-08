@@ -53,10 +53,16 @@ test("collapsed subtitles omit absent relationships without leading separators i
         else assert.doesNotMatch(issue, /dashboard-row-timing/);
         assert.doesNotMatch(issue, /No property|<small> ·/);
 
-        const event = recordRow({...base, kind: "event", date: "2026-10-03"}, area);
+        const event = recordRow({...base, kind: "event", state: "scheduled", date: "2026-10-03"}, area);
+        const eventSummary = event.slice(0, event.indexOf("dashboard-row-detail"));
         assert.match(event, /<strong title="Record">Record<\/strong>\s*<small class="dashboard-row-context" aria-hidden="true"><\/small>/);
-        if (area === "queue") assert.match(event, /dashboard-row-timing"><span>3 Oct 2026/);
-        else assert.match(event, /dashboard-row-timing"><span>All day<\/span><\/span>/);
+        if (area === "queue") {
+            assert.match(event, /dashboard-row-timing"><span>3 Oct 2026/);
+            assert.doesNotMatch(eventSummary, /data-state="scheduled"/);
+        } else {
+            assert.match(event, /dashboard-row-timing"><span>All day<\/span><\/span>/);
+            assert.match(eventSummary, /data-state="scheduled"/);
+        }
         assert.doesNotMatch(event, /No property|<small> ·/);
     }
 });
@@ -93,6 +99,13 @@ test("Operations tasks prioritise due dates and highlight overdue timing", () =>
     assert.match(task, /dashboard-task-timing is-overdue">Overdue 28 Sep 2026<\/span>/);
     assert.doesNotMatch(task.slice(0, task.indexOf("dashboard-row-detail")), /Scheduled 29 Sep 2026/);
     assert.match(task, /<span>Scheduled 29 Sep 2026<\/span>/);
+});
+
+test("Operations issues use a short deadline label", () => {
+    const issue = recordRow({...base, kind: "issue", due: "2026-10-13"}, "queue");
+    const summary = issue.slice(0, issue.indexOf("dashboard-row-detail"));
+    assert.match(summary, /dashboard-row-timing">Due by 13 Oct 2026<\/span>/);
+    assert.doesNotMatch(summary, /Resolve by/);
 });
 
 test("Selected day deadlines retain their type without repeating the selected date", () => {

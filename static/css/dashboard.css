@@ -424,13 +424,66 @@
 }
 
 @media (min-width: 600px) {
-    .dashboard-work-row[data-kind="event"] .dashboard-row-toggle,
     .dashboard-day-row[data-kind="event"] .dashboard-row-toggle {
         grid-template-columns: minmax(0, 1fr) minmax(0, 10.5rem) 27px;
     }
+
+    /* The badge and date occupy different lines, so dates do not shorten titles. */
+    .dashboard-work-row .dashboard-row-toggle {
+        grid-template-columns: minmax(0, 1fr) max-content 27px;
+        grid-template-rows: auto auto;
+        row-gap: 0;
+    }
+
+    .dashboard-work-row :is(
+        .dashboard-task-copy,
+        .dashboard-task-meta,
+        .dashboard-row-main,
+        .dashboard-row-side
+    ) {
+        display: contents;
+    }
+
+    .dashboard-work-row :is(.dashboard-task-title, .dashboard-row-main strong) {
+        grid-column: 1 / 3;
+        grid-row: 1;
+        min-width: 0;
+    }
+
+    .dashboard-work-row:has(.work-pill) :is(.dashboard-task-title, .dashboard-row-main strong) {
+        padding-right: 4.5rem;
+    }
+
+    .dashboard-work-row :is(.dashboard-task-meta > .work-pill, .dashboard-row-side > .work-pill) {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        align-self: center;
+    }
+
+    .dashboard-work-row :is(.dashboard-task-context, .dashboard-row-main small) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .dashboard-work-row :is(.dashboard-task-timing, .dashboard-row-timing) {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+    }
+
+    .dashboard-work-row .dashboard-row-chevron {
+        grid-column: 3;
+        grid-row: 1 / 3;
+    }
 }
 
-.dashboard-work-row[data-kind="event"] .dashboard-row-side .work-pill,
+@media (min-width: 1200px) {
+    .dashboard-work-row:has(.work-pill) :is(.dashboard-task-title, .dashboard-row-main strong) {
+        padding-right: 4.25rem;
+    }
+}
+
 .dashboard-day-row[data-kind="event"] .dashboard-row-side .work-pill {
     min-height: 1.375rem;
 }
@@ -578,7 +631,6 @@
 
 /* Empty Event context should not reserve an extra line on narrow rows. */
 @media (max-width: 599.98px) {
-    .dashboard-work-row[data-kind="event"] .dashboard-row-toggle,
     .dashboard-day-row[data-kind="event"] .dashboard-row-toggle {
         min-height: 0;
     }

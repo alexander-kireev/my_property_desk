@@ -6,6 +6,12 @@
 
 Property Operations Manager is a web application for organising a small property portfolio and the day-to-day operational work associated with it.
 
+The public product pages live in `pages/templates/pages/` and share `templates/public_base.html`, the public header/footer includes, and `static/public/` assets. The signed-in workspace keeps its existing `templates/base.html` shell. Login and registration reuse their existing Django forms and account views with the public layout.
+
+The Contact page emails reports and messages through Django's configured email backend. Set `PMS_CONTACT_EMAIL` to the inbox that should receive them, alongside the SMTP settings in `.env.example`. Reports can be anonymous and may include up to three PNG, JPG or WebP screenshots (5 MB each, 12 MB total); uploaded files are attached to the outgoing email and are not stored by the application.
+
+Forgot-password requests use the same email backend and a one-hour link. Requests are limited by email address and `REMOTE_ADDR` using hashed, database-backed counters; deployment behind a reverse proxy should ensure `REMOTE_ADDR` identifies the intended client source. Run migrations before enabling the public reset route. HTTPS must be enabled on the deployed site for reset links to work securely. See `accounts/PASSWORD_RESET_POLICY.md` for the full flow and delivery limitation.
+
 It is intended to bring properties, contacts, issues, tasks, events, notes and scheduling information into one lightweight system without the overhead of enterprise property-management software.
 
 ## Target user

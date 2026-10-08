@@ -111,38 +111,6 @@
     scrollbar-width: thin;
 }
 
-.issue-list-row {
-    position: relative;
-    flex: 0 0 auto;
-    min-height: 6.75rem;
-    padding: 0.85rem 1.25rem;
-    overflow: visible;
-    color: inherit !important;
-    background: var(--bs-body-bg) !important;
-    border: 0;
-    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
-}
-
-.issue-list-row:hover {
-    background: var(--pom-hover) !important;
-}
-
-.issue-list-row.is-selected {
-    background: var(--bs-tertiary-bg) !important;
-}
-
-.issue-list-row.is-selected::before {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 0.25rem;
-    background: var(--pom-accent);
-    content: "";
-}
-
-.issue-list-row.terminated {
-    color: var(--bs-secondary-color) !important;
-}
-
 .issue-menu-button::after {
     display: none;
 }

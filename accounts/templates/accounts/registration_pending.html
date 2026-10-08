@@ -1,9 +1,14 @@
-{% extends "base.html" %}
-
-{% block title %}Registration | My Property Desk{% endblock %}
-
+{% extends "public_base.html" %}
+{% block title %}Check your email · My Property Desk{% endblock %}
 {% block content %}
-
-    <div>Your registration has been sent.</div>
-
+    <section class="auth wrap">
+        <div class="auth-head">
+            <span class="eyebrow">Almost there</span>
+            <h1>Check your email.</h1>
+            <p>We have sent a link to confirm your account. Open it to finish registration and start using My Property Desk.</p>
+        </div>
+        <div class="panel auth-card">
+            <p>If the message has not arrived, check your junk folder. The link will expire, but you can <a href="{% url 'accounts:register' %}">try registering again</a> afterward.</p>
+        </div>
+    </section>
 {% endblock %}

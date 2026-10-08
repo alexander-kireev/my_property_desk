@@ -130,7 +130,7 @@
             {# Event summaries, state badges, dates and times #}
             {% for event in page_obj %}
                 <div class="event-command-entry" id="eventRow{{ event.pk }}">
-                    <a class="event-command-row list-group-item list-group-item-action{% if selected_event.pk == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}"
+                    <a class="event-command-row work-summary-row list-group-item list-group-item-action{% if selected_event.pk == event.pk %} is-selected{% endif %}{% if event.state != 'scheduled' %} terminated{% endif %}"
                        href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ event.pk }}&amp;tab=details"
                        data-workspace-scroll-row{% if not mobile_calendar_view and mobile_expanded_event_id == event.pk %}
                        data-mobile-event-expanded
@@ -138,10 +138,10 @@
                        aria-controls="eventInlineDetails{{ event.pk }}"
                        {% endif %}
                        {% if selected_event.pk == event.pk %} aria-current="true"{% endif %}>
-                        <span class="event-command-row-grid">
-                            <span class="event-command-copy"><strong class="event-command-title" title="{{ event.title }}">{{ event.title }}</strong><span class="event-command-context"
+                        <span class="event-command-row-grid work-summary-grid">
+                            <span class="event-command-copy work-summary-copy"><strong class="event-command-title work-summary-title" title="{{ event.title }}">{{ event.title }}</strong><span class="event-command-context work-summary-context"
       {% if event.property %} title="{{ event.property.name }}"{% else %} aria-hidden="true"{% endif %}>{% if event.property %}{{ event.property.name }}{% endif %}</span></span>
-                            <span class="event-command-meta">{% include "includes/work_state_badge.html" with item=event only %}<span class="event-command-when"><span>{{ event.scheduled_date|date:"j M Y" }} ·</span><span>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span></span>
+                            <span class="event-command-meta work-summary-meta"><span class="work-summary-badges">{% include "includes/work_state_badge.html" with item=event only %}</span><span class="event-command-when work-summary-when"><span>{{ event.scheduled_date|date:"j M Y" }} ·</span><span>{% if event.all_day %}All day{% else %}{{ event.start_time|time:"H:i" }}{% if event.end_time %}–{{ event.end_time|time:"H:i" }}{% endif %}{% endif %}</span></span></span>
                             <span class="work-mobile-chevron event-mobile-row-arrow" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" focusable="false">
                                     <path d="m5 9 7 7 7-7" />

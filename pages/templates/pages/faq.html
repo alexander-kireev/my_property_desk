@@ -1,0 +1,172 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}FAQ · My Property Desk{% endblock %}
+
+{% block content %}
+    {# Public page introduction. #}
+    <section class="page-intro faq-column faq-intro">
+        <span class="eyebrow">Frequently asked questions</span>
+        <h1>A few things you may want to know.</h1>
+    </section>
+    <section class="faq-page faq-column">
+        <div class="faq-numbered-list">
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">01</span>
+                <details>
+                    <summary>
+                        <span>What is My Property Desk?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            It is a free online application for organising the practical work involved
+                            in managing a small property portfolio. It brings your properties, people,
+                            repairs, appointments and dates into one workspace.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">02</span>
+                <details>
+                    <summary>
+                        <span>Who is it for?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            It is designed for one person looking after several properties, whether they
+                            own them or manage them for someone else.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">03</span>
+                <details>
+                    <summary>
+                        <span>Is it free to use?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            Yes. You can create an account and use
+                            <strong class="product-name">My Property Desk</strong>
+                            for free.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">04</span>
+                <details>
+                    <summary>
+                        <span>How easy is it to use?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            It is designed to be straightforward. The dashboard brings current work and
+                            upcoming dates into view, and you can open each property when you need more
+                            detail.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">05</span>
+                <details>
+                    <summary>
+                        <span>How much setup is needed before I can use it?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            Almost none. Create an account and start organising your work. You can add
+                            properties, contacts and other details as you go.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">06</span>
+                <details>
+                    <summary>
+                        <span>What devices can I use My Property Desk on?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            You can use it in a web browser on a computer, tablet or phone. There is no
+                            separate mobile or tablet app to install; sign in to the same account on
+                            whichever device you use.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">07</span>
+                <details>
+                    <summary>
+                        <span>Can I see my appointments on a calendar?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>Yes. The dashboard includes a calendar and a view of what you have planned.</p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">08</span>
+                <details>
+                    <summary>
+                        <span>Can tenants or contractors sign in?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            No. The current application is for the person managing the properties. You
+                            can keep tenants, contractors and others as contacts, but they do not get
+                            accounts.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">09</span>
+                <details>
+                    <summary>
+                        <span>Are historical records preserved?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            Yes. Previous work stays available, so you can return to a property and see
+                            what happened before.
+                        </p>
+                    </div>
+                </details>
+            </article>
+            <article class="faq-numbered-card">
+                <span class="faq-question-no" aria-hidden="true">10</span>
+                <details>
+                    <summary>
+                        <span>How do I report a problem with the application?</span>
+                        <span class="faq-plus" aria-hidden="true">+</span>
+                    </summary>
+                    <div class="faq-answer">
+                        <p>
+                            Describe what happened in the report form. You can attach screenshots if
+                            they help.
+                        </p>
+                        <a class="button secondary faq-report-link"
+                           href="{% url 'pages:contact_us' %}">
+                            Report a problem
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                </details>
+            </article>
+        </div>
+    </section>
+{% endblock %}

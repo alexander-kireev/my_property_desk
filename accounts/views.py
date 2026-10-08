@@ -11,7 +11,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 
 from config.feedback import form_values_changed, snapshot_form_values
 from config.form_state import (
@@ -33,7 +33,9 @@ from .forms import (
     EmailChangeForm,
     PendingRegistrationForm,
     ProfileForm,
+    PublicPasswordResetRequestForm,
 )
+from .password_reset_requests import reserve_password_reset_request
 from .profile_context import profile_context
 from .registration import (
     InvalidRegistrationLink,
@@ -61,7 +63,7 @@ def login_view(request):
             action="login",
             form=form,
             url=reverse("accounts:login"),
-            exclude=("password",),
+            exclude=("username", "password"),
         )
     else:
         state = account_form_state(request, "login")
@@ -107,7 +109,7 @@ def register_view(request):
             action="register",
             form=form,
             url=reverse("accounts:register"),
-            exclude=("password_1", "password_2"),
+            exclude=("email", "password_1", "password_2"),
         )
 
     else:
@@ -301,20 +303,45 @@ def delete_account_complete_view(request):
     return render(request, "accounts/delete_account_complete.html")
 
 
+def _send_reset_email(request, form):
+    # A production link must use HTTPS even when TLS terminates before Django.
+    form.save(
+        request=request,
+        use_https=request.is_secure() or not settings.DEBUG,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        email_template_name="accounts/password_reset_email.txt",
+        subject_template_name="accounts/password_reset_subject.txt",
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def password_reset_request_view(request):
+    form = PublicPasswordResetRequestForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        if reserve_password_reset_request(
+            form.cleaned_data["email"], request.META.get("REMOTE_ADDR")
+        ):
+            try:
+                _send_reset_email(request, form)
+            except Exception:
+                # Account existence and mail delivery stay private in the public response.
+                logger.exception("Public password reset delivery failed.")
+        return redirect("accounts:password_reset_sent")
+    return render(request, "accounts/password_reset_request.html", {"form": form})
+
+
 @login_required
 @require_POST
 def reset_password_protected_view(request):
     form = PasswordResetForm({"email": request.user.email})
-
-    if form.is_valid():
-        form.save(
-            request=request,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            email_template_name="accounts/password_reset_email.txt",
-            subject_template_name="accounts/password_reset_subject.txt",
-        )
-        messages.success(request, "Password reset link sent.")
-
+    if form.is_valid() and reserve_password_reset_request(
+        request.user.email, request.META.get("REMOTE_ADDR")
+    ):
+        try:
+            _send_reset_email(request, form)
+        except Exception:
+            logger.exception("Signed-in password reset delivery failed.")
+    messages.success(request, "If available, a password reset link has been sent.")
     return redirect("accounts:profile_page")
 
 

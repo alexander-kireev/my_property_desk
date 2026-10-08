@@ -78,6 +78,7 @@ class RegistrationViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("password_2", response.context["form"].errors)
+        self.assertIsNone(response.context["form"]["email"].value())
         self.assertIsNone(response.context["form"]["password_1"].value())
         self.assertIsNone(response.context["form"]["password_2"].value())
         self.assertEqual(PendingRegistration.objects.count(), 0)

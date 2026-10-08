@@ -41,6 +41,14 @@ class User(AbstractUser):
         ]
 
 
+class PasswordResetRequestBucket(models.Model):
+    """Keep short-lived request counts without storing email addresses or client IPs."""
+
+    key_hash = models.CharField(max_length=64, unique=True)
+    window_started_at = models.DateTimeField(db_index=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+
 class PendingRegistration(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)

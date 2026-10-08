@@ -167,7 +167,7 @@
                                 {% for task in selected_tasks %}
                                     {% work_status task today as linked_status %}
                                     <article class="issue-task-row{% if task.state != 'active' %} terminated{% endif %}">
-                                        <div class="issue-task-summary issue-linked-task-grid px-3 px-md-4 py-3"
+                                        <div class="issue-task-summary issue-linked-task-grid"
                                              role="button"
                                              tabindex="0"
                                              data-bs-toggle="collapse"

@@ -1,0 +1,10 @@
+/* Visual tokens shared by the public header and the signed-in application navbar. */
+:root {
+    --mpd-nav-background: #243d26;
+    --mpd-nav-border: #192c1b;
+    --mpd-nav-hover: #91a96f;
+    --mpd-nav-height: 4.9rem;
+    --mpd-nav-logo-width: 225px;
+    --mpd-nav-link-size: 1.4rem;
+    --mpd-nav-font: georgia, "Times New Roman", serif;
+}

@@ -1,14 +1,124 @@
-{% extends "base.html" %}
-
-{% block title %}Contact us | My Property Desk{% endblock %}
-
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}Contact · My Property Desk{% endblock %}
+{% block description %}Ask a question or report a problem with My Property Desk.{% endblock %}
 {% block content %}
-    <div class="container py-5">
-        <div class="row">
-            <div class="col">
-                <h1>My Property Desk</h1>
-                <p>Contact us</p>
+    <section class="page-intro contact-intro">
+        <span class="eyebrow">Contact us</span>
+        <h1>How can we help?</h1>
+        <p>Tell us about a problem with the application, ask a question or share an idea.</p>
+    </section>
+    <div class="contact-layout">
+        <div class="panel">
+            {% if sent %}
+                <p class="notice" role="status">{% if sent == "report" %}Your report has been sent. Thank you for helping us improve the application.{% else %}Your message has been sent. Thank you for getting in touch.{% endif %}</p>
+            {% endif %}
+            <div class="tabs" role="tablist" aria-label="Contact options">
+                <button class="tab"
+                        id="report-tab"
+                        type="button"
+                        role="tab"
+                        aria-controls="report-panel"
+                        aria-selected="{% if active_tab == 'report' %}true{% else %}false{% endif %}"
+                        tabindex="{% if active_tab == 'report' %}0{% else %}-1{% endif %}">Report a problem</button>
+                <button class="tab"
+                        id="message-tab"
+                        type="button"
+                        role="tab"
+                        aria-controls="message-panel"
+                        aria-selected="{% if active_tab == 'message' %}true{% else %}false{% endif %}"
+                        tabindex="{% if active_tab == 'message' %}0{% else %}-1{% endif %}">Message us</button>
             </div>
+
+            {# Each form has its own prefix so fields and error IDs stay unique on the shared page. #}
+            <form id="report-panel"
+                  role="tabpanel"
+                  aria-labelledby="report-tab"
+                  method="post"
+                  enctype="multipart/form-data"
+                  {% if active_tab != 'report' %}hidden{% endif %}>
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="report">
+                {{ report_form.website }}
+                <h2>Report a problem</h2>
+                <p>Describe what went wrong. You can send a report without leaving your email address.</p>
+                {% for error in report_form.non_field_errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                <div class="field">
+                    <label for="{{ report_form.description.id_for_label }}">What happened? <span class="required-mark"
+       aria-hidden="true">*</span></label>
+                    {{ report_form.description }}
+                    {% for error in report_form.description.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ report_form.steps.id_for_label }}">How can we repeat it?</label>
+                    {{ report_form.steps }}
+                    {% for error in report_form.steps.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ report_form.area.id_for_label }}">Where did it happen?</label>
+                    {{ report_form.area }}
+                    {% for error in report_form.area.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ report_form.screenshots.id_for_label }}">Screenshots</label>
+                    {{ report_form.screenshots }}
+                    <p class="small-note">Attach up to three PNG, JPG or WebP screenshots, each under 5 MB.</p>
+                    {% for error in report_form.screenshots.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ report_form.email.id_for_label }}">Email for a reply</label>
+                    {{ report_form.email }}
+                    <p class="small-note">Leave this blank to send the report anonymously. We can only reply if you give us an address.</p>
+                    {% for error in report_form.email.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <p class="notice">Please remove passwords and sensitive details about people or properties from screenshots and text.</p>
+                <button class="button primary" type="submit">Send report</button>
+            </form>
+
+            <form id="message-panel"
+                  role="tabpanel"
+                  aria-labelledby="message-tab"
+                  method="post"
+                  {% if active_tab != 'message' %}hidden{% endif %}>
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="message">
+                {{ message_form.website }}
+                <h2>Message us</h2>
+                <p>Ask a question, tell us what you think or suggest an improvement.</p>
+                {% for error in message_form.non_field_errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                <div class="field">
+                    <label for="{{ message_form.topic.id_for_label }}">What is this about?</label>
+                    {{ message_form.topic }}
+                    {% for error in message_form.topic.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ message_form.body.id_for_label }}">Your message <span class="required-mark"
+       aria-hidden="true">*</span></label>
+                    {{ message_form.body }}
+                    {% for error in message_form.body.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label for="{{ message_form.email.id_for_label }}">Email for a reply</label>
+                    {{ message_form.email }}
+                    <p class="small-note">Leave an address if you would like us to reply.</p>
+                    {% for error in message_form.email.errors %}<p class="form-error"
+   role="alert">{{ error }}</p>{% endfor %}
+                </div>
+                <button class="button primary" type="submit">Send message</button>
+            </form>
         </div>
     </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/searchable-select.js' %}"></script>
+    <script src="{% static 'public/public-contact.js' %}"></script>
 {% endblock %}

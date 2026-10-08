@@ -1148,13 +1148,6 @@
     }
 }
 
-@media (min-width: 700px) and (max-width: 860px) {
-    .task-command-centre {
-        max-width: 680px;
-        margin-inline: auto;
-    }
-}
-
 /* Contact method dialog sizing and body scroll */
 .contact-method-modal .modal-dialog {
     max-width: 34rem;

@@ -116,61 +116,6 @@
     scrollbar-width: thin;
 }
 
-.event-command-row {
-    position: relative;
-    min-height: 5.65rem;
-    padding: 1rem 1.25rem;
-    color: inherit !important;
-    background: var(--bs-body-bg) !important;
-    border: 0;
-    border-bottom: var(--bs-border-width) solid var(--bs-border-color);
-}
-
-.event-command-row:hover {
-    background: var(--pom-hover) !important;
-}
-
-.event-command-row.is-selected {
-    background: var(--bs-tertiary-bg) !important;
-}
-
-.event-command-row.is-selected::before {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 0.25rem;
-    background: var(--pom-accent);
-    content: "";
-}
-
-.event-command-row.terminated {
-    color: var(--bs-secondary-color) !important;
-}
-
-.event-command-title {
-    min-width: 0;
-    overflow: hidden;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.event-command-context {
-    color: var(--bs-secondary-color);
-    font-size: 0.85rem;
-}
-
-.event-command-row > .d-flex,
-.event-command-context,
-.event-detail-heading-copy {
-    min-width: 0;
-}
-
-.event-command-context {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .event-right-tabs {
     min-height: 3.55rem;
 }
@@ -636,14 +581,6 @@ a.event-participant-name:focus-visible {
 
 /* Tablet and phone workspace modes */
 @media (max-width: 860px) {
-    .event-command-row.is-selected:not([aria-expanded]) {
-        background: var(--bs-body-bg) !important;
-    }
-
-    .event-command-row.is-selected:not([aria-expanded])::before {
-        content: none;
-    }
-
     .event-right-tabs,
     #eventDetailsPanel,
     .event-mobile-back {
@@ -1021,82 +958,6 @@ a.event-participant-name:focus-visible {
     background: var(--pom-hover);
 }
 
-.event-command-row {
-    display: block;
-    min-height: 4.25rem;
-    padding: 0.625rem 1.25rem;
-}
-
-.event-command-row-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 11.75rem;
-    gap: 0.5rem;
-    align-items: center;
-    min-height: 3rem;
-}
-
-.event-command-copy,
-.event-command-meta {
-    min-width: 0;
-}
-
-.event-command-copy {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.event-command-title,
-.event-command-context {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.event-command-context {
-    min-height: 1.25rem;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-}
-
-.event-command-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-}
-
-.event-command-meta .work-pill {
-    min-height: 1.375rem;
-}
-
-.event-command-when {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0 0.2rem;
-    max-width: 100%;
-    color: var(--bs-secondary-color);
-    font-size: 0.8rem;
-    line-height: 1.2;
-    text-align: right;
-}
-
-.event-command-when span {
-    white-space: nowrap;
-}
-
-.event-command-when span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.event-command-row.terminated .event-command-title {
-    font-weight: 500;
-}
-
 .event-detail-facts-column .work-detail-list dd {
     text-align: left;
 }
@@ -1138,10 +999,6 @@ a.event-participant-name:focus-visible {
 }
 
 @media (min-width: 861px) and (max-width: 1199.98px) {
-    .event-command-row-grid {
-        grid-template-columns: minmax(0, 1fr) 11rem;
-    }
-
     .event-detail-description-column,
     .event-detail-facts-column {
         width: min(100%, 37rem);
@@ -1176,53 +1033,6 @@ a.event-participant-name:focus-visible {
         font-weight: 600;
     }
 
-    .event-command-row-grid {
-        grid-template-columns: minmax(0, 1fr) 11rem 27px;
-        gap: 0.25rem 0.75rem;
-    }
-
-    .event-command-copy,
-    .event-command-meta {
-        display: contents;
-    }
-
-    .event-command-title {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .event-command-context {
-        grid-column: 1;
-        grid-row: 2;
-        margin-top: 0;
-    }
-
-    .event-command-meta .work-pill {
-        grid-column: 2;
-        grid-row: 1;
-        justify-self: end;
-    }
-
-    .event-command-when {
-        grid-column: 2;
-        grid-row: 2;
-        justify-self: end;
-    }
-
-    .event-command-row .work-mobile-chevron {
-        grid-column: 3;
-        grid-row: 1 / 3;
-        place-self: center;
-        width: 27px;
-        height: 27px;
-        border-color: var(--pom-border-strong);
-        color: var(--pom-text-muted);
-    }
-
-    .event-command-row .work-mobile-chevron svg {
-        stroke-width: 2;
-    }
-
     .event-mobile-expanded:not([hidden]) {
         padding: 1rem 1.25rem 1.25rem;
     }
@@ -1255,12 +1065,6 @@ a.event-participant-name:focus-visible {
     }
 }
 
-@media (min-width: 600px) and (max-width: 860px) {
-    .event-command-when {
-        font-size: 0.75rem;
-    }
-}
-
 @container event-actions (max-width: 24rem) {
     .event-mobile-inline-actions .work-mobile-open {
         display: none;
@@ -1282,48 +1086,6 @@ a.event-participant-name:focus-visible {
 }
 
 @media (max-width: 599.98px) {
-    .event-command-row-grid {
-        grid-template-columns: minmax(0, 1fr) 27px;
-        gap: 0.25rem 0.75rem;
-        min-height: 4.4rem;
-    }
-
-    .event-command-copy {
-        display: flex;
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    .event-command-meta {
-        display: flex;
-        grid-column: 1;
-        grid-row: 2;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.25rem 0.5rem;
-    }
-
-    .event-command-context {
-        margin-top: 0.25rem;
-    }
-
-    .event-command-meta .work-pill,
-    .event-command-when {
-        grid-column: auto;
-        grid-row: auto;
-    }
-
-    .event-command-row .work-mobile-chevron {
-        grid-column: 2;
-        grid-row: 1 / 3;
-    }
-
-    .event-command-when {
-        font-size: 0.75rem;
-    }
-
     .event-inline-participants-heading {
         flex-wrap: wrap;
     }

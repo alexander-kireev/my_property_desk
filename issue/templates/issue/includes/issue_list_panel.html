@@ -121,25 +121,30 @@
             {# Issue summaries, priority or state badges, and deadlines #}
             {% for issue in page_obj %}
                 {% work_status issue today as issue_status %}
-                <a class="issue-list-row list-group-item list-group-item-action{% if selected_issue.pk == issue.pk %} is-selected{% endif %}{% if issue.state != 'active' %} terminated{% endif %}"
+                <a class="issue-list-row work-summary-row list-group-item list-group-item-action{% if selected_issue.pk == issue.pk %} is-selected{% endif %}{% if issue.state != 'active' %} terminated{% endif %}"
                    href="?{% if navigation_query %}{{ navigation_query }}&amp;{% endif %}selected={{ issue.pk }}"
                    data-workspace-scroll-row{% if mobile_expanded_issue_id == issue.pk %}
                    aria-expanded="true"
                    aria-controls="issueInlineDetails{{ issue.pk }}"
                    {% endif %}
                    {% if selected_issue.pk == issue.pk %} aria-current="true"{% endif %}>
-                    <span class="issue-command-row-grid">
-                        <span class="issue-command-copy">
-                            <strong class="issue-command-title" title="{{ issue.title }}">{{ issue.title }}</strong>
-                            <span class="issue-command-context"
+                    <span class="issue-command-row-grid work-summary-grid">
+                        <span class="issue-command-copy work-summary-copy">
+                            <strong class="issue-command-title work-summary-title" title="{{ issue.title }}">{{ issue.title }}</strong>
+                            <span class="issue-command-context work-summary-context"
                                   {% if issue.property %} title="{{ issue.property.name }}"{% else %} aria-hidden="true"{% endif %}>{% if issue.property %}{{ issue.property.name }}{% endif %}</span>
                         </span>
-                        <span class="issue-command-meta">
-                            {% if issue.state == "active" %}
-                                <span class="issue-command-badges">{% include "issue/includes/priority_badge.html" with issue=issue %}</span>
-                            {% endif %}
-                            <span class="issue-command-deadline{% if issue_status.kind == 'overdue' %} issue-command-deadline--overdue{% elif issue_status.kind == 'soon' %} issue-command-deadline--soon{% endif %}">
-                                {% if issue.state != "active" %}{{ issue.get_state_display }}{% if issue.terminated_at %} {{ issue.terminated_at|date:"j M Y" }}{% endif %}
+                        <span class="issue-command-meta work-summary-meta">
+                            <span class="issue-command-badges work-summary-badges">
+                                {% if issue.state == "active" %}
+                                    {% include "issue/includes/priority_badge.html" with issue=issue %}
+                                {% else %}
+                                    {% include "includes/work_state_badge.html" with item=issue only %}
+                                {% endif %}
+                            </span>
+                            <span class="issue-command-deadline work-summary-when{% if issue_status.kind == 'overdue' %} issue-command-deadline--overdue{% elif issue_status.kind == 'soon' %} issue-command-deadline--soon{% endif %}">
+                                {% if issue.state != "active" %}
+                                    {% if issue.terminated_at %}{{ issue.terminated_at|date:"j M Y" }}{% else %}Created {{ issue.created_at|date:"j M Y" }}{% endif %}
             {% elif issue_status.kind == "overdue" %}Overdue {{ issue.resolution_deadline|date:"j M Y" }}
             {% elif issue_status.kind == "soon" %}Due soon {{ issue.resolution_deadline|date:"j M Y" }}
             {% elif issue.resolution_deadline %}Resolve by {{ issue.resolution_deadline|date:"j M Y" }}

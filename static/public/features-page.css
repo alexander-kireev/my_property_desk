@@ -1,0 +1,159 @@
+/* Five screenshot-led feature stories; loaded after the shared public styles. */
+.story-hero {
+    padding: 76px 0 82px;
+}
+
+.story-hero h1 {
+    font: 500 clamp(2.8rem, 5.5vw, 5rem)/1.07 var(--serif);
+    letter-spacing: -0.04em;
+    max-width: 920px;
+    margin: 15px 0 22px;
+}
+
+.story-hero p {
+    font-size: 1.13rem;
+    color: #4b594f;
+    max-width: 62ch;
+    margin: 0;
+}
+
+.story-hero .actions {
+    margin-top: 30px;
+}
+
+/* Alternating text and media placement keeps each capability distinct. */
+.story-section {
+    padding: 88px 0;
+    border-bottom: 1px solid #d8dfd6;
+}
+
+.story-section:nth-of-type(odd) {
+    background: #fff;
+}
+
+.story-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 52px;
+    align-items: center;
+}
+
+.story-layout--reverse {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+}
+
+.story-layout--reverse .story-media {
+    order: -1;
+}
+
+.story-copy {
+    min-width: 0;
+}
+
+.story-copy h2 {
+    font: 500 clamp(2.3rem, 3.4vw, 3.35rem)/1.12 var(--serif);
+    letter-spacing: -0.027em;
+    margin: 10px 0 20px;
+}
+
+.story-copy p {
+    color: #4b594f;
+    line-height: 1.75;
+    font-size: 1.04rem;
+    margin: 0 0 17px;
+}
+
+/* Each screenshot opens the shared public image viewer. */
+.story-media {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #c4d4bf;
+    border-radius: 16px;
+    background: #f4f8f2;
+    box-shadow: 0 18px 40px #243d2612;
+}
+
+.story-frame {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    border: 1px solid #b8c9b7;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.story-still {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: #fff;
+    cursor: zoom-in;
+}
+
+.story-still img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.story-still:hover img {
+    transform: scale(1.02);
+}
+
+@media (max-width: 1000px) {
+    .story-layout,
+    .story-layout--reverse {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .story-layout--reverse .story-media {
+        order: 0;
+    }
+
+    .story-copy {
+        max-width: 760px;
+    }
+
+    .story-media {
+        width: min(100%, 860px);
+    }
+}
+
+@media (max-width: 600px) {
+    .story-hero {
+        padding: 52px 0 58px;
+    }
+
+    .story-hero h1 {
+        font-size: 2.8rem;
+    }
+
+    .story-section {
+        padding: 58px 0;
+    }
+
+    .story-copy h2 {
+        font-size: 2.3rem;
+    }
+
+    .story-copy p {
+        font-size: 1rem;
+    }
+
+    .story-media {
+        padding: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .story-still img {
+        transition: none;
+    }
+}

@@ -42,7 +42,7 @@ class EventViewWorkspaceTests(EventViewFixture, TestCase):
         self.assertContains(response, '<span class="task-related-copy">Hill House</span>')
         self.assertRegex(
             response.content.decode(),
-            re.escape('class="event-command-context" title="Hill House">Hill House</span>').replace(
+            re.escape('class="event-command-context work-summary-context" title="Hill House">Hill House</span>').replace(
                 r"\ ", r"\s+"
             ),
         )

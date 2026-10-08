@@ -1,14 +1,351 @@
-{% extends "base.html" %}
-
-{% block title %}Home | My Property Desk{% endblock %}
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}My Property Desk · Manage your property work{% endblock %}
 
 {% block content %}
-    <div class="container py-5">
-        <div class="row">
-            <div class="col">
-                <h1>My Property Desk</h1>
-                <p>Manage your property portfolio in one place.</p>
+    {# Homepage introduction. #}
+    <section class="hero">
+        <div class="wrap hero-grid">
+            <div>
+                <span class="eyebrow">Property management for your day-to-day work</span>
+                <h1>Manage your properties and the work that comes with them.</h1>
+                <p>
+                    <strong class="product-name">My Property Desk</strong>
+                    is a free online workspace for people looking after a small property portfolio. Keep
+                    repairs, appointments, contacts and important dates together. Open the app and see
+                    what needs attention, without piecing the day together from messages, notes and
+                    calendars.
+                </p>
+                <div class="actions">
+                    <a class="button primary" href="{% url 'accounts:register' %}">Create a free account</a>
+                    <a class="button secondary" href="{% url 'pages:features' %}">Explore the features</a>
+                </div>
+            </div>
+            <div>
+                <figure class="screen">
+                    <div class="screen-top" aria-hidden="true">
+                        <i></i>
+                        <i></i>
+                        <i></i>
+                    </div>
+                    <img src="{% static 'public/images/hero-dashboard.png' %}"
+                         width="1600"
+                         height="900"
+                         alt="Sample dashboard with today's work, a calendar and selected-day details" />
+                </figure>
             </div>
         </div>
-    </div>
+    </section>
+    <section class="section white" id="what">
+        <div class="wrap">
+            <span class="eyebrow">What it does</span>
+            <h2>Answers you can find before the next call.</h2>
+            <p class="section-lead">
+                A resident calls, a visit moves, or an owner asks about an old repair.
+                <strong class="product-name">My Property Desk</strong>
+                gives you a clear place to check the work, the dates and the property history.
+            </p>
+            <div class="answer-grid">
+                <article class="answer-card">
+                    <span class="answer-label">When the day starts</span>
+                    <h3>What needs my attention?</h3>
+                    <p>
+                        Open the dashboard and see outstanding work beside the calendar. Pick up the
+                        next thing without rebuilding your to-do list from messages.
+                    </p>
+                </article>
+                <article class="answer-card">
+                    <span class="answer-label">When plans change</span>
+                    <h3>Who is going where, and when?</h3>
+                    <p>
+                        Check visits and follow-ups in one place, with the property and people involved
+                        close to hand.
+                    </p>
+                </article>
+                <article class="answer-card">
+                    <span class="answer-label">When someone asks</span>
+                    <h3>What happened here before?</h3>
+                    <p>
+                        Find the earlier repair, the notes you kept and the outcome without searching
+                        through old conversations.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+    <section class="section" id="for-whom">
+        <div class="wrap split">
+            <div>
+                <span class="eyebrow">Who it is for</span>
+                <h2>Looking after several properties yourself?</h2>
+                <p>
+                    If you manage a small portfolio yourself,
+                    <strong class="product-name">My Property Desk</strong>
+                    helps you stay on top of the calls, visits and follow-ups that come with it. It is
+                    built for the person coordinating the work, whether you own the properties or manage
+                    them for someone else.
+                </p>
+                <a class="button secondary" href="{% url 'pages:features' %}">See what you can do</a>
+            </div>
+            <div class="stack">
+                <div class="usecase">
+                    <h3>You manage more than one address</h3>
+                    <p>Keep each property's details and work easy to find.</p>
+                </div>
+                <div class="usecase">
+                    <h3>You deal with several people</h3>
+                    <p>Keep contact details close to the work they relate to.</p>
+                </div>
+                <div class="usecase">
+                    <h3>You need to look ahead</h3>
+                    <p>See visits and follow-ups alongside the rest of your schedule.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section white" id="preview">
+        <div class="wrap">
+            <div class="preview-heading">
+                <div>
+                    <span class="eyebrow">A look inside</span>
+                    <h2>See the parts you would use.</h2>
+                    <p class="section-lead">
+                        Take a closer look at your day, a repair in progress and the details you can
+                        find later.
+                    </p>
+                </div>
+                <div class="preview-controls">
+                    <button class="preview-arrow"
+                            type="button"
+                            data-slide-prev
+                            aria-label="Previous feature">←</button>
+                    <button class="preview-arrow"
+                            type="button"
+                            data-slide-next
+                            aria-label="Next feature">→</button>
+                </div>
+            </div>
+            <div class="preview-carousel" aria-label="Feature previews">
+                <article class="preview-slide" data-slide>
+                    <div class="preview-copy">
+                        <span class="answer-label">01 / 03 · Dashboard</span>
+                        <h3>See what needs attention today.</h3>
+                        <p>
+                            Open your workspace to find current work next to the calendar. Look ahead,
+                            then get straight to the item that needs you.
+                        </p>
+                        <a class="button secondary preview-cta"
+                           href="{% url 'pages:features' %}">
+                            See the features
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                    <div class="preview-visual">
+                        <figure class="screen">
+                            <div class="screen-top" aria-hidden="true">
+                                <i></i>
+                                <i></i>
+                                <i></i>
+                            </div>
+                            <button class="image-zoom"
+                                    type="button"
+                                    data-public-image
+                                    aria-label="Enlarge the dashboard preview">
+                                <img src="{% static 'public/images/dashboard-preview.png' %}"
+                                     width="1600"
+                                     height="900"
+                                     alt="Seeded dashboard showing today's work beside the calendar" />
+                                <span class="zoom-cue" aria-hidden="true"></span>
+                            </button>
+                        </figure>
+                    </div>
+                </article>
+                <article class="preview-slide" data-slide hidden>
+                    <div class="preview-copy">
+                        <span class="answer-label">02 / 03 · My work</span>
+                        <h3>Organise your work.</h3>
+                        <p>
+                            A shower leak at 18 Rowan Terrace becomes a clear set of steps: confirm
+                            access, arrange the plumber's visit and check the result. Keep them together
+                            so you can see what is done and what comes next.
+                        </p>
+                        <a class="button secondary preview-cta"
+                           href="{% url 'pages:features' %}">
+                            See the features
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                    <div class="preview-visual">
+                        <figure class="screen">
+                            <button class="image-zoom"
+                                    type="button"
+                                    data-public-image
+                                    aria-label="Enlarge the My Work preview">
+                                <img src="{% static 'public/images/my-work-preview.png' %}"
+                                     width="1360"
+                                     height="730"
+                                     alt="Repair at 18 Rowan Terrace with three linked steps: confirm access, arrange a plumbing visit and check the result" />
+                                <span class="zoom-cue" aria-hidden="true"></span>
+                            </button>
+                        </figure>
+                    </div>
+                </article>
+                <article class="preview-slide" data-slide hidden>
+                    <div class="preview-copy">
+                        <span class="answer-label">03 / 03 · Property history</span>
+                        <h3>Find the detail from last time.</h3>
+                        <p>
+                            Open an address and look back at previous work and the outcome. Useful when
+                            a resident or owner asks what happened before.
+                        </p>
+                        <a class="button secondary preview-cta"
+                           href="{% url 'pages:features' %}">
+                            See the features
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    </div>
+                    <div class="preview-visual">
+                        <figure class="screen">
+                            <div class="screen-top history-screen-top">
+                                <span>18 Rowan Terrace · Related records</span>
+                            </div>
+                            <button class="image-zoom"
+                                    type="button"
+                                    data-public-image
+                                    aria-label="Enlarge the property history screenshot">
+                                <img src="{% static 'public/images/property-history-preview.png' %}"
+                                     alt="Three previous records for 18 Rowan Terrace, including the resolved shower leak and its outcome" />
+                                <span class="zoom-cue" aria-hidden="true"></span>
+                            </button>
+                        </figure>
+                    </div>
+                </article>
+            </div>
+            <div class="preview-dots"
+                 role="group"
+                 aria-label="Choose a feature preview">
+                <button type="button"
+                        data-slide-to="0"
+                        aria-label="Show dashboard preview"
+                        aria-current="true"></button>
+                <button type="button" data-slide-to="1" aria-label="Show My work preview"></button>
+                <button type="button"
+                        data-slide-to="2"
+                        aria-label="Show property history preview"></button>
+            </div>
+        </div>
+    </section>
+    <section class="section tint" id="upcoming">
+        <div class="wrap upcoming-strip">
+            <div>
+                <span class="eyebrow">More to come</span>
+                <h2>There is more on the way.</h2>
+                <p>
+                    We are working towards more ways to keep the right information close and stay ahead
+                    of recurring work. These are some of the additions we want to bring to
+                    <strong class="product-name">My Property Desk</strong>
+                    .
+                </p>
+                <div class="actions">
+                    <a class="button secondary" href="{% url 'pages:coming_soon' %}">See what we're exploring</a>
+                </div>
+            </div>
+            <div class="upcoming-previews">
+                <div>
+                    <span>Photos and files</span>
+                    <strong>Keep evidence and documents with the property.</strong>
+                </div>
+                <div>
+                    <span>Repeat work</span>
+                    <strong>Get reminders for the work that comes round again.</strong>
+                </div>
+                <div>
+                    <span>Connected email</span>
+                    <strong>Bring property conversations into the same place.</strong>
+                </div>
+                <div>
+                    <span>AI assistant</span>
+                    <strong>Find details, get a clear update and review suggested next steps.</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="section white">
+        <div class="wrap">
+            <span class="eyebrow">Common questions</span>
+            <h2>Before you start.</h2>
+            <div class="faq-numbered-list">
+                <article class="faq-numbered-card">
+                    <span class="faq-question-no" aria-hidden="true">01</span>
+                    <details>
+                        <summary>
+                            <span>Is My Property Desk free?</span>
+                            <span class="faq-plus" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="faq-answer">
+                            <p>Yes. You can create an account and use the application for free.</p>
+                        </div>
+                    </details>
+                </article>
+                <article class="faq-numbered-card">
+                    <span class="faq-question-no" aria-hidden="true">02</span>
+                    <details>
+                        <summary>
+                            <span>How easy is it to use?</span>
+                            <span class="faq-plus" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="faq-answer">
+                            <p>
+                                It is designed to be straightforward. The dashboard brings current work and
+                                upcoming dates into view, and you can open each property when you need more
+                                detail.
+                            </p>
+                        </div>
+                    </details>
+                </article>
+                <article class="faq-numbered-card">
+                    <span class="faq-question-no" aria-hidden="true">03</span>
+                    <details>
+                        <summary>
+                            <span>Can tenants and contractors use it?</span>
+                            <span class="faq-plus" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="faq-answer">
+                            <p>
+                                The workspace is designed for the person managing the properties. You can keep
+                                other people's details as contacts, but they do not sign in to the application.
+                            </p>
+                        </div>
+                    </details>
+                </article>
+            </div>
+            <p>
+                <a class="button secondary faq-cta" href="{% url 'pages:faq' %}">
+                    Read all questions
+                    <span aria-hidden="true">→</span>
+                </a>
+            </p>
+        </div>
+    </section>
+    <section class="closing">
+        <div class="wrap closing-inner">
+            <div>
+                <h2>Ready to get organised?</h2>
+                <p>Create an account and start with the next thing you need to do.</p>
+            </div>
+            <div class="actions">
+                <a class="button primary" href="{% url 'accounts:register' %}">Create a free account</a>
+                <a class="button secondary"
+                   href="{% url 'pages:contact_us' %}?topic=question">Ask a question</a>
+            </div>
+        </div>
+    </section>
+
+    {% include "includes/public_image_viewer.html" %}
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'public/public-home.js' %}"></script>
+    <script src="{% static 'public/public-image-viewer.js' %}"></script>
 {% endblock %}

@@ -1,11 +1,11 @@
-{% extends "base.html" %}
-{% block title %}Registration confirmed | My Property Desk{% endblock %}
+{% extends "public_base.html" %}
+{% block title %}Confirmation link · My Property Desk{% endblock %}
 {% block content %}
-
-    {% if error %}
-        <div>{{ error }}</div>
-    {% else %}
-        <div>yay your registration has been confirmed</div>
-    {% endif %}
-
+    <section class="auth wrap">
+        <div class="auth-head">
+            <h1>We could not confirm your account.</h1>
+            <p>{{ error }}</p>
+        </div>
+        <a class="button primary" href="{% url 'accounts:register' %}">Create a new account request</a>
+    </section>
 {% endblock %}

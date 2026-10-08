@@ -99,6 +99,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Public reset links expire after one hour, as stated in the reset email.
+PASSWORD_RESET_TIMEOUT = 3600
+
 
 # Language and time handling
 LANGUAGE_CODE = "en-us"
@@ -134,3 +137,5 @@ EMAIL_USE_SSL = os.environ.get("PMS_EMAIL_USE_SSL", "False").lower() == "true"
 DEFAULT_FROM_EMAIL = os.environ.get(
     "PMS_DEFAULT_FROM_EMAIL", "noreply@property-operations-manager.local"
 )
+# Public contact messages use the same delivery backend as account email.
+PMS_CONTACT_EMAIL = os.environ.get("PMS_CONTACT_EMAIL", DEFAULT_FROM_EMAIL)
