@@ -3,7 +3,7 @@
 from datetime import timedelta
 
 from django.core import mail
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -12,6 +12,7 @@ from ..models import PendingRegistration, User
 from ..tokens import create_confirmation_token
 
 
+@override_settings(PMS_REGISTRATION_MODE="pending")
 class RegistrationViewTests(TestCase):
     VALID_DATA = {
         "first_name": "  Alice  ",
@@ -183,3 +184,50 @@ class RegistrationViewTests(TestCase):
         user = User.objects.get(email=r["pending_registration"].email)
 
         self.assertTrue(user.check_password(self.VALID_DATA["password_1"]))
+
+
+@override_settings(PMS_REGISTRATION_MODE="instant")
+class InstantRegistrationTests(TestCase):
+    DATA = RegistrationViewTests.VALID_DATA
+
+    def test_signup_creates_account_and_authenticated_dashboard_session_without_email(self):
+        response = self.client.post(reverse("accounts:register"), self.DATA)
+
+        self.assertRedirects(response, reverse("pages:dashboard"))
+        user = User.objects.get(email=self.DATA["email"])
+        self.assertEqual((user.first_name, user.last_name), ("Alice", "Smith"))
+        self.assertTrue(user.check_password(self.DATA["password_1"]))
+        self.assertEqual(self.client.session.get("_auth_user_id"), str(user.pk))
+        self.assertFalse(PendingRegistration.objects.exists())
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_existing_pending_request_is_replaced_and_its_link_expires(self):
+        pending = PendingRegistration.objects.create(
+            first_name="Older", last_name="Person", email=self.DATA["email"]
+        )
+        pending.set_password("OlderPassword123!")
+        pending.save(update_fields=["password_hash"])
+        old_token = create_confirmation_token(pending)
+
+        response = self.client.post(reverse("accounts:register"), self.DATA)
+
+        self.assertRedirects(response, reverse("pages:dashboard"))
+        self.assertFalse(PendingRegistration.objects.exists())
+        self.assertEqual(
+            self.client.get(reverse("accounts:confirm_registration", args=[old_token])).status_code,
+            400,
+        )
+        self.assertEqual(User.objects.count(), 1)
+
+    def test_duplicate_email_and_invalid_password_do_not_create_another_account(self):
+        User.objects.create_user(email=self.DATA["email"], password="ExistingPassword123!")
+        duplicate = dict(self.DATA, email=self.DATA["email"].upper())
+        response = self.client.post(reverse("accounts:register"), duplicate)
+        self.assertEqual(response.status_code, 302)
+        self.assertContains(self.client.get(response.url), "already exists", status_code=200)
+
+        invalid = dict(self.DATA, email="new@example.com", password_2="OtherPassword123!")
+        response = self.client.post(reverse("accounts:register"), invalid)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 0)

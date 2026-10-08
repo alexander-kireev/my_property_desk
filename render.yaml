@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: my-property-desk
+    runtime: python
+    plan: starter
+    region: frankfurt
+    branch: main
+    autoDeployTrigger: "off"
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --access-logfile - --error-logfile -
+    healthCheckPath: /health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.0
+      - key: PMS_PRODUCTION
+        value: "True"
+      - key: PMS_DEBUG
+        value: "False"
+      - key: PMS_SECRET_KEY
+        generateValue: true
+      - key: PMS_REGISTRATION_MODE
+        value: instant
+      - key: PMS_ALLOWED_HOSTS
+        sync: false
+      - key: PMS_CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: PMS_DB_NAME
+        sync: false
+      - key: PMS_DB_USER
+        sync: false
+      - key: PMS_DB_PASSWORD
+        sync: false
+      - key: PMS_DB_HOST
+        sync: false
+      - key: PMS_DB_PORT
+        value: "5432"
+      - key: PMS_DB_SSLMODE
+        value: require
+      - key: PMS_EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: PMS_EMAIL_HOST
+        sync: false
+      - key: PMS_EMAIL_PORT
+        value: "587"
+      - key: PMS_EMAIL_HOST_USER
+        sync: false
+      - key: PMS_EMAIL_HOST_PASSWORD
+        sync: false
+      - key: PMS_EMAIL_USE_TLS
+        value: "True"
+      - key: PMS_EMAIL_USE_SSL
+        value: "False"
+      - key: PMS_DEFAULT_FROM_EMAIL
+        sync: false
+      - key: PMS_CONTACT_EMAIL
+        sync: false
+      - key: PMS_CLOUDFLARE_WEB_ANALYTICS_TOKEN
+        sync: false

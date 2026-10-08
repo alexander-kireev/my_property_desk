@@ -2,7 +2,9 @@
 
 import logging
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -12,6 +14,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from event.forms import EventContactForm, EventForm
 
 from .contact_mail import send_problem_report, send_public_message
+from .context_processors import ANALYTICS_OPT_OUT_COOKIE
 from .dashboard.actions import dashboard_action
 from .dashboard.data import dashboard_data
 from .forms import MessageForm, ProblemReportForm
@@ -27,6 +30,32 @@ def home_view(request):
 
 def about_us_view(request):
     return redirect("pages:home")
+
+
+@require_GET
+def privacy_policy_view(request):
+    return render(request, "pages/privacy_policy.html")
+
+
+@require_POST
+def analytics_preference_view(request):
+    choice = request.POST.get("analytics")
+    if choice not in {"off", "on"}:
+        return HttpResponseBadRequest("Invalid analytics preference")
+
+    response = redirect(f"{reverse('pages:privacy_policy')}#cookies-and-analytics")
+    if choice == "off":
+        response.set_cookie(
+            ANALYTICS_OPT_OUT_COOKIE,
+            "1",
+            max_age=365 * 24 * 60 * 60,
+            secure=not settings.DEBUG,
+            httponly=True,
+            samesite="Lax",
+        )
+    else:
+        response.delete_cookie(ANALYTICS_OPT_OUT_COOKIE, samesite="Lax")
+    return response
 
 
 @require_GET

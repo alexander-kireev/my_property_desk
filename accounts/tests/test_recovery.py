@@ -3,7 +3,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -13,6 +13,7 @@ from accounts.models import PendingEmailChange, PendingRegistration, User
 from accounts.tokens import create_confirmation_token
 
 
+@override_settings(PMS_REGISTRATION_MODE="pending")
 class RegistrationRecoveryTests(TestCase):
     def data(self):
         return {

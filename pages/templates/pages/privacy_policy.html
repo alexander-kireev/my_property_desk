@@ -1,0 +1,83 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}Privacy notice · My Property Desk{% endblock %}
+{% block description %}How My Property Desk handles account, workspace and website information.{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'public/legal-pages.css' %}">
+{% endblock %}
+{% block content %}
+    <section class="page-intro legal-intro wrap">
+        <span class="eyebrow">Your information</span>
+        <h1>Privacy notice.</h1>
+        <p>What My Property Desk handles, why it is used and how to get in touch.</p>
+        <p class="legal-date">Effective 8 October 2026</p>
+    </section>
+    <div class="legal-layout wrap">
+        <nav class="legal-index" aria-label="Privacy notice sections">
+            <p>On this page</p>
+            <a href="#who-runs-the-service">Who runs the service</a>
+            <a href="#information-we-handle">Information we handle</a>
+            <a href="#why-we-use-it">Why we use it</a>
+            <a href="#who-can-access-it">Who can access it</a>
+            <a href="#retention">How long we keep it</a>
+            <a href="#cookies-and-analytics">Cookies and analytics</a>
+            <a href="#your-rights">Your choices and rights</a>
+            <a href="#changes">Changes</a>
+        </nav>
+        <article class="legal-copy">
+            <section id="who-runs-the-service" class="legal-section">
+                <h2>Who runs My Property Desk</h2>
+                <p>My Property Desk is an independently built property operations application operated by Alexander Kireev. It lets an account holder organise properties, contacts, issues, tasks, events and notes in a private workspace.</p>
+                <p>For privacy questions or requests, use the <a href="{% url 'pages:contact_us' %}">Contact page</a> or email <a href="mailto:support@mypropertydesk.co.uk">support@mypropertydesk.co.uk</a>.</p>
+            </section>
+            <section id="information-we-handle" class="legal-section">
+                <h2>Information the service handles</h2>
+                <ul>
+                    <li><strong>Account details:</strong> your name, email address and a password hash. The application does not store your plain-text password.</li>
+                    <li><strong>Workspace records:</strong> the property, contact and operational details you choose to enter. These may include names, addresses, phone numbers, email addresses, dates and notes about other people. Please enter only information you are entitled to use.</li>
+                    <li><strong>Messages to us:</strong> the contents of a contact message or problem report, an optional reply address and any screenshots you attach. The application sends these to a support mailbox and does not save the attachments as workspace files.</li>
+                    <li><strong>Technical information:</strong> information needed to run and protect the service, such as sign-in session and CSRF cookies and server or error logs that may include an IP address, time of request and requested path.</li>
+                    <li><strong>Website statistics:</strong> Cloudflare Web Analytics measures visits and performance on selected public pages. Its beacon receives page paths, referring sites, browser and device information, approximate country and page performance measurements. Cloudflare says Web Analytics does not use cookies or local storage to collect usage metrics and does not log URL query strings.</li>
+                </ul>
+            </section>
+            <section id="why-we-use-it" class="legal-section">
+                <h2>Why the information is used</h2>
+                <p>We use account and workspace information to provide the features you request and to manage your account. We use contact messages to respond and fix problems, technical information to operate and protect the service, and aggregate public-page statistics to understand how the website is used and improve it. Our lawful bases are performance of our contract with you for account and workspace features, and our legitimate interests in responding to requests, maintaining a secure and reliable service, and improving our public website. Where the law requires us to keep or disclose information, we also rely on legal obligation.</p>
+            </section>
+            <section id="who-can-access-it" class="legal-section">
+                <h2>Who can access information</h2>
+                <p>Your workspace is designed for your account; other account holders do not have a shared workspace. The operator may need limited access to information to maintain the service, investigate a problem or respond to a request.</p>
+                <p>Render hosts the website, Neon hosts its PostgreSQL database, and Resend sends account and contact-form emails. Squarespace uses Mailgun to forward messages addressed to support@mypropertydesk.co.uk to a private Gmail inbox operated by Google. Cloudflare Web Analytics handles public-page statistics. These providers receive only the information needed for their service. We do not use workspace records for advertising.</p>
+            </section>
+            <section id="retention" class="legal-section">
+                <h2>How long information is kept</h2>
+                <p>Account and workspace records remain in the active database while the account exists. Deleting a property, contact, issue, task or event within the workspace generally marks that record as deleted rather than removing its database row; some links and historical details can therefore remain available in context. Individual notes and contact methods can be removed from the active database when deleted. The profile page offers a separate <strong>Delete account</strong> action. When that succeeds, the current application deletes the user and their associated workspace records from the active database.</p>
+                <p>Support emails, email-provider delivery records and operational logs may remain with their providers after an account is deleted. We keep them only as long as needed to handle enquiries, investigate errors, protect the service or meet legal requirements, subject to the provider's retention settings. Cloudflare says unsampled Web Analytics beacon data is retained for seven days and that Web Analytics reports are available for the previous six months.</p>
+            </section>
+            <section id="cookies-and-analytics" class="legal-section">
+                <h2>Cookies and analytics</h2>
+                <p>The application uses cookies needed for sign-in sessions and request security. Cloudflare Web Analytics measures aggregate visits and performance only on the home, features, FAQ, coming-soon and privacy pages. It does not run on contact forms, registration, sign-in, password reset, account management or private workspace pages. We use these statistics solely to improve the public website, not to identify visitors or for advertising.</p>
+                <p>Cloudflare Web Analytics does not set analytics cookies. We rely on the UK statistical-purpose exception for this limited analytics use, so we do not ask for consent before loading its beacon. Turning analytics off prevents the beacon from loading on subsequent pages in this browser. A one-year, strictly necessary preference cookie remembers your objection; if you clear your cookies, you may need to set the preference again.</p>
+                <div class="analytics-choice">
+                    <p class="analytics-choice-status" role="status">Analytics is currently <strong>{% if analytics_opted_out %}off{% else %}on{% endif %}</strong> in this browser.</p>
+                    <form method="post" action="{% url 'pages:analytics_preference' %}">
+                        {% csrf_token %}
+                        {% if analytics_opted_out %}
+                            <button type="submit" name="analytics" value="on">Turn analytics on</button>
+                        {% else %}
+                            <button type="submit" name="analytics" value="off">Turn analytics off</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </section>
+            <section id="your-rights" class="legal-section">
+                <h2>Your choices and rights</h2>
+                <p>You can change your name and email in your profile, edit workspace records, and delete your account. You may also ask about access to, correction of, or deletion of personal information, and raise other data-protection rights where they apply. Use the <a href="{% url 'pages:contact_us' %}">Contact page</a> to make a request. You can complain to the <a href="https://ico.org.uk/make-a-complaint/">UK Information Commissioner's Office</a> if you are unhappy with how a privacy concern is handled.</p>
+            </section>
+            <section id="changes" class="legal-section">
+                <h2>Changes to this notice</h2>
+                <p>We will update this notice when the service, providers or data practices change. The page will show its effective date.</p>
+            </section>
+        </article>
+    </div>
+{% endblock %}

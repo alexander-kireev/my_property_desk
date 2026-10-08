@@ -446,11 +446,31 @@ button {
 
 .footer-links {
     display: flex;
-    gap: 17px;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 24px;
+    row-gap: 8px;
     flex-wrap: wrap;
 }
 
 .footer a {
+    color: #fff;
+}
+
+.footer-links a {
+    padding: 5px 0;
+    border-bottom: 1px solid transparent;
+    color: #d9e3d7;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: color 160ms ease, border-color 160ms ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible {
+    border-bottom-color: var(--sage);
     color: #fff;
 }
 
@@ -694,6 +714,13 @@ button {
     .footer-inner {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .footer-links {
+        display: grid;
+        grid-template-columns: repeat(3, max-content);
+        column-gap: 24px;
+        row-gap: 8px;
     }
 
     .panel {

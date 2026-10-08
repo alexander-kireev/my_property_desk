@@ -7,7 +7,6 @@
             <p>Set up your free workspace and start with the work you need to manage today.</p>
         </div>
         <div class="panel auth-card">
-            {# The registration view still owns email confirmation and failed-form restoration. #}
             <form method="post" autocomplete="off">
                 {% csrf_token %}
                 {% for error in form.non_field_errors %}<p class="form-error" role="alert">{{ error }}</p>{% endfor %}

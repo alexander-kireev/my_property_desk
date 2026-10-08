@@ -1,0 +1,19 @@
+{% extends "public_base.html" %}
+{% load static %}
+{% block title %}Page not found · My Property Desk{% endblock %}
+{% block description %}The page you were looking for could not be found.{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'public/legal-pages.css' %}">
+{% endblock %}
+{% block content %}
+    <section class="error-page wrap" aria-labelledby="error-title">
+        <span class="eyebrow">Page not found</span>
+        <p class="error-code" aria-hidden="true">404</p>
+        <h1 id="error-title">This page isn't here.</h1>
+        <p>The address may have changed, or there may be a typo in the link. You can return to the homepage or tell us if something looks broken.</p>
+        <div class="actions">
+            <a class="button primary" href="{% url 'pages:home' %}">Go to homepage</a>
+            <a class="button secondary" href="{% url 'pages:contact_us' %}">Contact us</a>
+        </div>
+    </section>
+{% endblock %}

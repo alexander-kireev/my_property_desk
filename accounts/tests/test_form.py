@@ -1,11 +1,12 @@
 """Accounts form behaviour."""
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from ..forms import EmailChangeForm, PendingRegistrationForm
 from ..models import PendingRegistration, User
 
 
+@override_settings(PMS_REGISTRATION_MODE="pending")
 class PendingRegistrationFormTests(TestCase):
     VALID_DATA = {
         "first_name": "  Alice  ",
