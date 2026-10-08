@@ -30,9 +30,12 @@ notes/
 # Wireframes folder 
 wireframes/
 
-# For internal build docs
+# Internal project notes and operational tools
 build_docs/
 internal_tools/
+legal/
+scripts/
+assets/pr/
 .ruff_cache/
 docs/*
 .github/*.md
