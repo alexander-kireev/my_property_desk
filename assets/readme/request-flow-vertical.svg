@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="968" viewBox="0 0 1000 968" role="img" aria-labelledby="title desc">
+  <title id="title">How a request moves through My Property Desk</title>
+  <desc id="desc">A browser request passes through Render and Gunicorn, Django middleware and URL routing, and a domain view. The view then follows a read or write path. Reads query owned records from PostgreSQL and build an HTML or JSON response. Writes validate input, apply a change through a service and the ORM, then redirect or return JSON.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10z" fill="#647b66"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #25352a; }
+      .eyebrow { font-size: 14px; font-weight: 700; letter-spacing: 1.1px; fill: #49644d; }
+      .node { font-size: 17px; font-weight: 600; text-anchor: middle; }
+      .sub { font-size: 13px; font-weight: 400; fill: #536557; text-anchor: middle; }
+      .line { stroke: #647b66; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .branch { stroke: #647b66; stroke-width: 2; fill: none; }
+      .box { fill: #fff; stroke: #9cad9a; stroke-width: 1.5; rx: 10; }
+      .db { fill: #e8f0e6; stroke: #5c7a60; stroke-width: 1.5; rx: 10; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text class="eyebrow" x="32" y="31">REQUEST ENTRY</text>
+
+  <rect class="box" x="360" y="48" width="280" height="56"/>
+  <text class="node" x="500" y="82">Browser</text>
+  <path class="line" d="M500 106 V132"/>
+  <rect class="box" x="360" y="136" width="280" height="56"/>
+  <text class="node" x="500" y="170">Render / Gunicorn</text>
+  <path class="line" d="M500 194 V220"/>
+  <rect class="box" x="360" y="224" width="280" height="56"/>
+  <text class="node" x="500" y="249"><tspan x="500">Django middleware</tspan><tspan x="500" dy="20">and URL routing</tspan></text>
+  <path class="line" d="M500 282 V308"/>
+  <rect class="box" x="360" y="312" width="280" height="56"/>
+  <text class="node" x="500" y="346">Domain view</text>
+
+  <path class="branch" d="M500 368 V403 H250 M500 403 H750"/>
+  <rect x="32" y="424" width="450" height="486" rx="14" fill="#f7f9f4" stroke="#c8d5c4"/>
+  <rect x="518" y="424" width="450" height="486" rx="14" fill="#f8f9f8" stroke="#c8d5c4"/>
+  <text class="eyebrow" x="52" y="457">GET · READ</text>
+  <text class="eyebrow" x="538" y="457">POST · WRITE</text>
+  <path class="line" d="M250 403 V479"/>
+  <path class="line" d="M750 403 V479"/>
+
+  <rect class="box" x="60" y="487" width="380" height="59"/>
+  <text class="node" x="250" y="509"><tspan x="250">Selector / ORM</tspan><tspan class="sub" x="250" dy="19">query records owned by this user</tspan></text>
+  <path class="line" d="M250 548 V574"/>
+  <rect class="db" x="60" y="578" width="380" height="59"/>
+  <text class="node" x="250" y="613">PostgreSQL</text>
+  <path class="line" d="M250 639 V665"/>
+  <rect class="box" x="60" y="669" width="380" height="59"/>
+  <text class="node" x="250" y="704">Workspace context</text>
+  <path class="line" d="M250 730 V756"/>
+  <rect class="box" x="60" y="760" width="380" height="59"/>
+  <text class="node" x="250" y="795">Template or JSON</text>
+  <path class="line" d="M250 821 V847"/>
+  <rect class="box" x="60" y="851" width="380" height="42"/>
+  <text class="node" x="250" y="878">HTML / JSON to browser</text>
+
+  <rect class="box" x="560" y="487" width="380" height="59"/>
+  <text class="node" x="750" y="509"><tspan x="750">Form and access checks</tspan><tspan class="sub" x="750" dy="19">validate the submitted change</tspan></text>
+  <path class="line" d="M750 548 V574"/>
+  <rect class="box" x="560" y="578" width="380" height="59"/>
+  <text class="node" x="750" y="600"><tspan x="750">Service / ORM</tspan><tspan class="sub" x="750" dy="19">apply change</tspan></text>
+  <path class="line" d="M750 639 V665"/>
+  <rect class="db" x="560" y="669" width="380" height="59"/>
+  <text class="node" x="750" y="704">PostgreSQL</text>
+  <path class="line" d="M750 730 V756"/>
+  <rect class="box" x="560" y="760" width="380" height="59"/>
+  <text class="node" x="750" y="795">Redirect or JSON</text>
+  <path class="line" d="M750 821 V847"/>
+  <rect class="box" x="560" y="851" width="380" height="42"/>
+  <text class="node" x="750" y="878">Browser may follow GET</text>
+
+  <text class="sub" x="500" y="943">Both paths use the same PostgreSQL database; the two boxes show its role in each path.</text>
+</svg>

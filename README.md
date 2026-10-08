@@ -1,101 +1,279 @@
-# Property Operations Manager
+# My Property Desk
 
-> Current status: Technical design and project setup.
+My Property Desk is a web application for organising the day-to-day work of a small property portfolio. It brings property records, contacts, issues, tasks, events and notes into one workspace, with a dashboard and calendar to show what needs attention next.
 
-## Overview
+The application is designed for an individual manager responsible for multiple properties. It gives operational work a clear place to live without trying to reproduce the breadth of a large property-management system.
 
-Property Operations Manager is a web application for organising a small property portfolio and the day-to-day operational work associated with it.
+**Live application:** [mypropertydesk.co.uk](https://mypropertydesk.co.uk/)
 
-The public product pages live in `pages/templates/pages/` and share `templates/public_base.html`, the public header/footer includes, and `static/public/` assets. The signed-in workspace keeps its existing `templates/base.html` shell. Login and registration reuse their existing Django forms and account views with the public layout.
+## A look at the application
 
-The Contact page emails reports and messages through Django's configured email backend. Set `PMS_CONTACT_EMAIL` to the inbox that should receive them, alongside the SMTP settings in `.env.example`. Reports can be anonymous and may include up to three PNG, JPG or WebP screenshots (5 MB each, 12 MB total); uploaded files are attached to the outgoing email and are not stored by the application.
+The signed-in screenshots use synthetic records from the Daniel Mercer demo workspace.
 
-Forgot-password requests use the same email backend and a one-hour link. Requests are limited by email address and `REMOTE_ADDR` using hashed, database-backed counters; deployment behind a reverse proxy should ensure `REMOTE_ADDR` identifies the intended client source. Run migrations before enabling the public reset route. HTTPS must be enabled on the deployed site for reset links to work securely. See `accounts/PASSWORD_RESET_POLICY.md` for the full flow and delivery limitation.
+| Public website | Portfolio dashboard |
+| --- | --- |
+| ![My Property Desk public home page](assets/readme/screenshots/home-desktop.png) | ![Daniel Mercer's My Property Desk dashboard](assets/readme/screenshots/dashboard-desktop.png) |
 
-It is intended to bring properties, contacts, issues, tasks, events, notes and scheduling information into one lightweight system without the overhead of enterprise property-management software.
+| Property workspace | Contacts |
+| --- | --- |
+| ![Property with related issue, tasks and event](assets/readme/screenshots/properties-desktop.png) | ![Contacts in the Daniel Mercer workspace](assets/readme/screenshots/contacts-desktop.png) |
 
-## Target user
+| Calendar on a smaller screen | Tasks on a smaller screen |
+| --- | --- |
+| ![Calendar with Daniel Mercer's scheduled records](assets/readme/screenshots/calendar-mobile.png) | ![Active tasks in the Daniel Mercer workspace](assets/readme/screenshots/tasks-mobile.png) |
 
-The primary user is an individual managing approximately 5–50 properties.
+## What it does
 
-Version 1.0 is manager-facing. Other people involved in property operations, including landlords, tenants, contractors and agents, are represented as Contacts rather than application users.
+- **Properties:** Keep a portfolio record with the identifying details and address of each property.
+- **Contacts:** Store people and organisations involved in the work, with validated email addresses and telephone numbers.
+- **Issues:** Record a problem against a property, set its priority and deadline, and resolve or dismiss it when the outcome is known.
+- **Tasks:** Track work to be done.
+- **Events:** Schedule appointments and other dated activity.
+- **Notes:** Capture short general notes or notes associated with a contact.
+- **Dashboard and calendar:** Bring current work and upcoming dates into views that support day-to-day planning.
+- **Account access:** Create an account, sign in, manage account details and reset a forgotten password by email.
 
-## Planned V1 scope
+Records are scoped to the signed-in user. The current product is a manager's workspace: tenants, contractors, landlords and other participants are represented as contacts, rather than as users with their own accounts.
 
-Version 1.0 is planned to provide:
+## Technology and application structure
 
-- A public-facing product website
-- Account registration and authentication
-- Property portfolio management
-- Contact and property-role management
-- Creation and management of Issues, Tasks and Events
-- Calendar-based scheduling of Tasks and Events
-- Contextual Notes and NotesBoards
-- A portfolio dashboard and calendar
-- Read-only access to historical operational records
+The application uses **Python 3.14, Django 5.2 and PostgreSQL**. Django renders the pages and handles authentication, forms and database access. The signed-in dashboard also uses JSON endpoints for actions that update the page without a full reload. Styling is built with CSS and Bootstrap, with focused JavaScript for interactive parts of the interface.
 
-## Technology
+The code is organised by domain (`property`, `contact`, `issue`, `task`, `event`, `note` and `accounts`). Views handle requests; selectors provide reusable, owner-scoped queries; services implement record-changing operations. Workspace helpers assemble page context.
 
-- Python 3.14
-- Django 5.2.17 LTS
-- PostgreSQL 18
-- Server-rendered HTML and CSS with Bootstrap
+![Request and data flow through My Property Desk](assets/readme/request-flow-vertical.svg)
 
-## Development approach
+For an authenticated workspace page, the view reads the signed-in user's records and builds the context for an HTML template. A successful form submission validates input, applies a change and usually redirects to a fresh GET that queries the updated data. The dashboard also has JSON endpoints: JavaScript requests its data and sends actions without reloading the entire page. Account email flows use Django's email backend and Resend SMTP.
 
-This is a personal portfolio and learning project intended to strengthen practical skills in system design, relational database modelling, Django development, testing and deployment.
+### Example: adding a task
 
-Development follows a structured but lightweight software-development lifecycle: requirements analysis, domain modelling, technical design, incremental implementation, continuous testing and iteration. The process emphasises useful engineering discipline without unnecessary ceremony.
+The task workspace renders an Add task form. When the manager submits it, `POST /tasks/add/` reaches `add_task_view` after Django's session, authentication and CSRF handling. The view binds `TaskForm` to the submitted values and limits property and issue choices to records owned by the signed-in user.
 
-## Development formatting
+![Adding a task through the success and validation-error paths](assets/readme/add-task-flow.svg)
 
-When available locally, `docs/MAINTAINER_GUIDE.md` describes front-end ownership, shared templates, commenting conventions and focused checks. It is intentionally Git-ignored and is not included in a fresh clone.
+If the form is valid, the view calls `create_task`, which inserts a `Task` through the ORM. It sets a success message and redirects to the selected task, or back to the originating property when the task was added there. The new GET queries the task workspace again and renders the updated record.
 
-Install the optional formatting tools after installing the application requirements:
+If validation fails, no task is written. The view stores the submitted form values in one-use session state and redirects back to the task workspace. The GET restores a bound form from those values, so the Add task modal reopens with validation errors for the manager to correct.
 
-Use a Node.js version supported by ESLint: 20.19+, 22.13+ or 24+. This tooling baseline was checked with Node 24.19.
+### Data model
 
-```powershell
-pip install -r requirements-dev.txt
-npm install
+The schema is divided into three related views so the columns stay readable. Together they show every database column on the application's 12 models. Foreign keys use their database names (`user_id`, `property_id`, and so on); `nullable` identifies columns that may be empty. Every `user_id` points to `USER.id` in the account view. Those ownership lines are left out of the first two views to keep the domain relationships legible. The small `EVENT` box in the contact view is a reference to the full table above it.
+
+#### Properties and operational work
+
+Properties can have issues, tasks and events. An issue may have tasks of its own. Each operational record belongs to one user, even when its property or issue link is empty.
+
+```mermaid
+erDiagram
+    PROPERTY o|--o{ ISSUE : has
+    PROPERTY o|--o{ TASK : has
+    PROPERTY o|--o{ EVENT : has
+    ISSUE o|--o{ TASK : has
+
+    PROPERTY {
+        bigint id PK
+        bigint user_id FK
+        string state
+        string name
+        string description
+        string address
+        datetime created_at
+        datetime deleted_at "nullable"
+    }
+    ISSUE {
+        bigint id PK
+        bigint user_id FK
+        bigint property_id FK "nullable"
+        string state
+        int priority
+        string title
+        string description
+        date resolution_deadline "nullable"
+        datetime created_at
+        datetime terminated_at "nullable"
+        datetime deleted_at "nullable"
+    }
+    TASK {
+        bigint id PK
+        bigint user_id FK
+        bigint property_id FK "nullable"
+        bigint issue_id FK "nullable"
+        string state
+        int priority
+        string title
+        string description
+        date scheduled_date "nullable"
+        date completion_deadline "nullable"
+        datetime created_at
+        datetime terminated_at "nullable"
+        datetime deleted_at "nullable"
+    }
+    EVENT {
+        bigint id PK
+        bigint user_id FK
+        bigint property_id FK "nullable"
+        string state
+        string title
+        string description
+        date scheduled_date
+        boolean all_day
+        time start_time "nullable"
+        time end_time "nullable"
+        boolean user_participation_required
+        boolean user_presence_required
+        datetime terminated_at "nullable"
+        datetime created_at
+        datetime deleted_at "nullable"
+    }
 ```
 
-Check the authored CSS and Django templates without changing them:
+A task may link to a property or an issue, or stand alone. A database check prevents both links being set at once. Completed, resolved and dismissed records remain available as history; deactivated properties also retain their context.
 
-```powershell
-npm run lint:css
-npm run format:css:check
-python -m djlint accounts contact event issue note pages property task templates --lint
-python -m djlint accounts contact event issue note pages property task templates --check
+#### Contacts, event participants and notes
+
+Contacts can have multiple contact methods, and an event can include several contacts through `EVENT_CONTACT`. A note belongs to a user and may also be attached to a contact. The `EVENT` box below is a reference to its full definition in the property view.
+
+```mermaid
+erDiagram
+    CONTACT ||--o{ CONTACT_METHOD : has
+    CONTACT o|--o{ NOTE : has
+    CONTACT ||--o{ EVENT_CONTACT : joins
+    EVENT ||--o{ EVENT_CONTACT : includes
+
+    EVENT {
+        bigint id PK
+    }
+    CONTACT {
+        bigint id PK
+        bigint user_id FK
+        string state
+        string first_name
+        string last_name
+        datetime created_at
+        datetime deleted_at "nullable"
+    }
+    CONTACT_METHOD {
+        bigint id PK
+        bigint contact_id FK
+        string type
+        string value
+    }
+    EVENT_CONTACT {
+        bigint id PK
+        bigint contact_id FK
+        bigint event_id FK
+    }
+    NOTE {
+        bigint id PK
+        bigint user_id FK
+        bigint contact_id FK "nullable"
+        string content
+        datetime created_at
+    }
 ```
 
-Format CSS or a bounded group of templates, then review the diff before committing:
+A contact can be deactivated while keeping its record and history.
 
-```powershell
-npm run format:css
-python -m djlint path\to\templates --reformat
+#### Accounts and request controls
+
+The custom user includes fields inherited from Django's `AbstractUser`. A pending email change belongs to exactly one user; the other two support tables have no foreign key to `USER`.
+
+```mermaid
+erDiagram
+    USER ||--o| PENDING_EMAIL_CHANGE : requests
+
+    USER {
+        bigint id PK
+        string password
+        datetime last_login "nullable"
+        boolean is_superuser
+        boolean is_staff
+        boolean is_active
+        datetime date_joined
+        string first_name
+        string last_name
+        string email
+    }
+    PENDING_EMAIL_CHANGE {
+        bigint id PK
+        bigint user_id FK
+        string old_email
+        string new_email
+        string token_hash
+        datetime created_at
+        datetime expires_at
+    }
+    PENDING_REGISTRATION {
+        bigint id PK
+        string first_name
+        string last_name
+        string email
+        datetime created_at
+        string password_hash
+        datetime expires_at
+    }
+    PASSWORD_RESET_REQUEST_BUCKET {
+        bigint id PK
+        string key_hash
+        datetime window_started_at
+        int attempts
+    }
 ```
 
-CSS rules that could alter the cascade or impose a new naming scheme are deliberately excluded from the initial lint baseline. Those changes belong in reviewed refactoring work rather than automatic formatting.
+`PENDING_REGISTRATION` supports the retained email-confirmation mode. It is currently disabled in production to reduce friction at sign-up; instant registration creates a user directly. Password fields hold hashes, and reset request buckets use hashed rate-limit keys rather than storing email addresses or IPs.
 
-JavaScript correctness checks cover all authored browser scripts:
+## Running it locally
 
-```powershell
-npm run lint:js
-npm run format:js:check
-```
+You will need Python 3.14 and a local PostgreSQL server. Create a local database and a role with permission to use it; the example configuration calls them `mpd` and `mpd_app`.
 
-JavaScript formatting covers every authored `static/js/*.js` file. Use `npm run format:js` to format them. See the maintainer guide for module ownership and focused browser checks.
+1. Clone the repository and create a virtual environment.
 
-## Project status
+   ```powershell
+   git clone https://github.com/alexander-kireev/my_property_desk.git
+   cd my_property_desk
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   python -m pip install -r requirements-dev.txt
+   ```
 
-Python checks cover the authored application code, excluding historical migrations and local tools:
+2. Copy `.env.example` to `.env` and set the local database name, user and password. Give `MPD_SECRET_KEY` a development value. The example uses Django's console email backend, so local email appears in the terminal.
+
+3. Apply migrations and start the server.
+
+   ```powershell
+   python manage.py migrate
+   python manage.py runserver
+   ```
+
+The app will be available at `http://127.0.0.1:8000/`. `.env` contains local credentials and should stay out of version control.
+
+## Checks and tests
+
+Pull requests into `main` run a short GitHub Actions job: Ruff checks, Django's system check, and a check for model changes without migrations. The complete Django test suite runs only when the GitHub Actions workflow is started manually. This keeps routine pull requests quick while retaining a repeatable full-suite check before a release.
+
+The same commands can be run locally:
 
 ```powershell
 python -m ruff check accounts config contact event issue note pages property task manage.py
-python -m ruff format --check accounts config contact event issue note pages property task manage.py
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test --noinput
 ```
 
-Use `python -m ruff format path/to/file.py` for a bounded formatting change. Review import changes and run the affected tests; formatting does not replace behaviour checks.
+The test suite covers domain rules, account flows, public pages and dashboard behaviour. CI uses a temporary PostgreSQL database and an in-memory email backend; delivery through a real SMTP provider requires a separate manual check.
 
-Requirements and domain analysis are substantially complete. Technical design and application setup are now underway.
+## Deployment
+
+In production, Render runs the Django application through Gunicorn, Neon hosts PostgreSQL, and Resend delivers application email. Static files are collected during the build and served through WhiteNoise. Cloudflare Web Analytics is available on selected public pages when its token is configured; visitors can opt out through the privacy page.
+
+Deployments are initiated deliberately rather than automatically on every push to `main`. The Render Blueprint runs database migrations before starting the updated application and checks `/health/` after it starts.
+
+## Scope and future direction
+
+My Property Desk currently concentrates on operational records and scheduling for one manager. It does not provide separate tenant or contractor accounts, rent collection, accounting, or lease administration.
+
+Possible next steps include attaching photographs and documents to properties and related work, recurring tasks and reminders, and inspection checklists for visits. Connected email could keep conversations with the relevant records and make it easier to turn incoming messages into tasks, issues or events. An AI assistant could summarise history, find relevant details and suggest actions or drafts for the manager to review before anything is saved or sent. Portfolio reporting, data export and collaboration between managers may follow as the workspace grows.
+
+## About the project
+
+I built My Property Desk as a portfolio project and a practical exercise in modelling a real domain, implementing its rules in Django, testing the resulting behaviour, and taking the application through to deployment. The repository includes both the product and the engineering decisions that support it.

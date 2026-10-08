@@ -1,4 +1,4 @@
-"""Application settings loaded from PMS environment variables and the local .env file."""
+"""Application settings loaded from MPD/PMS environment variables and .env."""
 
 import os
 from pathlib import Path
@@ -11,21 +11,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
-# Deployment identity and allowed hosts
-SECRET_KEY = os.environ["PMS_SECRET_KEY"]
 
-DEBUG = os.environ.get("PMS_DEBUG", "False").lower() == "true"
-PMS_PRODUCTION = os.environ.get("PMS_PRODUCTION", "False").lower() == "true"
+def app_env(name, default=None):
+    """Prefer the public MPD name while accepting existing PMS deployment keys."""
+    return os.environ.get(f"MPD_{name}", os.environ.get(f"PMS_{name}", default))
+
+
+def required_app_env(name):
+    value = app_env(name)
+    if value is None:
+        raise ImproperlyConfigured(f"MPD_{name} or PMS_{name} is required")
+    return value
+
+
+# Deployment identity and allowed hosts
+SECRET_KEY = required_app_env("SECRET_KEY")
+
+DEBUG = app_env("DEBUG", "False").lower() == "true"
+PMS_PRODUCTION = app_env("PRODUCTION", "False").lower() == "true"
 
 if PMS_PRODUCTION and DEBUG:
     raise ImproperlyConfigured("PMS_DEBUG must be False in production")
 
 ALLOWED_HOSTS = [
-    host.strip() for host in os.environ.get("PMS_ALLOWED_HOSTS", "").split(",") if host.strip()
+    host.strip() for host in app_env("ALLOWED_HOSTS", "").split(",") if host.strip()
 ]
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get("PMS_CSRF_TRUSTED_ORIGINS", "").split(",")
+    for origin in app_env("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
 
@@ -41,7 +54,7 @@ if PMS_PRODUCTION:
     SECURE_REDIRECT_EXEMPT = [r"^health/$"]
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.environ.get("PMS_HSTS_SECONDS", "3600"))
+    SECURE_HSTS_SECONDS = int(app_env("HSTS_SECONDS", "3600"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
 
@@ -99,25 +112,25 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Cloudflare Web Analytics is manually embedded on selected public pages only.
 # Set this to the site token from Cloudflare's Web Analytics dashboard at deploy time.
-PMS_CLOUDFLARE_WEB_ANALYTICS_TOKEN = os.environ.get("PMS_CLOUDFLARE_WEB_ANALYTICS_TOKEN", "")
-PMS_REGISTRATION_MODE = os.environ.get("PMS_REGISTRATION_MODE", "pending").lower()
+PMS_CLOUDFLARE_WEB_ANALYTICS_TOKEN = app_env("CLOUDFLARE_WEB_ANALYTICS_TOKEN", "")
+PMS_REGISTRATION_MODE = app_env("REGISTRATION_MODE", "pending").lower()
 if PMS_REGISTRATION_MODE not in {"instant", "pending"}:
     raise ImproperlyConfigured("PMS_REGISTRATION_MODE must be instant or pending")
 
 
 # PostgreSQL connection
-PMS_DB_SSLMODE = os.environ.get("PMS_DB_SSLMODE", "require" if PMS_PRODUCTION else "prefer")
+PMS_DB_SSLMODE = app_env("DB_SSLMODE", "require" if PMS_PRODUCTION else "prefer")
 if PMS_PRODUCTION and PMS_DB_SSLMODE not in {"require", "verify-ca", "verify-full"}:
     raise ImproperlyConfigured("Production PostgreSQL connections must use TLS")
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["PMS_DB_NAME"],
-        "USER": os.environ["PMS_DB_USER"],
-        "PASSWORD": os.environ["PMS_DB_PASSWORD"],
-        "HOST": os.environ.get("PMS_DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("PMS_DB_PORT", "5433"),
+        "NAME": required_app_env("DB_NAME"),
+        "USER": required_app_env("DB_USER"),
+        "PASSWORD": required_app_env("DB_PASSWORD"),
+        "HOST": app_env("DB_HOST", "127.0.0.1"),
+        "PORT": app_env("DB_PORT", "5433"),
         "OPTIONS": {"sslmode": PMS_DB_SSLMODE},
     }
 }
@@ -171,20 +184,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Console delivery is useful locally; set the SMTP values below for real delivery.
-EMAIL_BACKEND = os.environ.get(
-    "PMS_EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
-)
-EMAIL_HOST = os.environ.get("PMS_EMAIL_HOST", "localhost")
-EMAIL_PORT = int(os.environ.get("PMS_EMAIL_PORT", "587"))
-EMAIL_HOST_USER = os.environ.get("PMS_EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("PMS_EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = os.environ.get("PMS_EMAIL_USE_TLS", "False").lower() == "true"
-EMAIL_USE_SSL = os.environ.get("PMS_EMAIL_USE_SSL", "False").lower() == "true"
-DEFAULT_FROM_EMAIL = os.environ.get(
-    "PMS_DEFAULT_FROM_EMAIL", "noreply@property-operations-manager.local"
-)
+EMAIL_BACKEND = app_env("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = app_env("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(app_env("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = app_env("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = app_env("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = app_env("EMAIL_USE_TLS", "False").lower() == "true"
+EMAIL_USE_SSL = app_env("EMAIL_USE_SSL", "False").lower() == "true"
+DEFAULT_FROM_EMAIL = app_env("DEFAULT_FROM_EMAIL", "noreply@property-operations-manager.local")
 # Public contact messages use the same delivery backend as account email.
-PMS_CONTACT_EMAIL = os.environ.get("PMS_CONTACT_EMAIL", DEFAULT_FROM_EMAIL)
+PMS_CONTACT_EMAIL = app_env("CONTACT_EMAIL", DEFAULT_FROM_EMAIL)
 
 if PMS_PRODUCTION:
     if EMAIL_BACKEND == "django.core.mail.backends.console.EmailBackend":
