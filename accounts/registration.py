@@ -64,6 +64,25 @@ def request_registration(*, first_name, last_name, email, password, confirmation
         ) from error
 
 
+def create_instant_account(*, first_name, last_name, email, password):
+    """Create an immediately usable account and invalidate any older confirmation link."""
+    email = email.strip().lower()
+    try:
+        with transaction.atomic():
+            # The database's case-insensitive user constraint settles concurrent requests.
+            if User.objects.filter(email__iexact=email).exists():
+                raise RegistrationUnavailable("An account already exists with this email address.")
+            user = User.objects.create_user(
+                first_name=first_name, last_name=last_name, email=email, password=password
+            )
+            PendingRegistration.objects.filter(email__iexact=email).delete()
+            return user
+    except IntegrityError as error:
+        raise RegistrationUnavailable(
+            "An account already exists with this email address."
+        ) from error
+
+
 def confirm_registration(token):
     """Consume a valid pending registration once and return its newly created user."""
     try:

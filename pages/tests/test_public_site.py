@@ -17,6 +17,7 @@ class PublicSiteTests(SimpleTestCase):
             "pages:features",
             "pages:faq",
             "pages:contact_us",
+            "pages:privacy_policy",
             "pages:coming_soon",
             "accounts:login",
             "accounts:register",
@@ -29,7 +30,44 @@ class PublicSiteTests(SimpleTestCase):
                 response = self.client.get(reverse(name))
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, reverse("pages:features"))
+                self.assertContains(response, reverse("pages:privacy_policy"))
                 self.assertContains(response, reverse("accounts:register"))
+
+    @override_settings(DEBUG=False)
+    def test_unknown_url_uses_custom_404_page(self):
+        response = self.client.get("/this-page-does-not-exist/")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTemplateUsed(response, "404.html")
+        self.assertContains(response, "This page isn't here.", status_code=404)
+        self.assertContains(response, reverse("pages:home"), status_code=404)
+
+    @override_settings(PMS_CLOUDFLARE_WEB_ANALYTICS_TOKEN="test-site-token")
+    def test_analytics_is_limited_to_public_pages_and_respects_objection(self):
+        beacon = "https://static.cloudflareinsights.com/beacon.min.js"
+        for name in ("pages:home", "pages:features", "pages:faq", "pages:coming_soon", "pages:privacy_policy"):
+            with self.subTest(page=name):
+                self.assertContains(self.client.get(reverse(name)), beacon)
+
+        for name in ("pages:contact_us", "accounts:login", "accounts:register", "accounts:password_reset_request"):
+            with self.subTest(excluded_page=name):
+                self.assertNotContains(self.client.get(reverse(name)), beacon)
+        with override_settings(DEBUG=False):
+            self.assertNotContains(self.client.get("/not-a-real-page/"), beacon, status_code=404)
+
+        preference_url = reverse("pages:analytics_preference")
+        response = self.client.post(preference_url, {"analytics": "off"})
+        self.assertRedirects(response, f"{reverse('pages:privacy_policy')}#cookies-and-analytics")
+        self.assertEqual(response.cookies["mpd_analytics_off"].value, "1")
+        self.assertNotContains(self.client.get(reverse("pages:home")), beacon)
+        self.assertContains(self.client.get(reverse("pages:privacy_policy")), "Turn analytics on")
+
+        self.client.post(preference_url, {"analytics": "on"})
+        self.assertContains(self.client.get(reverse("pages:home")), beacon)
+
+    def test_analytics_preference_rejects_invalid_choice(self):
+        response = self.client.post(reverse("pages:analytics_preference"), {"analytics": "unknown"})
+        self.assertEqual(response.status_code, 400)
 
     def test_anonymous_problem_report_attaches_screenshot(self):
         screenshot = SimpleUploadedFile(

@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quick-checks:
+    name: Quick checks
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PMS_SECRET_KEY: ci-only-secret-key
+      PMS_DEBUG: "False"
+      PMS_PRODUCTION: "False"
+      PMS_REGISTRATION_MODE: instant
+      PMS_DB_NAME: pms_ci
+      PMS_DB_USER: pms_ci
+      PMS_DB_PASSWORD: ci-only-password
+      PMS_DB_HOST: 127.0.0.1
+      PMS_DB_PORT: "5432"
+      PMS_DB_SSLMODE: disable
+      PMS_EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: pms_ci
+          POSTGRES_USER: pms_ci
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pms_ci -d pms_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Check Python style
+        run: python -m ruff check accounts config contact event issue note pages property task manage.py
+      - name: Check Django configuration and migrations
+        run: |
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+
+  full-suite:
+    name: Full suite (manual only)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PMS_SECRET_KEY: ci-only-secret-key
+      PMS_DEBUG: "False"
+      PMS_PRODUCTION: "False"
+      PMS_REGISTRATION_MODE: instant
+      PMS_DB_NAME: pms_ci
+      PMS_DB_USER: pms_ci
+      PMS_DB_PASSWORD: ci-only-password
+      PMS_DB_HOST: 127.0.0.1
+      PMS_DB_PORT: "5432"
+      PMS_DB_SSLMODE: disable
+      PMS_EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: pms_ci
+          POSTGRES_USER: pms_ci
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pms_ci -d pms_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run complete Django test suite
+        run: python manage.py test --noinput

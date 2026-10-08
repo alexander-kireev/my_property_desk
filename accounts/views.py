@@ -42,6 +42,7 @@ from .registration import (
     RegistrationDeliveryFailed,
     RegistrationUnavailable,
     confirm_registration,
+    create_instant_account,
     request_registration,
 )
 
@@ -83,26 +84,39 @@ def register_view(request):
         form = PendingRegistrationForm(request.POST)
 
         if form.is_valid():
-
-            def confirmation_url(token):
-                path = reverse("accounts:confirm_registration", kwargs={"token": token})
-                return request.build_absolute_uri(path)
-
-            try:
-                request_registration(
-                    first_name=form.cleaned_data["first_name"],
-                    last_name=form.cleaned_data["last_name"],
-                    email=form.cleaned_data["email"],
-                    password=form.cleaned_data["password_1"],
-                    confirmation_url_for_token=confirmation_url,
-                )
-            except RegistrationUnavailable as error:
-                form.add_error("email", str(error))
-            except RegistrationDeliveryFailed:
-                logger.warning("Registration confirmation delivery failed.")
-                form.add_error(None, "We couldn’t send your confirmation email. Please try again.")
+            registration_details = {
+                "first_name": form.cleaned_data["first_name"],
+                "last_name": form.cleaned_data["last_name"],
+                "email": form.cleaned_data["email"],
+                "password": form.cleaned_data["password_1"],
+            }
+            if getattr(settings, "PMS_REGISTRATION_MODE", "pending") == "instant":
+                try:
+                    user = create_instant_account(**registration_details)
+                except RegistrationUnavailable as error:
+                    form.add_error("email", str(error))
+                else:
+                    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+                    return redirect("pages:dashboard")
             else:
-                return redirect("accounts:registration_pending")
+
+                def confirmation_url(token):
+                    path = reverse("accounts:confirm_registration", kwargs={"token": token})
+                    return request.build_absolute_uri(path)
+
+                try:
+                    request_registration(
+                        **registration_details, confirmation_url_for_token=confirmation_url
+                    )
+                except RegistrationUnavailable as error:
+                    form.add_error("email", str(error))
+                except RegistrationDeliveryFailed:
+                    logger.warning("Registration confirmation delivery failed.")
+                    form.add_error(
+                        None, "We couldn’t send your confirmation email. Please try again."
+                    )
+                else:
+                    return redirect("accounts:registration_pending")
 
         return redirect_with_account_form_state(
             request,

@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import (
     AuthenticationForm,
     PasswordChangeForm,
@@ -45,9 +46,13 @@ class PendingRegistrationForm(forms.Form):
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("An account already exists with this email address.")
 
-        if PendingRegistration.objects.filter(
-            email__iexact=email, expires_at__gt=timezone.now()
-        ).exists():
+        pending_mode = getattr(settings, "PMS_REGISTRATION_MODE", "pending") != "instant"
+        if (
+            pending_mode
+            and PendingRegistration.objects.filter(
+                email__iexact=email, expires_at__gt=timezone.now()
+            ).exists()
+        ):
             raise forms.ValidationError("A registration is already pending for this email address.")
 
         return email
