@@ -135,30 +135,35 @@
     display: flex;
     min-height: min(670px, calc(100dvh - var(--mpd-nav-height) - 100px));
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
+    text-align: center;
     padding-block: 72px 84px;
 }
 
 .error-code {
-    margin: 4px 0 -24px;
+    margin: 8px 0 0;
     color: #dce8d7;
-    font: 500 clamp(7rem, 19vw, 13rem)/1 var(--serif);
-    letter-spacing: -0.08em;
+    font: 500 clamp(6rem, 15vw, 10rem)/0.95 var(--serif);
+    letter-spacing: -0.06em;
 }
 
 .error-page h1 {
-    margin: 0 0 14px;
+    margin: 12px 0 14px;
     color: var(--night);
     font: 500 clamp(2.4rem, 5vw, 4.2rem)/1.08 var(--serif);
     letter-spacing: -0.035em;
 }
 
 .error-page > p:not(.error-code) {
-    max-width: 55ch;
+    max-width: 50ch;
     margin: 0;
     color: var(--muted);
     font-size: 1.1rem;
+}
+
+.error-page .actions {
+    justify-content: center;
 }
 
 @media (max-width: 760px) {
@@ -189,9 +194,5 @@
 
     .error-page {
         padding-block: 56px 72px;
-    }
-
-    .error-code {
-        margin-bottom: -12px;
     }
 }
