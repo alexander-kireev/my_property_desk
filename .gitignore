@@ -24,19 +24,8 @@ htmlcov/
 node_modules/
 .stylelintcache
 
-# Notes folder
-notes/
-
-# Wireframes folder 
-wireframes/
-
 # Internal project notes and operational tools
-build_docs/
-internal_tools/
-legal/
-scripts/
-assets/pr/
+internal/
 .ruff_cache/
-docs/*
 .github/*.md
 .github/audits/
